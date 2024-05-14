@@ -57,6 +57,19 @@ function createStationItems() {
             
     }    
 
+    function createMap() {
+      // Initialize the map
+      const map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: 46.5597, lng: 15.6411 },
+        zoom: 13
+      });
+    
+      // Add a marker to the map
+      const marker = new google.maps.Marker({
+        position: { lat: 46.5597, lng: 15.6411 },
+        map: map
+      });
+    }
     
 function addElement(tag, parent, className) {
     var element = document.createElement(tag);
