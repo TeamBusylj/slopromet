@@ -1,4 +1,4 @@
-function makeBottomheet(title) {
+function makeBottomheet(title, height) {
     let bottomSheet = addElement("div", document.body, "bottomSheet");
     let sheetContents = addElement("div", bottomSheet, "sheetContents");
     let draggableArea = addElement("div", bottomSheet, "handleHolder");
@@ -21,7 +21,8 @@ function makeBottomheet(title) {
     let toolbarColor = document
         .querySelector('meta[name="theme-color"]')
         .getAttribute("content");
-    let sheetHeight; // in vh
+    let sheetHeight;
+    
     const setSheetHeight = (value) => {
         sheetHeight = Math.max(0, Math.min(100, value));
 
@@ -44,7 +45,8 @@ function makeBottomheet(title) {
                 .setAttribute("content", toolbarColor);
         }
     };
-    setSheetHeight(0);
+    if(height)setSheetHeight(height); else setSheetHeight(0);
+    
 
     const touchPosition = (event) => (event.touches ? event.touches[0] : event);
 
@@ -195,45 +197,41 @@ function makeBottomheet(title) {
     setSheetHeight(
         Math.min(sheetContents.offsetHeight, 50, (720 / window.innerHeight) * 100)
     );
-
+setTimeout(() => {
     const observer = new MutationObserver((mutations) =>
-        mutations.forEach((mutation) => {
-            if (mutation.type === "childList" && sheetHeight < 100) {
-                setTimeout(() => {
-                    const mainContentHeight = Math.min(
-                        mainContent.clientHeight,
-                        mainContent.scrollHeight
-                    ); // Adding 60px for padding or margin
+    mutations.forEach((mutation) => {
+        if (mutation.type === "childList" && sheetHeight < 100) {
+            setTimeout(() => {
+                const mainContentHeight = Math.min(
+                    mainContent.clientHeight,
+                    mainContent.scrollHeight
+                ); // Adding 60px for padding or margin
 
-                    // Calculate the percentage height of mainContent relative to the viewport height
-                    const sheetHeight2 = (mainContentHeight / vh) * 100;
+                // Calculate the percentage height of mainContent relative to the viewport height
+                const sheetHeight2 = (mainContentHeight / vh) * 100;
 
-                    // Set the height of .mainSheet using the calculated percentage height
-                    if (mainContent.innerHTML.includes("makAnmFrSht")) {
-                        setSheetHeight(100);
-                    } else {
-                        setSheetHeight(Math.max(Math.min(sheetHeight2 + 5, 75), 25));
-                    }
-
-                    if (sheetHeight > ((vh - 52) / vh) * 100) {
-                        btTitle.classList.add("titleFull");
-                    } else {
-                        btTitle.classList.remove("titleFull");
-                    }
-                    btTitle.style.margin = "-" + (btTitle.offsetHeight + 34) + "px";
-                }, 10);
-                if (
-                    mainContent.innerHTML.includes("md-list") &&
-                    sheetContents.scrollHeight > sheetContents.clientHeight
-                ) {
-                    sheetContents.style.overflow = "scroll";
-                    sheetContents.style.display = "block";
+                // Set the height of .mainSheet using the calculated percentage height
+                if (mainContent.innerHTML.includes("makAnmFrSht")) {
+                    setSheetHeight(100);
+                } else {
+                    setSheetHeight(Math.max(Math.min(sheetHeight2 + 5, 75), 25));
                 }
-            }
-        })
-    );
 
-    observer.observe(mainContent, { childList: true });
+                if (sheetHeight > ((vh - 52) / vh) * 100) {
+                    btTitle.classList.add("titleFull");
+                } else {
+                    btTitle.classList.remove("titleFull");
+                }
+                btTitle.style.margin = "-" + (btTitle.offsetHeight + 34) + "px";
+            }, 10);
+            
+        }
+    })
+);
+
+observer.observe(mainContent, { childList: true });
+}, 1000);
+
 
     return mainContent;
 }

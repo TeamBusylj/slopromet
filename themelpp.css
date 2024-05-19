@@ -73,7 +73,7 @@ body{
     transition: all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1);
   }
   .sheetContents {
-    display: flex;
+    display: block;
     align-items: center;
     overflow: hidden;
     justify-content: center;

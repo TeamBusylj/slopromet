@@ -17,7 +17,7 @@ window.addEventListener("DOMContentLoaded", async function () {
   const movies = await response.json();
   createBuses(movies.data);
 
-let sht = makeBottomheet("Postaje")
+let sht = makeBottomheet("Postaje", 100)
 sht.innerHTML = `
 <div class="searchContain"> <md-filled-text-field class="search" placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
  <md-circular-progress indeterminate id="loader"></md-circular-progress>

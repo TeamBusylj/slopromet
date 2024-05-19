@@ -58,7 +58,8 @@ html, body{
     width: 100%;
     height: 100svh;
     margin: 0;
-    overflow: hidden;
+    overscroll-behavior: none
+  
 }
 .center {
     margin-left: 10px;
@@ -94,6 +95,7 @@ md-list#listOfStations {
     margin-top: 90px;
     overflow-y: scroll;
     height: 100%;
+    width: 100%;
 }
 md-list-item.stationItem {
     background: var(--md-sys-color-surface-container);
