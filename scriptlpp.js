@@ -10,6 +10,27 @@ function debounce(func, delay) {
       }, delay);
   };
 }
+function makeMap(){
+  let map;
+
+async function initMap() {
+  const { Map } = await google.maps.importLibrary("maps");
+  const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+  map = new Map(document.getElementById("map"), {
+    center: { lat: latitude, lng: longitude },
+    zoom: 18,
+    mapId: "LPP",
+  });
+  const marker = new AdvancedMarkerElement({
+    map: map,
+    icon: "https://teambusylj.github.io/slopromet/images/bus.png",
+    position: { lat: latitude, lng: longitude },
+    title: "Uluru",
+  });
+}
+
+initMap();
+}
 const delayedSearch = debounce(searchRefresh, 300);
 window.addEventListener("DOMContentLoaded", async function () {
   const url = "https://mestnipromet.cyou/api/v1/resources/buses/info";
@@ -23,7 +44,9 @@ sht.innerHTML = `
  <md-circular-progress indeterminate id="loader"></md-circular-progress>
     <md-list id="listOfStations"></md-list>`
     this.document.querySelector(".search").addEventListener("input",  delayedSearch)
+    
 })
+
 window.addEventListener("load", async function () {
 
 
@@ -130,6 +153,7 @@ async function createBuses(data) {
 
   console.log("finish");
   await getLocation();
+  makeMap()
   createStationItems();
 }
 
