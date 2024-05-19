@@ -30,8 +30,8 @@ window.addEventListener("load", async function () {
  const pullToRefresh = document.querySelector('.pull-to-refresh');
  
 let touchstartY = 0;
-let list = this.document.getElementById('listOfStations')
 
+var list 
 var touchDiff = 0;
 document.addEventListener('touchstart', e => {
   
@@ -47,6 +47,7 @@ var bottomSheet
 var loadingC = this.document.querySelector('.pll-loader');
 setTimeout(() => {
   bottomSheet= document.querySelector(".sheetContents")
+  list = this.document.getElementById('listOfStations')
 }, 400);
 
 document.addEventListener('touchmove', e => {

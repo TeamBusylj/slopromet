@@ -45,7 +45,6 @@ function makeBottomheet(title, height) {
                 .setAttribute("content", toolbarColor);
         }
     };
-    if(height)setSheetHeight(height); else setSheetHeight(0);
     
 
     const touchPosition = (event) => (event.touches ? event.touches[0] : event);
@@ -71,7 +70,7 @@ function makeBottomheet(title, height) {
     window.onmouseup = function () {
         --mouseDown;
     };
-    var listOfStations = document.getElementById("listOfStations");
+
     const onDragMove = (event) => {
         if (mouseDown || event.type == "touchmove") {
             const y = touchPosition(event).pageY;
@@ -193,10 +192,13 @@ function makeBottomheet(title, height) {
     window.addEventListener("touchend", onDragEnd);
 
     let mainContent = addElement("main", sheetContents, "mainSheet");
+    if(height)setSheetHeight(height); else{
+        setSheetHeight(
+            Math.min(sheetContents.offsetHeight, 50, (720 / window.innerHeight) * 100)
+        ); 
+    }
 
-    setSheetHeight(
-        Math.min(sheetContents.offsetHeight, 50, (720 / window.innerHeight) * 100)
-    );
+    
 setTimeout(() => {
     const observer = new MutationObserver((mutations) =>
     mutations.forEach((mutation) => {
