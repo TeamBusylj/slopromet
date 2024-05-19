@@ -51,7 +51,7 @@ setTimeout(() => {
 }, 400);
 
 document.addEventListener('touchmove', e => {
- if(bottomSheet.style.height == "100dvh"){
+ if(bottomSheet.style.height == "100svh"){
 
 
   if((list.scrollTop < 1 && !isArrivalsOpen) ||(isArrivalsOpen &&  this.document.querySelector('.arrivalsScroll').scrollTop < 1)){

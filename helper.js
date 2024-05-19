@@ -26,7 +26,7 @@ function makeBottomheet(title, height) {
     const setSheetHeight = (value) => {
         sheetHeight = Math.max(0, Math.min(100, value));
 
-        sheetContents.style.height = `${sheetHeight}dvh`;
+        sheetContents.style.height = `${sheetHeight}svh`;
 
         if (sheetHeight === 100) {
             bottomSheet.classList.add("fullscreenSheet");
