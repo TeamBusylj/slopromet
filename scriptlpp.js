@@ -19,11 +19,26 @@ async function initMap() {
   map = new Map(document.getElementById("map"), {
     center: { lat: latitude, lng: longitude },
     zoom: 18,
-    mapId: "LPP",
+    mapId: "828836cb97c61eb5",
+    disableDefaultUI: true,
   });
+const centerControlDiv = document.createElement("div");
+
+
+const controlButton = document.createElement("md-fab");
+controlButton.classList.add("centerMap")
+let icn = addElement("md-icon", controlButton)
+  icn.innerHTML = "radio_button_checked";
+  icn.slot="icon"
+  controlButton.addEventListener("click", () => {
+    map.setCenter({ lat: latitude, lng: longitude });
+  });
+  centerControlDiv.appendChild(controlButton);
+map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(centerControlDiv);
+centerControlDiv.style.right="25px !important"
   const marker = new AdvancedMarkerElement({
     map: map,
-    icon: "https://teambusylj.github.io/slopromet/images/bus.png",
+    content: "https://teambusylj.github.io/slopromet/images/bus.png",
     position: { lat: latitude, lng: longitude },
     title: "Uluru",
   });
@@ -31,6 +46,7 @@ async function initMap() {
 
 initMap();
 }
+
 const delayedSearch = debounce(searchRefresh, 300);
 window.addEventListener("DOMContentLoaded", async function () {
   const url = "https://mestnipromet.cyou/api/v1/resources/buses/info";
