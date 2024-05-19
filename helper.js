@@ -81,7 +81,12 @@ function makeBottomheet(title) {
             ){
                if(sheetHeight<100)sheetContents.style.overflow = "hidden"; else sheetContents.style.overflow = "scroll"
             }
-                
+            if (
+                mainContent.innerHTML.includes("md-list") &&
+                sheetContents.scrollHeight > sheetContents.clientHeight && deltaY<0
+            ){
+               if(sheetContents.scrollTop>1) deltaY = 0
+            }
           
                 
             const deltaHeight = (deltaY / window.innerHeight) * 100;
