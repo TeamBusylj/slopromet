@@ -44,6 +44,7 @@ body{
   .bottomSheet {
     position: fixed;
     width: 100%;
+    overscroll-behavior: none;
     transition: all var(--transDur);
     background-color: var(--md-sys-color-surface);
     bottom: 0;
@@ -74,6 +75,7 @@ body{
   }
   .sheetContents {
     display: block;
+    overscroll-behavior: none;
     align-items: center;
     overflow: hidden;
     justify-content: center;
@@ -85,6 +87,7 @@ body{
   .bottomSheetScrim {
     position: absolute;
     height: 100vh;
+    overscroll-behavior: none;
     width: 100vw;
     top: 0;
     transition: all var(--transDur) ease-out;
@@ -100,6 +103,7 @@ body{
     padding: 30px 5vw 30px 5vw;
     flex-wrap: wrap;
     justify-content: center;
+    overscroll-behavior: none;
     align-items: center;
   }
   .fullscreenSheet {
