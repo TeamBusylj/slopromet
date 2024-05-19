@@ -11,13 +11,22 @@ function debounce(func, delay) {
   };
 }
 const delayedSearch = debounce(searchRefresh, 300);
-window.addEventListener("load", async function () {
-  setInterval(async () => {}, 2000);
+window.addEventListener("DOMContentLoaded", async function () {
   const url = "https://mestnipromet.cyou/api/v1/resources/buses/info";
   const response = await fetch(url);
   const movies = await response.json();
   createBuses(movies.data);
- this.document.querySelector(".search").addEventListener("input",  delayedSearch)
+
+let sht = makeBottomheet("Postaje")
+sht.innerHTML = `
+<div class="searchContain"> <md-filled-text-field class="search" placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
+ <md-circular-progress indeterminate id="loader"></md-circular-progress>
+    <md-list id="listOfStations"></md-list>`
+    this.document.querySelector(".search").addEventListener("input",  delayedSearch)
+})
+window.addEventListener("load", async function () {
+
+
  const pullToRefresh = document.querySelector('.pull-to-refresh');
  
 let touchstartY = 0;
@@ -34,11 +43,16 @@ touchDiff = 0
   loadingC.setAttribute("value", "0")
   touchstartY = e.touches[0].clientY;
 });
-
+var bottomSheet
 var loadingC = this.document.querySelector('.pll-loader');
+setTimeout(() => {
+  bottomSheet= document.querySelector(".sheetContents")
+}, 400);
 
 document.addEventListener('touchmove', e => {
- 
+ if(bottomSheet.style.height == "100dvh"){
+
+
   if((list.scrollTop < 1 && !isArrivalsOpen) ||(isArrivalsOpen &&  this.document.querySelector('.arrivalsScroll').scrollTop < 1)){
 
 
@@ -50,6 +64,7 @@ document.addEventListener('touchmove', e => {
   }
 }else{
   touchDiff = 0
+}
 }
 });
 document.addEventListener('touchend', e => {
