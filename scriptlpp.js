@@ -83,7 +83,7 @@ window.addEventListener("DOMContentLoaded", async function () {
   const movies = await response.json();
   createBuses(movies.data);
 
-let sht = makeBottomheet("Postaje", 100)
+let sht = makeBottomheet(null, 100)
 sht.innerHTML = `
 <div class="searchContain"> <md-filled-text-field class="search" placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
  <md-circular-progress indeterminate id="loader"></md-circular-progress>
@@ -92,7 +92,7 @@ sht.innerHTML = `
     
 })
 
-window.addEventListener("load", async function () {
+/*window.addEventListener("load", async function () {
 
 
  const pullToRefresh = document.querySelector('.pull-to-refresh');
@@ -159,7 +159,7 @@ document.addEventListener('touchend', e => {
   }
 
 });
-});
+});*/
 var arrivalsMain = {};
 var tripIds = [];
 var stationList = {};

@@ -15,6 +15,10 @@ function makeBottomheet(title, height) {
         scrim.style.display = "none"
         scrim.style.visibillity = "hidden"
     }
+    if(title == null){
+        btTitle.style.display = "none"
+        btTitle.style.visibillity = "hidden"
+    }
 
     setTimeout(() => {
         scrim.style.opacity = ".32";
@@ -31,7 +35,7 @@ function makeBottomheet(title, height) {
     const setSheetHeight = (value) => {
         sheetHeight = Math.max(0, Math.min(100, value));
 
-        sheetContents.style.height = `${sheetHeight}svh`;
+        sheetContents.style.height = `${sheetHeight}dvh`;
 
         if (sheetHeight === 100) {
             bottomSheet.classList.add("fullscreenSheet");
