@@ -81,7 +81,7 @@ function makeBottomheet(title, height) {
     };
 
     const onDragMove = (event) => {
-        if (mouseDown || event.type == "touchmove") {
+        if ((mouseDown || event.type == "touchmove" ) && event.target.closest('.bottomSheet')) {
             const y = touchPosition(event).pageY;
             var deltaY = dragPosition - y;
 
@@ -98,16 +98,6 @@ function makeBottomheet(title, height) {
                if(sheetContents.scrollTop>1) deltaY = 0
             }
           
-                
-            const deltaHeight = (deltaY / window.innerHeight) * 100;
-
-            setSheetHeight(sheetHeight + deltaHeight);
-
-            if (sheetHeight > ((vh - 52) / vh) * 100) {
-                btTitle.classList.add("titleFull");
-            } else {
-                btTitle.classList.remove("titleFull");
-            }
             var sheetHeight3;
 
             const mainContentHeight = Math.min(
@@ -117,22 +107,17 @@ function makeBottomheet(title, height) {
             sheetHeight3 = (mainContentHeight / vh) * 100;
 
             if (
-                (sheetHeight < sheetHeight3 / 2 &&
-                    !mainContent.innerHTML.includes("md-list")) ||
-                (mainContent.innerHTML.includes("md-list") && sheetHeight < 25)
+                
+                mainContent.innerHTML.includes("md-list") && sheetHeight < 30 &&deltaY<0
             ) {
-                if (title !== "") {
-                    btTitle.style.transform = "scale(1,0)";
-                }
-                bottomSheet.classList.add("escapingSheet");
-                scrim.style.opacity = "0";
-            } else {
-                if (title !== "") {
-                    btTitle.style.transform = "scale(1)";
-                }
-                bottomSheet.classList.remove("escapingSheet");
-                scrim.style.opacity = ".32";
-            }
+               deltaY = 0;
+            } 
+            const deltaHeight = (deltaY / window.innerHeight) * 100;
+
+            setSheetHeight(sheetHeight + deltaHeight);
+
+           
+           
             dragPosition = y;
         }
     };
@@ -150,21 +135,17 @@ function makeBottomheet(title, height) {
             sheetHeight3 = (mainContentHeight / vh) * 100;
 
             if (mainContent.innerHTML.includes("md-list")) {
-                if (sheetHeight > 95) {
+                if (sheetHeight > 65) {
                     setSheetHeight(100);
-                } else if (sheetHeight > 25) {
+                } else if (sheetHeight > 30) {
                     setSheetHeight(Math.min(sheetHeight3 + 5, 30));
-                } else {
-                    setIsSheetShown(false);
-                    setSheetHeight(0);
-                }
-            } else if (sheetHeight < sheetHeight3 / 2) {
-                setIsSheetShown(false);
-                setSheetHeight(0);
-            } else if (sheetHeight > sheetHeight3 + (100 - sheetHeight3) / 2) {
+                } else  {
+                    setSheetHeight(30);
+                } 
+            }  else if (sheetHeight > sheetHeight3 + (100 - sheetHeight3) / 2) {
                 setSheetHeight(100);
             } else {
-                setSheetHeight(Math.max(Math.min(sheetHeight3 + 5, 30), 25));
+                setSheetHeight(Math.max(Math.min(sheetHeight3 + 5, 30), 30));
             }
 
             if (sheetHeight > ((vh - 26) / vh) * 100) {

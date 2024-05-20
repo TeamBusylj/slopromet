@@ -44,6 +44,7 @@ body{
   .bottomSheet {
     position: fixed;
     width: 100%;
+    overflow: hidden;
     overscroll-behavior: none;
     transition: all var(--transDur);
     background-color: var(--md-sys-color-surface);
@@ -62,6 +63,7 @@ body{
   }
   .handleHolder {
     left: 50%;
+    background: var(--md-sys-color-surface);
     transform: translateX(-50%);
     position: absolute;
     top: 0px;
