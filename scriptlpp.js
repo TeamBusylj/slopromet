@@ -58,16 +58,22 @@ const pinSvg = parser.parseFromString(
 ).documentElement;
 await initMap();
 const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+var markers = []
 for (let po = 0; po < stationList.length; po++) {
-  console.log(stationList[po].latitude,stationList[po].longitude )
-new AdvancedMarkerElement({
+
+  const pinSvg = parser.parseFromString(
+    pinSvgString,
+    "image/svg+xml",
+  ).documentElement;
+markers.push(new AdvancedMarkerElement({
     map: map,
     content: pinSvg,
     position: { lat: stationList[po].latitude, lng: stationList[po].longitude },
     title: stationList[po].name,
-  });
+  }))
   
 }
+const markerCluster = new markerClusterer.MarkerClusterer({ markers, map });
 }
 
 const delayedSearch = debounce(searchRefresh, 300);
