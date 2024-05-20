@@ -50,12 +50,8 @@ centerControlDiv.style.right="25px !important"
   
 }
 const parser = new DOMParser();
-// A marker with a custom inline SVG.
 const pinSvgString = '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 1080 1080" xml:space="preserve"><g transform="translate(540 540)"/><g transform="translate(540 540)"/><rect style="stroke:#000;stroke-width:0;stroke-dasharray:none;stroke-linecap:butt;stroke-dashoffset:0;stroke-linejoin:miter;stroke-miterlimit:4;fill:#78a75a;fill-rule:nonzero;opacity:1" vector-effect="non-scaling-stroke" x="-33.084" y="-33.084" width="66.167" height="66.167" rx="13" ry="13" transform="translate(540 540)scale(16.4)"/><path style="stroke:#000;stroke-width:0;stroke-dasharray:none;stroke-linecap:butt;stroke-dashoffset:0;stroke-linejoin:miter;stroke-miterlimit:4;fill:#fff;fill-rule:nonzero;opacity:1" vector-effect="non-scaling-stroke" transform="translate(60 1040)" d="M240-120q-17 0-28.5-11.5T200-160v-82q-18-20-29-44.5T160-340v-380q0-83 77-121.5T480-880q172 0 246 37t74 123v380q0 29-11 53.5T760-242v82q0 17-11.5 28.5T720-120h-40q-17 0-28.5-11.5T640-160v-40H320v40q0 17-11.5 28.5T280-120zm242-640h224-448zm158 280H240h480zm-400-80h480v-120H240zm100 240q25 0 42.5-17.5T400-380t-17.5-42.5T340-440t-42.5 17.5T280-380t17.5 42.5T340-320Zm280 0q25 0 42.5-17.5T680-380t-17.5-42.5T620-440t-42.5 17.5T560-380t17.5 42.5T620-320ZM258-760h448q-15-17-64.5-28.5T482-800q-107 0-156.5 12.5T258-760Zm62 480h320q33 0 56.5-23.5T720-360v-120H240v120q0 33 23.5 56.5T320-280Z"/></svg>';
-const pinSvg = parser.parseFromString(
-  pinSvgString,
-  "image/svg+xml",
-).documentElement;
+
 await initMap();
 const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 var markers = []
@@ -73,7 +69,32 @@ markers.push(new AdvancedMarkerElement({
   }))
   
 }
-const markerCluster = new markerClusterer.MarkerClusterer({ markers, map });
+const clusterStyles = [
+  {
+    url: 'https://teambusylj.github.io/slopromet/images/bus.png',  // URL to custom cluster icon
+    width: 53,  // width of the cluster icon
+    height: 53, // height of the cluster icon
+    textColor: '#ffffff',  // color of the text on the cluster icon
+    textSize: 14  // size of the text on the cluster icon
+  },
+  {
+    url: 'https://teambusylj.github.io/slopromet/images/bus.png',
+    width: 56,
+    height: 56,
+    textColor: '#ffffff',
+    textSize: 16
+  },
+  {
+    url: 'https://teambusylj.github.io/slopromet/images/bus.png',
+    width: 66,
+    height: 66,
+    textColor: '#ffffff',
+    textSize: 18
+  }
+];
+const markerCluster = new markerClusterer.MarkerClusterer({ markers, map, renderer: {
+  styles: clusterStyles
+} });
 }
 
 const delayedSearch = debounce(searchRefresh, 300);
