@@ -43,7 +43,7 @@ md-circular-progress#loader {
     --_active-indicator-height: 0;
     --_hover-active-indicator-height: 0;
     --_focus-active-indicator-height: 0;
-    width: 93%;
+    width: 100%;
     --md-filled-text-field-container-shape: 150px;
     /* margin-left: auto; */
     /* margin-right: auto; */
@@ -77,7 +77,7 @@ html, body{
     height: 50px;
     display: flex;
     justify-content: center;
-    width: 100%;
+    width: 93%;
   margin-bottom: 20px;
    z-index: 2;
 }
@@ -101,7 +101,7 @@ md-fab.centerMap {
     font-size: 1.2rem;
 }
 md-list#listOfStations {
-    margin-top: 90px;
+    margin-top: 55px;
     overflow-y: scroll;
     height: 100%;
     width: 100%;

@@ -11,6 +11,11 @@ function makeBottomheet(title, height) {
     }
     let handle = addElement("div", draggableArea, "bottomSheetHandle");
     let scrim = addElement("div", document.body, "bottomSheetScrim");
+    if(height){
+        scrim.style.display = "none"
+        scrim.style.visibillity = "hidden"
+    }
+
     setTimeout(() => {
         scrim.style.opacity = ".32";
     }, 10);
@@ -144,7 +149,7 @@ function makeBottomheet(title, height) {
                 if (sheetHeight > 95) {
                     setSheetHeight(100);
                 } else if (sheetHeight > 25) {
-                    setSheetHeight(Math.min(sheetHeight3 + 5, 75));
+                    setSheetHeight(Math.min(sheetHeight3 + 5, 30));
                 } else {
                     setIsSheetShown(false);
                     setSheetHeight(0);
@@ -155,7 +160,7 @@ function makeBottomheet(title, height) {
             } else if (sheetHeight > sheetHeight3 + (100 - sheetHeight3) / 2) {
                 setSheetHeight(100);
             } else {
-                setSheetHeight(Math.max(Math.min(sheetHeight3 + 5, 75), 25));
+                setSheetHeight(Math.max(Math.min(sheetHeight3 + 5, 30), 25));
             }
 
             if (sheetHeight > ((vh - 26) / vh) * 100) {
