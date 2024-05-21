@@ -1,5 +1,6 @@
 function makeBottomheet(title, height) {
     let bottomSheet = addElement("div", document.body, "bottomSheet");
+    bottomSheet.innerHTML = "<md-elevation></md-elevation>"
     let sheetContents = addElement("div", bottomSheet, "sheetContents");
     let draggableArea = addElement("div", bottomSheet, "handleHolder");
     var btTitle;

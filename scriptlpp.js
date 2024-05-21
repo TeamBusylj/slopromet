@@ -24,7 +24,7 @@ id="828836cb97c61eb5"
   
   map = new Map(document.getElementById("map"), {
     center: { lat: latitude, lng: longitude },
-    zoom: 18,
+    zoom: 15,
     mapId: id,
     disableDefaultUI: true,
   });
@@ -32,11 +32,13 @@ const centerControlDiv = document.createElement("div");
 
 
 const controlButton = document.createElement("md-fab");
+controlButton.variant = "secondary"
 controlButton.classList.add("centerMap")
 let icn = addElement("md-icon", controlButton)
   icn.innerHTML = "radio_button_checked";
   icn.slot="icon"
   controlButton.addEventListener("click", () => {
+    map.setZoom(15);
     map.setCenter({ lat: latitude, lng: longitude });
   });
   centerControlDiv.appendChild(controlButton);
@@ -56,69 +58,65 @@ await initMap();
 const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 var markers = []
 
-const svg = window.btoa(`
-<svg fill="#ff0000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-  <circle cx="120" cy="120" opacity=".6" r="70" />
-  <circle cx="120" cy="120" opacity=".3" r="90" />
-  <circle cx="120" cy="120" opacity=".2" r="110" />
-  <circle cx="120" cy="120" opacity=".1" r="130" />
-</svg>`);
-for (let po = 0; po < stationList.length; po++) {
 
-  const pinSvg = parser.parseFromString(
-    pinSvgString,
-    "image/svg+xml",
-  ).documentElement;
-markers.push(new AdvancedMarkerElement({
-    map: map,
-    //icon: `data:image/svg+xml;base64,${svg}`,
+  for (let po = 0; po < stationList.length; po++) {
+
+    const pinSvg = parser.parseFromString(
+      pinSvgString,
+      "image/svg+xml",
+    ).documentElement;
+  markers.push(new AdvancedMarkerElement({
+      map: map,   
+      content: pinSvg,
+      position: { lat: stationList[po].latitude, lng: stationList[po].longitude },
+      title: stationList[po].name,
+    }))
     
-    content: pinSvg,
-    position: { lat: stationList[po].latitude, lng: stationList[po].longitude },
-    title: stationList[po].name,
-  }))
-  
-}
-const pinSvg = parser.parseFromString(
-    pinSvgString,
-    "image/svg+xml",
-  ).documentElement;
-  var options = {
-    styles: [{
-      textColor: 'black',
-      height: 53,
-      url: "images/bus.png",
-      width: 53
-    },
-    {
-      textColor: 'white',
-      height: 56,
-      url: "images/bus.png",
-      width: 56
-    },
-    {
-      textColor: 'white',
-      height: 66,
-      url: "images/bus.png",
-      width: 66
-    },
-    {
-      textColor: 'white',
-      height: 78,
-      url: "images/bus.png",
-      width: 78
-    },
-    {
-      textColor: 'white',
-      height: 90,
-      url: "images/bus.png",
-      width: 90
-    }],
-    maxZoom: 17
   }
 
 
-const markerCluster = new markerClusterer.MarkerClusterer({ markers, map, options});
+  function getColor(count, maxMarkers) {
+    // Create a sequential color scale using d3-scale-chromatic
+    const colorScale = d3.scaleSequential()
+      .domain([0, maxMarkers])  // Range from 0 (min) to maxMarkers (max)
+      .interpolator(d3.interpolateHsl('red', 'yellow', 'green'));  // Interpolate between red, yellow, and green
+  
+    // Calculate the normalized count (0-1)
+    const normalizedCount = count / maxMarkers;
+    return colorScale(normalizedCount);
+  }
+  
+  const interpolatedRenderer = {
+    palette: d3.color("yellow", "green").rgb(),
+    render: function ({ count, position }, stats) {
+        // use d3-interpolateRgb to interpolate between red and blue
+        const color = getColor(count, stats.clusters.markers.max);
+        // create svg url with fill color
+        const svg = window.btoa(`
+  <svg fill="${color}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+    <circle cx="120" cy="120" opacity=".8" r="70" />    
+  </svg>`);
+        // create marker using svg icon
+        return new google.maps.Marker({
+            position,
+            icon: {
+                url: `data:image/svg+xml;base64,${svg}`,
+                scaledSize: new google.maps.Size(75, 75),
+            },
+            label: {
+                text: String(count),
+                color: "rgba(255,255,255,0.9)",
+                fontSize: "12px",
+            },
+            // adjust zIndex to be above other markers
+            zIndex: Number(google.maps.Marker.MAX_ZINDEX) + count,
+        });
+    },
+};
+
+
+  const markerCluster = new markerClusterer.MarkerClusterer({algorithm: new markerClusterer.GridAlgorithm({ maxDistance: 5000 }), markers, map, renderer: interpolatedRenderer});
+
 }
 
 const delayedSearch = debounce(searchRefresh, 300);
@@ -227,6 +225,8 @@ async function getLocation() {
 
 setInterval(getLocation, 60000);
 async function createBuses(data) {
+  await getLocation();
+ 
   for (const bus in data) {
     if (data[bus].trip_id && !tripIds.includes(data[bus].trip_id)) {
       tripIds.push(data[bus].trip_id);
@@ -242,8 +242,9 @@ async function createBuses(data) {
   stationList = movies.data;
 
   console.log("finish");
-  await getLocation();
   makeMap()
+ 
+ 
   createStationItems();
 }
 

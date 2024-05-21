@@ -86,13 +86,20 @@ html, body{
   margin-bottom: 20px;
    z-index: 2;
 }
+.gm-style iframe + div { border:none!important; }
+#map div div a[target='_blank'] div{margin-bottom:30px;} 
+#map div div a[target='_blank'] div img {
+    left: 20px !important;
+    stroke-width: 0;
+}
 md-fab.centerMap {
-    margin-bottom: 1px;
+    margin-bottom: 40px;
     margin-right: 15px;
 }
 #map {
     margin-bottom: -30px;
-    width: 100%;
+    width: 102%;
+    margin-left: -1%;
     height: 100lvh;
 }
 .search md-icon{margin-left: 10px;}
