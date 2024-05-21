@@ -55,6 +55,14 @@ const pinSvgString = '<svg xmlns="http://www.w3.org/2000/svg" width="25" height=
 await initMap();
 const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 var markers = []
+
+const svg = window.btoa(`
+<svg fill="#ff0000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+  <circle cx="120" cy="120" opacity=".6" r="70" />
+  <circle cx="120" cy="120" opacity=".3" r="90" />
+  <circle cx="120" cy="120" opacity=".2" r="110" />
+  <circle cx="120" cy="120" opacity=".1" r="130" />
+</svg>`);
 for (let po = 0; po < stationList.length; po++) {
 
   const pinSvg = parser.parseFromString(
@@ -63,38 +71,54 @@ for (let po = 0; po < stationList.length; po++) {
   ).documentElement;
 markers.push(new AdvancedMarkerElement({
     map: map,
+    //icon: `data:image/svg+xml;base64,${svg}`,
+    
     content: pinSvg,
     position: { lat: stationList[po].latitude, lng: stationList[po].longitude },
     title: stationList[po].name,
   }))
   
 }
-const clusterStyles = [
-  {
-    url: 'https://teambusylj.github.io/slopromet/images/bus.png',  // URL to custom cluster icon
-    width: 53,  // width of the cluster icon
-    height: 53, // height of the cluster icon
-    textColor: '#ffffff',  // color of the text on the cluster icon
-    textSize: 14  // size of the text on the cluster icon
-  },
-  {
-    url: 'https://teambusylj.github.io/slopromet/images/bus.png',
-    width: 56,
-    height: 56,
-    textColor: '#ffffff',
-    textSize: 16
-  },
-  {
-    url: 'https://teambusylj.github.io/slopromet/images/bus.png',
-    width: 66,
-    height: 66,
-    textColor: '#ffffff',
-    textSize: 18
+const pinSvg = parser.parseFromString(
+    pinSvgString,
+    "image/svg+xml",
+  ).documentElement;
+  var options = {
+    styles: [{
+      textColor: 'black',
+      height: 53,
+      url: "images/bus.png",
+      width: 53
+    },
+    {
+      textColor: 'white',
+      height: 56,
+      url: "images/bus.png",
+      width: 56
+    },
+    {
+      textColor: 'white',
+      height: 66,
+      url: "images/bus.png",
+      width: 66
+    },
+    {
+      textColor: 'white',
+      height: 78,
+      url: "images/bus.png",
+      width: 78
+    },
+    {
+      textColor: 'white',
+      height: 90,
+      url: "images/bus.png",
+      width: 90
+    }],
+    maxZoom: 17
   }
-];
-const markerCluster = new markerClusterer.MarkerClusterer({ markers, map, renderer: {
-  styles: clusterStyles
-} });
+
+
+const markerCluster = new markerClusterer.MarkerClusterer({ markers, map, options});
 }
 
 const delayedSearch = debounce(searchRefresh, 300);

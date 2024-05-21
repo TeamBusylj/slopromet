@@ -42,17 +42,18 @@ body{
     }
   }
   .bottomSheet {
-    position: fixed;
+    position: relative;
     width: 100%;
     overflow: hidden;
-    overscroll-behavior: none;
+    flex: 3 0 auto;
     transition: all var(--transDur);
     background-color: var(--md-sys-color-surface);
     bottom: 0;
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
     z-index: 99;
-  }
+    /* height: 100%; */
+}
   .bottomSheetHandle {
     transition: all var(--transDur);
     margin-top: 7px;
