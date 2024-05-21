@@ -66,13 +66,16 @@ var markers = []
       pinSvgString,
       "image/svg+xml",
     ).documentElement;
-  markers.push(new AdvancedMarkerElement({
+    let mrk = new AdvancedMarkerElement({
       map: map,   
       content: pinSvg,
       position: { lat: stationList[po].latitude, lng: stationList[po].longitude },
       title: stationList[po].name,
-    }))
-    
+    })
+  markers.push(mrk)
+  mrk.addListener('click', function() {
+    stationClick(po)
+});
   }
 
 
@@ -96,7 +99,7 @@ var markers = []
         // create svg url with fill color
         const svg = window.btoa(`
   <svg fill="${color}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-    <circle cx="120" cy="120" opacity=".8" r="70" />    
+    <circle cx="120" cy="120" opacity="1" r="70" />    
   </svg>`);
         // create marker using svg icon
         return new google.maps.Marker({
@@ -433,14 +436,14 @@ async function stationClick(station, noAnimation) {
           " min</span></div></div>";
       }
     }
-    const pullToRefresh = document.querySelector('.pull-to-refresh');
+    /*const pullToRefresh = document.querySelector('.pull-to-refresh');
       pullToRefresh.classList.add('hideLoad')
       setTimeout(() => {
         pullToRefresh.style.top = '0px' ;
         pullToRefresh.classList.remove('hideLoad')
-      }, 300);     
+      }, 300);     */
   }else{
-    arrivalsContainer.innerHTML += "No buses arriving soon"
+  
   }
   
 }
@@ -455,9 +458,11 @@ function addElement(tag, parent, className) {
   return element;
 }
 function makeScreen(titlex) {
+  let sheet = document.querySelector(".mainSheet")
+  //sheet.innerHTML = 0
   let arrivalsContainer = addElement(
     "div",
-    document.body,
+    sheet,
     "arrivalsContainer"
   );  
   let title = addElement("h1", arrivalsContainer, "title");
@@ -472,9 +477,7 @@ function makeScreen(titlex) {
     }, 400);
    
   })
-  setTimeout(() => {
-    arrivalsContainer.style.transform = "translateY(0vh)";
-  }, 10);
+
 
   return arrivalsContainer;
 }

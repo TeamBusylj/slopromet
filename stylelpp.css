@@ -8,12 +8,11 @@ body{
     display: none;
 }
 .arrivalsContainer {
-    position: fixed;
-    top: 0;
-    left: 0;
+    position: absolute;
+    top: 12px;
     transition: all .4s  cubic-bezier(0.05, 0.7, 0.1, 1);
     font-family: Roboto;
-    transform: translateY(100vh);
+  
     width: 100%;
     z-index: 3;
     height: 100%;

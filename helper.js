@@ -204,18 +204,12 @@ setTimeout(() => {
                 const sheetHeight2 = (mainContentHeight / vh) * 100;
 
                 // Set the height of .mainSheet using the calculated percentage height
-                if (mainContent.innerHTML.includes("makAnmFrSht")) {
+                if (mainContent.innerHTML.includes("arrivalsContainer")) {
                     setSheetHeight(100);
                 } else {
                     setSheetHeight(Math.max(Math.min(sheetHeight2 + 5, 75), 25));
                 }
 
-                if (sheetHeight > ((vh - 52) / vh) * 100) {
-                    btTitle.classList.add("titleFull");
-                } else {
-                    btTitle.classList.remove("titleFull");
-                }
-                btTitle.style.margin = "-" + (btTitle.offsetHeight + 34) + "px";
             }, 10);
             
         }
