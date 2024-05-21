@@ -125,9 +125,9 @@ var markerCluster = new markerClusterer.MarkerClusterer({algorithm: new markerCl
 
   })
   document.addEventListener('touchend', e => {
-   setTimeout(() => {
+
     markerCluster.map = map
-   }, 300);
+
    
 
   })
