@@ -79,7 +79,7 @@ var markers = []
     // Create a sequential color scale using d3-scale-chromatic
     const colorScale = d3.scaleSequential()
       .domain([0, maxMarkers])  // Range from 0 (min) to maxMarkers (max)
-      .interpolator(d3.interpolateHsl('red', 'yellow', 'green'));  // Interpolate between red, yellow, and green
+      .interpolator(d3.interpolateHsl('red',  'green'));  // Interpolate between red, yellow, and green
   
     // Calculate the normalized count (0-1)
     const normalizedCount = count / maxMarkers;
@@ -87,6 +87,7 @@ var markers = []
   }
   
   const interpolatedRenderer = {
+   
     palette: d3.color("yellow", "green").rgb(),
     render: function ({ count, position }, stats) {
         // use d3-interpolateRgb to interpolate between red and blue
@@ -115,8 +116,21 @@ var markers = []
 };
 
 
-  const markerCluster = new markerClusterer.MarkerClusterer({algorithm: new markerClusterer.GridAlgorithm({ maxDistance: 5000 }), markers, map, renderer: interpolatedRenderer});
+var markerCluster = new markerClusterer.MarkerClusterer({algorithm: new markerClusterer.GridAlgorithm({ maxDistance: 5000 }), markers, map, renderer: interpolatedRenderer});
 
+
+  document.addEventListener('touchstart', e => {
+
+    markerCluster.map = null;
+
+  })
+  document.addEventListener('touchend', e => {
+   setTimeout(() => {
+    markerCluster.map = map
+   }, 300);
+   
+
+  })
 }
 
 const delayedSearch = debounce(searchRefresh, 300);
