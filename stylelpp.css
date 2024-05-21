@@ -12,7 +12,8 @@ body{
     top: 12px;
     transition: all .4s  cubic-bezier(0.05, 0.7, 0.1, 1);
     font-family: Roboto;
-  
+    transform: translateX(30px);
+    opacity: 0;
     width: 100%;
     z-index: 3;
     height: 100%;
@@ -26,7 +27,7 @@ body{
 md-icon-button.iks {
     position: absolute;
     left: 16px;
-    top: 15px;
+
 }
 .buses {
     gap: 10px;

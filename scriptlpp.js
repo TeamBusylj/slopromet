@@ -410,8 +410,8 @@ async function stationClick(station, noAnimation) {
   const movies = await response.json();
   console.log(movies.data);
 
-   
-
+   arrivalsContainer.style.transform = "translateX(0px)";
+   arrivalsContainer.style.opacity = "1";
     if (movies.data.arrivals.length > 0) {
     for (const arrival of movies.data.arrivals) {
       if (document.getElementById("bus_" + arrival.route_name)) {
@@ -467,10 +467,11 @@ function makeScreen(titlex) {
   );  
   let title = addElement("h1", arrivalsContainer, "title");
   title.innerHTML = titlex
-    let iks = addElement("md-icon-button", arrivalsContainer, "iks");
-  iks.innerHTML = "<md-icon>close</md-icon>";
+    let iks = addElement("md-icon-button", title, "iks");
+  iks.innerHTML = "<md-icon>arrow_back_ios </md-icon>";
   iks.addEventListener("click", function() {
-    arrivalsContainer.style.transform = "translateY(100vh)";
+    arrivalsContainer.style.transform = "translateX(30px)";   
+    arrivalsContainer.style.opacity = "0";
     isArrivalsOpen = false
     setTimeout(() => {
       arrivalsContainer.remove();
