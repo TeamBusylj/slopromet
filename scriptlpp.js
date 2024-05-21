@@ -10,6 +10,7 @@ function debounce(func, delay) {
       }, delay);
   };
 }
+
 async function makeMap(){
   let map;
 
@@ -119,18 +120,20 @@ var markers = []
 var markerCluster = new markerClusterer.MarkerClusterer({algorithm: new markerClusterer.GridAlgorithm({ maxDistance: 5000 }), markers, map, renderer: interpolatedRenderer});
 
 
-  document.addEventListener('touchstart', e => {
-
+document.getElementById("map").addEventListener('touchstart', e => {
     markerCluster.map = null;
-
   })
-  document.addEventListener('touchend', e => {
-
+  document.getElementById("map").addEventListener('touchend', e => {
     markerCluster.map = map
-
-   
-
   })
+  document.querySelector(".bottomSheet").addEventListener('touchstart', e => {
+    markerCluster.map = null;
+  })
+  document.querySelector(".bottomSheet").addEventListener("resize",debounce(function(e){
+    console.log("nd")
+    markerCluster.map = map
+  }, 300));
+  
 }
 
 const delayedSearch = debounce(searchRefresh, 300);
