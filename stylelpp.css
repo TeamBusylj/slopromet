@@ -87,10 +87,23 @@ html, body{
    z-index: 2;
 }
 .gm-style iframe + div { border:none!important; }
-#map div div a[target='_blank'] div{margin-bottom:30px;} 
+#map div div a[target='_blank'] div{
+    background-color: white;
+    border-radius: 100px;
+padding: 3px;
+    margin-left: 20px !important;
+} 
+@media (prefers-color-scheme: dark  ){
+    #map div div a[target='_blank'] div{
+        background-color:#242f3e;}
+}
+@media (prefers-color-scheme: light ){
+    #map div div a[target='_blank'] div{
+        background-color:#fbf9f7;}
+}
 #map div div a[target='_blank'] div img {
-    left: 20px !important;
-    stroke-width: 0;
+   left: unset !important;
+   top: unset !important;
 }
 md-fab.centerMap {
     margin-bottom: 40px;

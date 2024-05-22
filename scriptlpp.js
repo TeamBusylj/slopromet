@@ -132,6 +132,7 @@ let tmr = setInterval(() => {
     gsign = document.querySelector("#map div div a[target='_blank'] div")
   }else{
     gsign.style.marginBottom=  "calc(100vh - "+sheet.offsetTop +"px + 10px)"
+    gsign.innerHTML = gsign.innerHTML.replace('stroke-width%3D%221.5%22', 'stroke-width%3D%220%22')
     clearInterval(tmr)
   }
 }, 200);
