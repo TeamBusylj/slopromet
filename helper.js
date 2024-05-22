@@ -192,7 +192,7 @@ function makeBottomheet(title, height) {
 setTimeout(() => {
     const observer = new MutationObserver((mutations) =>
     mutations.forEach((mutation) => {
-        if (mutation.type === "childList" && sheetHeight < 100) {
+        if (mutation.type === "childList") {
             setTimeout(() => {
                 const mainContentHeight = Math.min(
                     mainContent.clientHeight,
@@ -203,10 +203,18 @@ setTimeout(() => {
                 const sheetHeight2 = (mainContentHeight / vh) * 100;
 
                 // Set the height of .mainSheet using the calculated percentage height
-                if (mainContent.innerHTML.includes("arrivalsContainer")) {
-                    setSheetHeight(100);
+                if (mainContent.innerHTML.includes("arrivalsContainer") && !mainContent.innerHTML.includes('ajokyxw')) {
+                  
+                    console.log("kkek")
+                      setSheetHeight(100);
                 } else {
-                    setSheetHeight(Math.max(Math.min(sheetHeight2 + 5, 75), 25));
+                    console.log("kkk")
+                    if(mainContent.innerHTML.includes('ajokyxw')){
+                        setSheetHeight(30);
+                    }else{
+                        setSheetHeight(30);
+                    }
+      
                 }
 
             }, 10);

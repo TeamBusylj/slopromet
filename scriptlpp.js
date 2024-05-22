@@ -143,7 +143,11 @@ gsign.style.marginBottom=  "calc(100vh - "+sheet.offsetTop +"px + 10px)"
 })
 
 let resizeObserver= new ResizeObserver(() => { 
-  gsign.style.marginBottom=  "calc(100vh - "+sheet.offsetTop +"px + 10px)"
+  try {
+    gsign.style.marginBottom=  "calc(100vh - "+sheet.offsetTop +"px + 10px)" 
+  } catch {
+  }
+  
   controlButton.style.marginBottom = "calc(100vh - "+sheet.offsetTop +"px + 10px)"
   });
   
@@ -411,6 +415,12 @@ function showOnMap(lnga, lata){
   console.log(lata, lnga)
 map.setCenter({ lat: lata, lng: lnga });
 map.setZoom(18);
+setTimeout(() => {
+  document.querySelector(".mainSheet").appendChild(document.createElement("ajokyxw"))
+
+}, 300);
+
+
 }
 async function stationClick(station, noAnimation) {
   
@@ -498,6 +508,7 @@ function makeScreen(titlex) {
     isArrivalsOpen = false
     setTimeout(() => {
       arrivalsContainer.remove();
+      document.querySelector("ajokyxw").remove()
     }, 400);
    
   })
