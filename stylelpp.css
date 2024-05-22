@@ -1,6 +1,6 @@
 body{
     background-color: var(--md-sys-color-surface);
-    display: flex;
+  
     flex-direction: column;
     height: 100vh;
 }

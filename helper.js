@@ -99,8 +99,7 @@ function makeBottomheet(title, height) {
                if(sheetContents.scrollTop>1) deltaY = 0
             }
           
-            var sheetHeight3;
-
+         
             const mainContentHeight = Math.min(
                 mainContent.clientHeight,
                 mainContent.scrollHeight

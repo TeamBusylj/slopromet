@@ -13,7 +13,7 @@ function debounce(func, delay) {
 
 async function makeMap(){
   let map;
-
+var controlButton
 async function initMap() {
   let id 
   if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -32,7 +32,7 @@ id="828836cb97c61eb5"
 const centerControlDiv = document.createElement("div");
 
 
-const controlButton = document.createElement("md-fab");
+controlButton = document.createElement("md-fab");
 controlButton.variant = "secondary"
 controlButton.classList.add("centerMap")
 let icn = addElement("md-icon", controlButton)
@@ -123,20 +123,24 @@ var markers = []
 var markerCluster = new markerClusterer.MarkerClusterer({algorithm: new markerClusterer.GridAlgorithm({ maxDistance: 5000 }), markers, map, renderer: interpolatedRenderer});
 
 
-document.getElementById("map").addEventListener('touchstart', e => {
-    markerCluster.map = null;
-  })
-  document.getElementById("map").addEventListener('touchend', e => {
-    markerCluster.map = map
-  })
-  document.querySelector(".bottomSheet").addEventListener('touchstart', e => {
-    markerCluster.map = null;
-  })
-  document.querySelector(".bottomSheet").addEventListener("resize",debounce(function(e){
-    console.log("nd")
-    markerCluster.map = map
-  }, 300));
+const sheet = document.querySelector(".bottomSheet")
+
+var gsign = document.querySelector("#map div div a[target='_blank'] div img")
+setTimeout(() => {
+  gsign = document.querySelector("#map div div a[target='_blank'] div img")
+}, 3000);
+controlButton.style.marginBottom = "calc(100vh - "+sheet.offsetTop +"px + 10px)"
+sheet.addEventListener('touchmove', e => {
+gsign.style.marginBottom=  "calc(100vh - "+sheet.offsetTop +"px + 10px)"
+ controlButton.style.marginBottom  =  "calc(100vh - "+sheet.offsetTop +"px + 10px)"
+})
+
+let resizeObserver= new ResizeObserver(() => { 
+
+  controlButton.style.marginBottom = "calc(100vh - "+sheet.offsetTop +"px + 10px)"
+  });
   
+  resizeObserver.observe(document.querySelector(".sheetContents")); 
 }
 
 const delayedSearch = debounce(searchRefresh, 300);
@@ -146,7 +150,7 @@ window.addEventListener("DOMContentLoaded", async function () {
   const movies = await response.json();
   createBuses(movies.data);
 
-let sht = makeBottomheet(null, 100)
+let sht = makeBottomheet(null, 30)
 sht.innerHTML = `
 <div class="searchContain"> <md-filled-text-field class="search" placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
  <md-circular-progress indeterminate id="loader"></md-circular-progress>

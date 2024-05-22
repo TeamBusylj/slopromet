@@ -42,7 +42,7 @@ body{
     }
   }
   .bottomSheet {
-    position: relative;
+    position: absolute;
     width: 100%;
     overflow: hidden;
     flex: 3 0 auto;
