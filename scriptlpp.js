@@ -106,12 +106,12 @@ var markers = []
             position,
             icon: {
                 url: `data:image/svg+xml;base64,${svg}`,
-                scaledSize: new google.maps.Size(75, 75),
+                scaledSize: new google.maps.Size(70, 70),
             },
             label: {
                 text: String(count),
                 color: "rgba(255,255,255,0.9)",
-                fontSize: "12px",
+                fontSize: "18px",
             },
             // adjust zIndex to be above other markers
             zIndex: Number(google.maps.Marker.MAX_ZINDEX) + count,
@@ -125,10 +125,16 @@ var markerCluster = new markerClusterer.MarkerClusterer({algorithm: new markerCl
 
 const sheet = document.querySelector(".bottomSheet")
 
-var gsign = document.querySelector("#map div div a[target='_blank'] div img")
-setTimeout(() => {
-  gsign = document.querySelector("#map div div a[target='_blank'] div img")
-}, 3000);
+var gsign = document.querySelector("#map div div a[target='_blank'] div")
+let tmr = setInterval(() => {
+  console.log("m")
+  if(!gsign){
+    gsign = document.querySelector("#map div div a[target='_blank'] div")
+  }else{
+    gsign.style.marginBottom=  "calc(100vh - "+sheet.offsetTop +"px + 10px)"
+    clearInterval(tmr)
+  }
+}, 200);
 controlButton.style.marginBottom = "calc(100vh - "+sheet.offsetTop +"px + 10px)"
 sheet.addEventListener('touchmove', e => {
 gsign.style.marginBottom=  "calc(100vh - "+sheet.offsetTop +"px + 10px)"
@@ -136,7 +142,7 @@ gsign.style.marginBottom=  "calc(100vh - "+sheet.offsetTop +"px + 10px)"
 })
 
 let resizeObserver= new ResizeObserver(() => { 
-
+  gsign.style.marginBottom=  "calc(100vh - "+sheet.offsetTop +"px + 10px)"
   controlButton.style.marginBottom = "calc(100vh - "+sheet.offsetTop +"px + 10px)"
   });
   
