@@ -445,8 +445,8 @@ iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
   if(noAnimation){arrivalsScroll.style.transition = "all 0s"; }
 
 setTimeout(() => {
-
-}, 100);
+  document.getElementById("listOfStations").style.display="none";
+}, 300);
  
   isArrivalsOpen = station
   const response = await fetch(
