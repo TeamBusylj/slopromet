@@ -375,12 +375,14 @@ function createStationItems() {
        
       }
       list.style.display = "block"
-      const pullToRefresh = document.querySelector('.pull-to-refresh');
+     /* const pullToRefresh = document.querySelector('.pull-to-refresh');
+     
       pullToRefresh.classList.add('hideLoad')
       setTimeout(() => {
         pullToRefresh.style.top = '0px' ;
         pullToRefresh.classList.remove('hideLoad')
       }, 300);     
+      */
       loader.style.display = "none"
     
 
@@ -440,10 +442,12 @@ iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
    
   })
   var arrivalsScroll = addElement("div", document.querySelector(".mainSheet"), "arrivalsScroll");
-  if(noAnimation){arrivalsScroll.style.transition = "all 0s"; 
+  if(noAnimation){arrivalsScroll.style.transition = "all 0s"; }
 
+setTimeout(() => {
+
+}, 100);
  
-  setTimeout(()=>{document.querySelectorAll(".arrivalsScroll")[0].remove()}, 10)}
   isArrivalsOpen = station
   const response = await fetch(
     " https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
@@ -487,6 +491,7 @@ title.style.transform = "translateX(0px)";
     arrivalsScroll.innerHTML += "Trenutno ni na sporedu nobenega avtobusa"
   }
   iks.addEventListener("click", function() {
+    document.getElementById("listOfStations").style.display="block"
     arrivalsScroll.style.transform = "translateX(30px)";   
     arrivalsScroll.style.opacity = "0";
     title.style.transform = "translateX(30px)";   
