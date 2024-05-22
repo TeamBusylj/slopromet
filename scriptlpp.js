@@ -455,6 +455,7 @@ async function stationClick(station, noAnimation) {
           " min</span>"
       } else {
         let arrivalItem = addElement("div", arrivalsScroll, "arrivalItem");
+        arrivalItem.style.order =arrival.route_name.replace(/\D/g, "")
         arrivalItem.innerHTML =
           "<div class=busNo2 style=background-color:#" +
           lineColors[arrival.route_name.replace(/\D/g, "")] +
