@@ -16,7 +16,7 @@ body{
     opacity: 0;
     width: 100%;
     z-index: 3;
-    height: 100%;
+
     background: var(--md-sys-color-surface);
     color: var(--md-sys-color-on-surface);
     display: flex;
@@ -97,6 +97,7 @@ padding: 3px;
     #map div div a[target='_blank'] div{
         background-color:#242f3e;}
 }
+
 @media (prefers-color-scheme: light ){
     #map div div a[target='_blank'] div{
         background-color:#fbf9f7;}
@@ -104,6 +105,10 @@ padding: 3px;
 #map div div a[target='_blank'] div img {
    left: unset !important;
    top: unset !important;
+}
+md-icon-button.mapca {
+    position: absolute;
+    right: 16px;
 }
 md-fab.centerMap {
     margin-bottom: 40px;

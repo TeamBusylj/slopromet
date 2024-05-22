@@ -10,9 +10,9 @@ function debounce(func, delay) {
       }, delay);
   };
 }
-
+var map;
 async function makeMap(){
-  let map;
+
 var controlButton
 async function initMap() {
   let id 
@@ -407,9 +407,21 @@ function refreshArrivals() {
  
   stationClick(isArrivalsOpen, true)
 }
+function showOnMap(lnga, lata){
+  console.log(lata, lnga)
+map.setCenter({ lat: lata, lng: lnga });
+map.setZoom(18);
+}
 async function stationClick(station, noAnimation) {
   
   var arrivalsContainer = makeScreen(stationList[station].name)
+  let mapca = addElement("md-icon-button",arrivalsContainer.querySelector(".title"), "mapca");
+  mapca.innerHTML = "<md-icon>map</md-icon>";
+  mapca.addEventListener("click", function() {
+  console.log(station)
+    showOnMap(stationList[station].longitude, stationList[station].latitude)
+   
+  })
   let arrivalsScroll = addElement("div", arrivalsContainer, "arrivalsScroll");
   if(noAnimation){arrivalsContainer.style.transition = "all 0s"; 
   setTimeout(()=>{document.querySelectorAll(".arrivalsContainer")[0].remove()}, 10)}
@@ -479,7 +491,7 @@ function makeScreen(titlex) {
   let title = addElement("h1", arrivalsContainer, "title");
   title.innerHTML = titlex
     let iks = addElement("md-icon-button", title, "iks");
-  iks.innerHTML = "<md-icon>arrow_back_ios </md-icon>";
+  iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
   iks.addEventListener("click", function() {
     arrivalsContainer.style.transform = "translateX(30px)";   
     arrivalsContainer.style.opacity = "0";
@@ -489,7 +501,7 @@ function makeScreen(titlex) {
     }, 400);
    
   })
-
+ 
 
   return arrivalsContainer;
 }
