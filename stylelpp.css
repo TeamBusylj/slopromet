@@ -7,6 +7,21 @@ body{
 .gmnoprint{
     display: none;
 }
+h1.title {
+    position: absolute;
+    top: 0;
+    padding: 13px 0;
+    transition: all .4s  cubic-bezier(0.05, 0.7, 0.1, 1);
+    left: 0;
+    background: var(--md-sys-color-surface);
+    z-index: 10;
+    transform: translateX(30px);
+    opacity: 0;
+    width: 100%;
+    color: var(--md-sys-color-on-surface);
+    font-family: Roboto;
+    text-align: center;
+}
 .arrivalsContainer {
     position: absolute;
     top: 12px;
@@ -228,8 +243,18 @@ span.arrivalTime {
 }
 .arrivalsScroll {
     overflow-y: scroll;
+    transform: translateX(30px);
+    opacity: 0;
+    top: 0;
     display: flex;
+    transition: all .4s  cubic-bezier(0.05, 0.7, 0.1, 1);
     width: 100%;
+    position: absolute;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-family: Roboto;
+    margin-top: 100px;
+    min-height: calc(100vh - 100px);
     overflow-x: hidden;
     flex-direction: column;
     align-items: center;

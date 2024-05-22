@@ -148,11 +148,7 @@ function makeBottomheet(title, height) {
                 setSheetHeight(Math.max(Math.min(sheetHeight3 + 5, 30), 30));
             }
 
-            if (sheetHeight > ((vh - 26) / vh) * 100) {
-                btTitle.classList.add("titleFull");
-            } else {
-                btTitle.classList.remove("titleFull");
-            }
+           
         }, 6);
     };
     const setIsSheetShown = (isShown) => {
@@ -203,7 +199,7 @@ setTimeout(() => {
                 const sheetHeight2 = (mainContentHeight / vh) * 100;
 
                 // Set the height of .mainSheet using the calculated percentage height
-                if (mainContent.innerHTML.includes("arrivalsContainer") && !mainContent.innerHTML.includes('ajokyxw')) {
+                if (mainContent.innerHTML.includes("arrivalsScroll")&& !mainContent.innerHTML.includes('ajokyxw')) {
                   
                     console.log("kkek")
                       setSheetHeight(100);

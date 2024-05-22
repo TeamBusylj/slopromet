@@ -424,17 +424,26 @@ setTimeout(() => {
 }
 async function stationClick(station, noAnimation) {
   
-  var arrivalsContainer = makeScreen(stationList[station].name)
-  let mapca = addElement("md-icon-button",arrivalsContainer.querySelector(".title"), "mapca");
+ 
+
+let title = addElement("h1",  document.querySelector(".mainSheet"), "title");
+title.innerHTML = stationList[station].name
+  let iks = addElement("md-icon-button", title, "iks");
+iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
+
+
+  let mapca = addElement("md-icon-button",title, "mapca");
   mapca.innerHTML = "<md-icon>map</md-icon>";
   mapca.addEventListener("click", function() {
   console.log(station)
     showOnMap(stationList[station].longitude, stationList[station].latitude)
    
   })
-  let arrivalsScroll = addElement("div", arrivalsContainer, "arrivalsScroll");
-  if(noAnimation){arrivalsContainer.style.transition = "all 0s"; 
-  setTimeout(()=>{document.querySelectorAll(".arrivalsContainer")[0].remove()}, 10)}
+  var arrivalsScroll = addElement("div", document.querySelector(".mainSheet"), "arrivalsScroll");
+  if(noAnimation){arrivalsScroll.style.transition = "all 0s"; 
+
+ 
+  setTimeout(()=>{document.querySelectorAll(".arrivalsScroll")[0].remove()}, 10)}
   isArrivalsOpen = station
   const response = await fetch(
     " https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
@@ -443,8 +452,10 @@ async function stationClick(station, noAnimation) {
   const movies = await response.json();
   console.log(movies.data);
 
-   arrivalsContainer.style.transform = "translateX(0px)";
-   arrivalsContainer.style.opacity = "1";
+  arrivalsScroll.style.transform = "translateX(0px)";
+  arrivalsScroll.style.opacity = "1";
+title.style.transform = "translateX(0px)";
+ title.style.opacity = "1";
     if (movies.data.arrivals.length > 0) {
     for (const arrival of movies.data.arrivals) {
       if (document.getElementById("bus_" + arrival.route_name)) {
@@ -470,16 +481,24 @@ async function stationClick(station, noAnimation) {
           " min</span></div></div>";
       }
     }
-    /*const pullToRefresh = document.querySelector('.pull-to-refresh');
-      pullToRefresh.classList.add('hideLoad')
-      setTimeout(() => {
-        pullToRefresh.style.top = '0px' ;
-        pullToRefresh.classList.remove('hideLoad')
-      }, 300);     */
+  
   }else{
-  
+   
+    arrivalsScroll.innerHTML += "Trenutno ni na sporedu nobenega avtobusa"
   }
-  
+  iks.addEventListener("click", function() {
+    arrivalsScroll.style.transform = "translateX(30px)";   
+    arrivalsScroll.style.opacity = "0";
+    title.style.transform = "translateX(30px)";   
+    title.style.opacity = "0";
+    isArrivalsOpen = false
+    setTimeout(() => {
+      arrivalsScroll.remove();
+      title.remove();
+      document.querySelector("ajokyxw").remove()
+    }, 400);
+   
+  })
 }
 function addElement(tag, parent, className) {
   var element = document.createElement(tag);
