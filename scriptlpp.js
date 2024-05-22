@@ -442,6 +442,7 @@ iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
    
   })
   var arrivalsScroll = addElement("div", document.querySelector(".mainSheet"), "arrivalsScroll");
+  document.querySelector(".sheetContents").scrollTop = 0
   if(noAnimation){arrivalsScroll.style.transition = "all 0s"; }
 
 setTimeout(() => {
