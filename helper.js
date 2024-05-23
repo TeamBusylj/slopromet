@@ -115,7 +115,7 @@ function makeBottomheet(title, height) {
             const deltaHeight = (deltaY / window.innerHeight) * 100;
 
             setSheetHeight(sheetHeight + deltaHeight);
-
+                
            
            
             dragPosition = y;
@@ -137,16 +137,12 @@ function makeBottomheet(title, height) {
             if (mainContent.innerHTML.includes("md-list")) {
                 if (sheetHeight > 65) {
                     setSheetHeight(100);
-                } else if (sheetHeight > 30) {
-                    setSheetHeight(Math.min(sheetHeight3 + 5, 30));
-                } else  {
+                } else {
                     setSheetHeight(30);
                 } 
             }  else if (sheetHeight > sheetHeight3 + (100 - sheetHeight3) / 2) {
                 setSheetHeight(100);
-            } else {
-                setSheetHeight(Math.max(Math.min(sheetHeight3 + 5, 30), 30));
-            }
+            } 
 
            
         }, 6);

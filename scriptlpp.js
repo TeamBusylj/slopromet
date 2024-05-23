@@ -156,10 +156,10 @@ let resizeObserver= new ResizeObserver(() => {
 
 const delayedSearch = debounce(searchRefresh, 300);
 window.addEventListener("DOMContentLoaded", async function () {
-  const url = "https://mestnipromet.cyou/api/v1/resources/buses/info";
-  const response = await fetch(url);
-  const movies = await response.json();
-  createBuses(movies.data);
+  //const url = "https://mestnipromet.cyou/api/v1/resources/buses/info";
+  //const response = await fetch(url);
+  //const movies = await response.json();
+  createBuses();
 
 let sht = makeBottomheet(null, 30)
 sht.innerHTML = `
@@ -261,12 +261,12 @@ async function getLocation() {
 setInterval(getLocation, 60000);
 async function createBuses(data) {
   await getLocation();
- 
-  for (const bus in data) {
+
+  /*for (const bus in data) {
     if (data[bus].trip_id && !tripIds.includes(data[bus].trip_id)) {
       tripIds.push(data[bus].trip_id);
     }
-  }
+  }*/
 
   // for (let i = 0; i < tripIds.length; i++) { }
   const response = await fetch(
@@ -277,8 +277,9 @@ async function createBuses(data) {
   stationList = movies.data;
 
   console.log("finish");
-  makeMap()
  
+ 
+  makeMap()
  
   createStationItems();
 }
@@ -472,19 +473,26 @@ title.style.transform = "translateX(0px)";
       } else {
         let arrivalItem = addElement("div", arrivalsScroll, "arrivalItem");
         arrivalItem.style.order =arrival.route_name.replace(/\D/g, "")
-        arrivalItem.innerHTML =
-          "<div class=busNo2 style=background-color:#" +
-          lineColors[arrival.route_name.replace(/\D/g, "")] +
-          " id=bus_" +
-          arrival.route_name +
-          ">" +
-          arrival.route_name +
-          "</div><div class=arrivalData><b><span>" +
-          arrival.trip_name.split(" - ").at(-1) +
-          "</span></b><div class=eta id=eta_"+arrival.route_name+"><span class=arrivalTime>" +
-          arrival.eta_min +
-          " min</span></div></div>";
-      }
+        const busNumberDiv = addElement("div", arrivalItem, "busNo2");
+        
+        busNumberDiv.style.backgroundColor = "#" + lineColors[arrival.route_name.replace(/\D/g, "")];
+        busNumberDiv.id = "bus_" + arrival.route_name;
+        busNumberDiv.textContent = arrival.route_name;
+        addElement("md-ripple", busNumberDiv)
+        const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+        
+        const tripNameSpan = addElement("span", arrivalDataDiv);
+        tripNameSpan.textContent = arrival.trip_name.split(" - ").at(-1);
+        
+        const etaDiv = addElement("div", arrivalDataDiv, "eta");
+        etaDiv.id = "eta_" + arrival.route_name;
+        
+        const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
+        arrivalTimeSpan.textContent = arrival.eta_min + " min";
+        busNumberDiv.addEventListener("click", () => {
+          showBusById(arrival.trip_id)
+        }        
+      )}
     }
   
   }else{
@@ -506,6 +514,17 @@ title.style.transform = "translateX(0px)";
    
   })
 }
+async function showBusById(tripId) {
+  const response = await fetch(
+    "https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/route/arrivals-on-route?trip-id=" +
+      tripId
+  );
+  const movies = await response.json();
+  console.log(movies.data);
+  var sheet = document.querySelector(".mainSheet")
+  sheet.appendChild(document.createElement("ajokyxw"))
+}
+
 function addElement(tag, parent, className) {
   var element = document.createElement(tag);
   if (className) {
