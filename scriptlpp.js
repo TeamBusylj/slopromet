@@ -357,8 +357,15 @@ function createStationItems() {
         }
         item.appendChild(buses);
         item.addEventListener("click", () => {
-          stationClick(station);
+       
+          item2.style.viewTransitionName = 'stitm';
+
+          document.startViewTransition(async () => {
+            item2.style.viewTransitionName = '';
+            await stationClick(station);
+          });
         });
+
       }
     }
     console.log(nearby);
@@ -461,10 +468,10 @@ async function stationClick(station, noAnimation) {
   const movies = await response.json();
   console.log(movies.data);
 
-  arrivalsScroll.style.transform = "translateX(0px)";
-  arrivalsScroll.style.opacity = "1";
-  title.style.transform = "translateX(0px)";
-  title.style.opacity = "1";
+  //arrivalsScroll.style.transform = "translateX(0px)";
+  //arrivalsScroll.style.opacity = "1";
+  //title.style.transform = "translateX(0px)";
+  //title.style.opacity = "1";
   if (movies.data.arrivals.length > 0) {
     for (const arrival of movies.data.arrivals) {
       if (document.getElementById("bus_" + arrival.route_name)) {
