@@ -192,14 +192,28 @@ animation: none;
     flex-wrap: wrap;
     gap: 2px;
 }
-span.arrivalTime {
+.arrivalTime {
     white-space: nowrap;
     width: min-content;
     background: var(--md-sys-color-surface-container-highest);
-    padding: 5px;
+    padding: 5px 13px;
     margin-top: 10px;
     border-radius: 100px;
+    display: flex
+;
     margin-right: 10px;
+    flex-direction: row;
+    align-items: center;
+    gap:5px;
+}
+.arrivalRed {
+    background: var(--md-sys-color-error-container);
+    animation: blinking .5s ease-in infinite;
+    color: var(--md-sys-color-on-error-container) ;
+}
+@keyframes blinking {
+    from{color: var(--md-sys-color-on-error-container);}
+    to{color: var(--md-sys-color-error-container);}
 }
 .arrivalItem {
     background: var(--md-sys-color-surface-container-high);

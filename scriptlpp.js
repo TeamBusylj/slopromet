@@ -130,7 +130,7 @@ async function makeMap() {
   var gsign = document.querySelector("#map div div a[target='_blank'] div")
 
   let tmr = setInterval(() => {
-    console.log("m")
+   
     if (!gsign) {
       gsign = document.querySelector("#map div div a[target='_blank'] div")
     } else {
@@ -322,7 +322,6 @@ function createStationItems() {
         stationList[station].longitude
       );
       if (distance < 3 || search) {
-        console.log(stationList[station].name);
         let cornot = "";
         if (!centertation.includes(stationList[station].name)) {
           centertation.push(stationList[station].name);
@@ -368,13 +367,12 @@ function createStationItems() {
 
       }
     }
-    console.log(nearby);
+
     const sortedArray = Object.keys(nearby)
       .map((key) => parseFloat(key).toFixed(5))
       .sort((a, b) => a - b)
       .map((key) => nearby[key]);
 
-    console.log(sortedArray);
     for (const stationDistance of sortedArray) {
       if (search) {
         if (stationDistance.innerText.toLowerCase().includes(query.toLowerCase())) {
@@ -425,7 +423,7 @@ function refreshArrivals() {
   stationClick(isArrivalsOpen, true)
 }
 function showOnMap(lnga, lata) {
-  console.log(lata, lnga)
+
   map.setCenter({ lat: lata, lng: lnga });
   map.setZoom(18);
   setTimeout(() => {
@@ -448,7 +446,7 @@ async function stationClick(station, noAnimation) {
   let mapca = addElement("md-icon-button", title, "mapca");
   mapca.innerHTML = "<md-icon>map</md-icon>";
   mapca.addEventListener("click", function () {
-    console.log(station)
+
     showOnMap(stationList[station].longitude, stationList[station].latitude)
 
   })
@@ -477,9 +475,8 @@ async function stationClick(station, noAnimation) {
       if (document.getElementById("bus_" + arrival.route_name)) {
         document
           .getElementById("eta_" + arrival.route_name).innerHTML +=
-          "<span class=arrivalTime>" +
-          arrival.eta_min +
-          " min</span>"
+    "<span class=arrivalTime>"+(arrival.type == 0 ? "<md-icon>near_me</md-icon>" : "") + arrival.eta_min + " min"+"</span>";
+
       } else {
         let arrivalItem = addElement("div", arrivalsScroll, "arrivalItem");
         arrivalItem.style.order = arrival.route_name.replace(/\D/g, "")
@@ -496,10 +493,10 @@ async function stationClick(station, noAnimation) {
 
         const etaDiv = addElement("div", arrivalDataDiv, "eta");
         etaDiv.id = "eta_" + arrival.route_name;
-
+       
         const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
-        arrivalTimeSpan.textContent = arrival.eta_min + " min";
-        busNumberDiv.addEventListener("click", () => {
+        if(arrival.eta_min !== 1) arrivalTimeSpan.innerHTML = (arrival.type == 0 ? "<md-icon>near_me</md-icon>" : "") + arrival.eta_min + " min"; else {arrivalTimeSpan.innerHTML ="PRIHOD"; arrivalTimeSpan.classList.add("arrivalRed")}
+                busNumberDiv.addEventListener("click", () => {
           showBusById(arrival.trip_id, iks)
         }
         )
