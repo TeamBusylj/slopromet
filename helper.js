@@ -99,6 +99,8 @@ function makeBottomheet(title, height) {
                if(sheetContents.scrollTop>1) deltaY = 0
             }
           
+            
+          if(sheetHeight==100 && deltaY<0 && !event.target.closest('.handleHolder')) return
          
             const mainContentHeight = Math.min(
                 mainContent.clientHeight,
@@ -204,7 +206,7 @@ setTimeout(() => {
                     if(mainContent.innerHTML.includes('ajokyxw')){
                         setSheetHeight(30);
                     }else{
-                        setSheetHeight(30);
+                        
                     }
       
                 }

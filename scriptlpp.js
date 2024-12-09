@@ -1,4 +1,3 @@
-
 function debounce(func, delay) {
   let timeoutId;
   return function () {
@@ -11,18 +10,20 @@ function debounce(func, delay) {
   };
 }
 var map;
-var markerCluster
+var markerCluster;
 const parser = new DOMParser();
-var markers = []
+var markers = [];
 async function makeMap() {
-
-  var controlButton
+  var controlButton;
   async function initMap() {
-    let id
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      id = "8ffb6c843fc80897"
+    let id;
+    if (
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    ) {
+      id = "8ffb6c843fc80897";
     } else {
-      id = "828836cb97c61eb5"
+      id = "828836cb97c61eb5";
     }
     const { Map } = await google.maps.importLibrary("maps");
 
@@ -34,58 +35,52 @@ async function makeMap() {
     });
     const centerControlDiv = document.createElement("div");
 
-
     controlButton = document.createElement("md-fab");
-    controlButton.variant = "secondary"
-    controlButton.classList.add("centerMap")
-    let icn = addElement("md-icon", controlButton)
+    controlButton.variant = "secondary";
+    controlButton.classList.add("centerMap");
+    let icn = addElement("md-icon", controlButton);
     icn.innerHTML = "radio_button_checked";
-    icn.slot = "icon"
+    icn.slot = "icon";
     controlButton.addEventListener("click", () => {
       map.setZoom(15);
       map.setCenter({ lat: latitude, lng: longitude });
     });
     centerControlDiv.appendChild(controlButton);
-    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(centerControlDiv);
-    centerControlDiv.style.right = "25px !important"
-
-
-
-
-
-
+    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(
+      centerControlDiv
+    );
+    centerControlDiv.style.right = "25px !important";
   }
-
 
   await initMap();
   const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
-
-
   for (let po = 0; po < stationList.length; po++) {
-
     const pinSvg = parser.parseFromString(
       pinSvgString,
-      "image/svg+xml",
+      "image/svg+xml"
     ).documentElement;
     let mrk = new AdvancedMarkerElement({
       map: map,
       content: pinSvg,
-      position: { lat: stationList[po].latitude, lng: stationList[po].longitude },
+      position: {
+        lat: stationList[po].latitude,
+        lng: stationList[po].longitude,
+      },
       title: stationList[po].name,
-    })
-    markers.push(mrk)
-    mrk.addListener('click', function () {
-      stationClick(po)
+    });
+    markers.push(mrk);
+    mrk.addListener("click", function () {
+      stationClick(po);
     });
   }
 
-
   function getColor(count, maxMarkers) {
     // Create a sequential color scale using d3-scale-chromatic
-    const colorScale = d3.scaleSequential()
-      .domain([0, maxMarkers])  // Range from 0 (min) to maxMarkers (max)
-      .interpolator(d3.interpolateHsl('red', 'green'));  // Interpolate between red, yellow, and green
+    const colorScale = d3
+      .scaleSequential()
+      .domain([0, maxMarkers]) // Range from 0 (min) to maxMarkers (max)
+      .interpolator(d3.interpolateHsl("red", "green")); // Interpolate between red, yellow, and green
 
     // Calculate the normalized count (0-1)
     const normalizedCount = count / maxMarkers;
@@ -93,7 +88,6 @@ async function makeMap() {
   }
 
   const interpolatedRenderer = {
-
     palette: d3.color("yellow", "green").rgb(),
     render: function ({ count, position }, stats) {
       // use d3-interpolateRgb to interpolate between red and blue
@@ -121,37 +115,46 @@ async function makeMap() {
     },
   };
 
+  markerCluster = new markerClusterer.MarkerClusterer({
+    algorithm: new markerClusterer.GridAlgorithm({ gridSize: 40 }),
+    markers,
+    map,
+    renderer: interpolatedRenderer,
+  });
 
-  markerCluster = new markerClusterer.MarkerClusterer({ algorithm: new markerClusterer.GridAlgorithm ({ gridSize: 40 }), markers, map, renderer: interpolatedRenderer });
+  const sheet = document.querySelector(".bottomSheet");
 
-
-  const sheet = document.querySelector(".bottomSheet")
-
-  var gsign = document.querySelector("#map div div a[target='_blank'] div")
+  var gsign = document.querySelector("#map div div a[target='_blank'] div");
 
   let tmr = setInterval(() => {
-   
     if (!gsign) {
-      gsign = document.querySelector("#map div div a[target='_blank'] div")
+      gsign = document.querySelector("#map div div a[target='_blank'] div");
     } else {
-      gsign.style.marginBottom = "calc(77vh - " + sheet.offsetTop + "px + 10px)"
-      gsign.innerHTML = gsign.innerHTML.replace('stroke-width%3D%221.5%22', 'stroke-width%3D%220%22')
-      clearInterval(tmr)
+      gsign.style.marginBottom =
+        "calc(77vh - " + sheet.offsetTop + "px + 10px)";
+      gsign.innerHTML = gsign.innerHTML.replace(
+        "stroke-width%3D%221.5%22",
+        "stroke-width%3D%220%22"
+      );
+      clearInterval(tmr);
     }
   }, 200);
-  controlButton.style.marginBottom = "calc(77vh - " + sheet.offsetTop + "px + 10px)"
-  sheet.addEventListener('touchmove', e => {
-    gsign.style.marginBottom = "calc(77vh - " + sheet.offsetTop + "px + 10px)"
-    controlButton.style.marginBottom = "calc(77vh - " + sheet.offsetTop + "px + 10px)"
-  })
+  controlButton.style.marginBottom =
+    "calc(77vh - " + sheet.offsetTop + "px + 10px)";
+  sheet.addEventListener("touchmove", (e) => {
+    gsign.style.marginBottom = "calc(77vh - " + sheet.offsetTop + "px + 10px)";
+    controlButton.style.marginBottom =
+      "calc(77vh - " + sheet.offsetTop + "px + 10px)";
+  });
 
   let resizeObserver = new ResizeObserver(() => {
     try {
-      gsign.style.marginBottom = "calc(77vh - " + sheet.offsetTop + "px + 10px)"
-    } catch {
-    }
+      gsign.style.marginBottom =
+        "calc(77vh - " + sheet.offsetTop + "px + 10px)";
+    } catch {}
 
-    controlButton.style.marginBottom = "calc(77vh - " + sheet.offsetTop + "px + 10px)"
+    controlButton.style.marginBottom =
+      "calc(77vh - " + sheet.offsetTop + "px + 10px)";
   });
 
   resizeObserver.observe(document.querySelector(".sheetContents"));
@@ -164,16 +167,17 @@ window.addEventListener("DOMContentLoaded", async function () {
   //const movies = await response.json();
   createBuses();
 
-  let sht = makeBottomheet(null, 30)
+  let sht = makeBottomheet(null, 30);
   sht.innerHTML = `
 <div class="searchContain"> <md-filled-text-field class="search" placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
  <md-circular-progress indeterminate id="loader"></md-circular-progress>
-    <md-list id="listOfStations"></md-list>`
-  this.document.querySelector(".search").addEventListener("input", delayedSearch)
+    <md-list id="listOfStations"></md-list>`;
+  this.document
+    .querySelector(".search")
+    .addEventListener("input", delayedSearch);
+});
 
-})
-
-/*window.addEventListener("load", async function () {
+window.addEventListener("load", async function () {
 
 
  const pullToRefresh = document.querySelector('.pull-to-refresh');
@@ -200,10 +204,10 @@ setTimeout(() => {
 }, 400);
 
 document.addEventListener('touchmove', e => {
- if(bottomSheet.style.height == "100svh"){
+ if(bottomSheet.style.height == "100dvh"){
 
 
-  if((list.scrollTop < 1 && !isArrivalsOpen) ||(isArrivalsOpen &&  this.document.querySelector('.arrivalsScroll').scrollTop < 1)){
+  if(document.querySelector(".sheetContents").scrollTop == 0){
 
 
   const touchY = e.touches[0].clientY;
@@ -214,10 +218,11 @@ document.addEventListener('touchmove', e => {
   }
 }else{
   touchDiff = 0
+  touchstartY = e.touches[0].clientY
 }
 }
 });
-document.addEventListener('touchend', e => {
+document.addEventListener('touchend', async () => {
   console.log(touchDiff);
   loadingC.setAttribute("indeterminate", "")
   if(touchDiff>150){
@@ -229,7 +234,7 @@ document.addEventListener('touchend', e => {
      
     }, 400);
    console.log('refresh');
-   if(isArrivalsOpen) refreshArrivals(); else   createBuses()
+   if(isArrivalsOpen) {await refreshArrivals(); pullToRefresh.style.top = "0"}else{ await createBuses(); pullToRefresh.style.top = "0"}
    }else{
     pullToRefresh.style.transition = "all .3s"
     pullToRefresh.style.top = "0"
@@ -240,25 +245,25 @@ document.addEventListener('touchend', e => {
   }
 
 });
-});*/
+});
 var arrivalsMain = {};
 var tripIds = [];
 var stationList = {};
-var latitude
-var longitude
+var latitude;
+var longitude;
 async function getLocation() {
   try {
     const position = await new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(resolve, reject, {
         timeout: 10000,
         maximumAge: 60000,
-        enableHighAccuracy: true
+        enableHighAccuracy: true,
       });
     });
 
     latitude = position.coords.latitude;
     longitude = position.coords.longitude;
-  } catch { }
+  } catch {}
 }
 
 setInterval(getLocation, 60000);
@@ -281,8 +286,7 @@ async function createBuses(data) {
 
   console.log("finish");
 
-
-  makeMap()
+  makeMap();
 
   createStationItems();
 }
@@ -290,29 +294,26 @@ async function createBuses(data) {
 var isArrivalsOpen = false;
 
 function createStationItems() {
-  var search = false
-  var query = ''
-  if (document.querySelector(".search").value !== '') {
-    search = true
-    query = document.querySelector(".search").value
+  var search = false;
+  var query = "";
+  if (document.querySelector(".search").value !== "") {
+    search = true;
+    query = document.querySelector(".search").value;
   }
   var loader = document.getElementById("loader");
   var list = document.getElementById("listOfStations");
-  list.innerHTML = ''
-  list.style.display = "none"
-  loader.style.display = "block"
+  list.innerHTML = "";
+  list.style.display = "none";
+  loader.style.display = "block";
   var nearby = {};
   if (navigator.geolocation) {
-
-
     let centertation = [];
     for (const station in stationList) {
       let item2 = addElement("md-list-item", null, "stationItem");
       item2.setAttribute("interactive", "");
       addElement("md-ripple", item2);
       let item = addElement("div", item2, "station");
-      item.innerHTML =
-        '<span class="stationName">' + stationList[station].name;
+      item.innerHTML = '<span class="stationName">' + stationList[station].name;
       +"</span>";
 
       const distance = haversineDistance(
@@ -356,15 +357,14 @@ function createStationItems() {
         }
         item.appendChild(buses);
         item.addEventListener("click", () => {
-       
-          item2.style.viewTransitionName = 'stitm';
-
+          item2.style.viewTransitionName = "stitm";
+          
           document.startViewTransition(async () => {
-            item2.style.viewTransitionName = '';
-            await stationClick(station);
+            item2.style.viewTransitionName = "";
+           
+           stationClick(station);
           });
         });
-
       }
     }
 
@@ -375,15 +375,16 @@ function createStationItems() {
 
     for (const stationDistance of sortedArray) {
       if (search) {
-        if (stationDistance.innerText.toLowerCase().includes(query.toLowerCase())) {
+        if (
+          stationDistance.innerText.toLowerCase().includes(query.toLowerCase())
+        ) {
           list.appendChild(stationDistance);
         }
       } else {
         list.appendChild(stationDistance);
       }
-
     }
-    list.style.display = "block"
+    list.style.display = "block";
     /* const pullToRefresh = document.querySelector('.pull-to-refresh');
     
      pullToRefresh.classList.add('hideLoad')
@@ -392,17 +393,13 @@ function createStationItems() {
        pullToRefresh.classList.remove('hideLoad')
      }, 300);     
      */
-    loader.style.display = "none"
-
-
+    loader.style.display = "none";
   }
 }
 function searchRefresh() {
   let query = document.querySelector(".search").value;
-  createStationItems(true, query)
+  createStationItems(true, query);
 }
-
-
 
 function haversineDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Radius of the Earth in kilometers
@@ -411,81 +408,96 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) *
-    Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLon / 2) *
-    Math.sin(dLon / 2);
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const distance = R * c; // Distance in kilometers
   return distance;
 }
-function refreshArrivals() {
-
-  stationClick(isArrivalsOpen, true)
+async function refreshArrivals() {
+  await stationClick(isArrivalsOpen, true);
 }
 function showOnMap(lnga, lata) {
-
   map.setCenter({ lat: lata, lng: lnga });
   map.setZoom(18);
   setTimeout(() => {
-    document.querySelector(".mainSheet").appendChild(document.createElement("ajokyxw"))
-
+    document
+      .querySelector(".mainSheet")
+      .appendChild(document.createElement("ajokyxw"));
   }, 300);
-
-
 }
 async function stationClick(station, noAnimation) {
-
-
-
+  var response
+  var movies
+  if (noAnimation) {
+    response = await fetch(
+      " https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
+        stationList[station].ref_id
+    );
+    movies = await response.json();
+  try {
+    document.querySelector(".title").remove();
+    document.querySelector(".arrivalsScroll").remove();
+  } catch (e) {
+    console.log(e);
+    
+  }
+  
+  }
   let title = addElement("h1", document.querySelector(".mainSheet"), "title");
-  title.innerHTML = stationList[station].name
+  title.innerHTML = stationList[station].name;
   let iks = addElement("md-icon-button", title, "iks");
   iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
-
 
   let mapca = addElement("md-icon-button", title, "mapca");
   mapca.innerHTML = "<md-icon>map</md-icon>";
   mapca.addEventListener("click", function () {
-
-    showOnMap(stationList[station].longitude, stationList[station].latitude)
-
-  })
-  var arrivalsScroll = addElement("div", document.querySelector(".mainSheet"), "arrivalsScroll");
-  document.querySelector(".sheetContents").scrollTop = 0
-  if (noAnimation) { arrivalsScroll.style.transition = "all 0s"; }
-
+    showOnMap(stationList[station].longitude, stationList[station].latitude);
+  });
+  var arrivalsScroll = addElement(
+    "div",
+    document.querySelector(".mainSheet"),
+    "arrivalsScroll"
+  );
+  document.querySelector(".sheetContents").scrollTop = 0;
+  isArrivalsOpen = station;
+  
   setTimeout(() => {
     document.getElementById("listOfStations").style.display = "none";
   }, 300);
 
-  isArrivalsOpen = station
-  const response = await fetch(
-    " https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
-    stationList[station].ref_id
-  );
-  const movies = await response.json();
-  console.log(movies.data);
 
-  //arrivalsScroll.style.transform = "translateX(0px)";
-  //arrivalsScroll.style.opacity = "1";
-  //title.style.transform = "translateX(0px)";
-  //title.style.opacity = "1";
+  if (noAnimation) {
+    arrivalsScroll.style.transition = "all 0s";
+  } else{
+    response = await fetch(
+      " https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
+        stationList[station].ref_id
+    );
+    movies = await response.json();
+  }
+
+
   if (movies.data.arrivals.length > 0) {
     for (const arrival of movies.data.arrivals) {
       if (document.getElementById("bus_" + arrival.route_name)) {
-        document
-          .getElementById("eta_" + arrival.route_name).innerHTML +=
-    "<span class=arrivalTime>"+(arrival.type == 0 ? "<md-icon>near_me</md-icon>" : "") + arrival.eta_min + " min"+"</span>";
-
+        document.getElementById("eta_" + arrival.route_name).innerHTML +=
+          "<span class=arrivalTime>" +
+          (arrival.type == 0 ? "<md-icon>near_me</md-icon>" : "") +
+          arrival.eta_min +
+          " min" +
+          "</span>";
       } else {
         let arrivalItem = addElement("div", arrivalsScroll, "arrivalItem");
-        arrivalItem.style.order = arrival.route_name.replace(/\D/g, "")
+        arrivalItem.style.order = arrival.route_name.replace(/\D/g, "");
         const busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
-        busNumberDiv.style.backgroundColor = "#" + lineColors[arrival.route_name.replace(/\D/g, "")];
+        busNumberDiv.style.backgroundColor =
+          "#" + lineColors[arrival.route_name.replace(/\D/g, "")];
         busNumberDiv.id = "bus_" + arrival.route_name;
         busNumberDiv.textContent = arrival.route_name;
-        addElement("md-ripple", busNumberDiv)
+        addElement("md-ripple", busNumberDiv);
         const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
 
         const tripNameSpan = addElement("span", arrivalDataDiv);
@@ -493,111 +505,118 @@ async function stationClick(station, noAnimation) {
 
         const etaDiv = addElement("div", arrivalDataDiv, "eta");
         etaDiv.id = "eta_" + arrival.route_name;
-       
+
         const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
-        if(arrival.eta_min !== 1) arrivalTimeSpan.innerHTML = (arrival.type == 0 ? "<md-icon>near_me</md-icon>" : "") + arrival.eta_min + " min"; else {arrivalTimeSpan.innerHTML ="PRIHOD"; arrivalTimeSpan.classList.add("arrivalRed")}
-                busNumberDiv.addEventListener("click", () => {
-          showBusById(arrival.trip_id, iks)
+        if (arrival.eta_min !== 1) {
+          if (arrival.type == 0) {
+            arrivalTimeSpan.innerHTML =
+              "<md-icon>near_me</md-icon>" + arrival.eta_min + " min";
+            arrivalTimeSpan.classList.add("arrivalGreen");
+          } else {
+            arrivalTimeSpan.innerHTML = arrival.eta_min + " min";
+          }
+        } else {
+          arrivalTimeSpan.innerHTML = "PRIHOD";
+          arrivalTimeSpan.classList.add("arrivalRed");
         }
-        )
+        busNumberDiv.addEventListener("click", () => {
+          showBusById(arrival.trip_id, iks);
+        });
       }
     }
-
   } else {
-
-    arrivalsScroll.innerHTML += "Trenutno ni na sporedu nobenega avtobusa"
+    arrivalsScroll.innerHTML += "Trenutno ni na sporedu nobenega avtobusa";
   }
   iks.addEventListener("click", function () {
-    document.getElementById("listOfStations").style.display = "block"
+    document.getElementById("listOfStations").style.display = "block";
     arrivalsScroll.style.transform = "translateX(30px)";
     arrivalsScroll.style.opacity = "0";
     title.style.transform = "translateX(30px)";
     title.style.opacity = "0";
-    isArrivalsOpen = false
-    markerCluster.markers = markers
-    map.setCenter({ lat: latitude, lng: longitude })
+    isArrivalsOpen = false;
+    markerCluster.markers = markers;
+    map.setCenter({ lat: latitude, lng: longitude });
     for (let p = 0; p < markers.length; p++) {
-      markerCluster.markers[p].map = map
+      markerCluster.markers[p].map = map;
     }
     setTimeout(() => {
       arrivalsScroll.remove();
       title.remove();
-      document.querySelector("ajokyxw").remove()
-    }, 400);
 
-  })
+    }, 400);
+  });
 }
-const pinSvgString = '<svg xmlns="http://www.w3.org/2000/svg" width="25px" height="25px" viewBox="0 0 1080 1080" xml:space="preserve"><g transform="translate(540 540)"/><g transform="translate(540 540)"/><rect style="stroke:#000;stroke-width:0;stroke-dasharray:none;stroke-linecap:butt;stroke-dashoffset:0;stroke-linejoin:miter;stroke-miterlimit:4;fill:#78a75a;fill-rule:nonzero;opacity:1" vector-effect="non-scaling-stroke" x="-33.084" y="-33.084" width="66.167" height="66.167" rx="13" ry="13" transform="translate(540 540)scale(16.4)"/><path style="stroke:#000;stroke-width:0;stroke-dasharray:none;stroke-linecap:butt;stroke-dashoffset:0;stroke-linejoin:miter;stroke-miterlimit:4;fill:#fff;fill-rule:nonzero;opacity:1" vector-effect="non-scaling-stroke" transform="translate(60 1040)" d="M240-120q-17 0-28.5-11.5T200-160v-82q-18-20-29-44.5T160-340v-380q0-83 77-121.5T480-880q172 0 246 37t74 123v380q0 29-11 53.5T760-242v82q0 17-11.5 28.5T720-120h-40q-17 0-28.5-11.5T640-160v-40H320v40q0 17-11.5 28.5T280-120zm242-640h224-448zm158 280H240h480zm-400-80h480v-120H240zm100 240q25 0 42.5-17.5T400-380t-17.5-42.5T340-440t-42.5 17.5T280-380t17.5 42.5T340-320Zm280 0q25 0 42.5-17.5T680-380t-17.5-42.5T620-440t-42.5 17.5T560-380t17.5 42.5T620-320ZM258-760h448q-15-17-64.5-28.5T482-800q-107 0-156.5 12.5T258-760Zm62 480h320q33 0 56.5-23.5T720-360v-120H240v120q0 33 23.5 56.5T320-280Z"/></svg>';
-function calcRoute(directionsService,  markersi, iks) {
+const pinSvgString =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="25px" height="25px" viewBox="0 0 1080 1080" xml:space="preserve"><g transform="translate(540 540)"/><g transform="translate(540 540)"/><rect style="stroke:#000;stroke-width:0;stroke-dasharray:none;stroke-linecap:butt;stroke-dashoffset:0;stroke-linejoin:miter;stroke-miterlimit:4;fill:#78a75a;fill-rule:nonzero;opacity:1" vector-effect="non-scaling-stroke" x="-33.084" y="-33.084" width="66.167" height="66.167" rx="13" ry="13" transform="translate(540 540)scale(16.4)"/><path style="stroke:#000;stroke-width:0;stroke-dasharray:none;stroke-linecap:butt;stroke-dashoffset:0;stroke-linejoin:miter;stroke-miterlimit:4;fill:#fff;fill-rule:nonzero;opacity:1" vector-effect="non-scaling-stroke" transform="translate(60 1040)" d="M240-120q-17 0-28.5-11.5T200-160v-82q-18-20-29-44.5T160-340v-380q0-83 77-121.5T480-880q172 0 246 37t74 123v380q0 29-11 53.5T760-242v82q0 17-11.5 28.5T720-120h-40q-17 0-28.5-11.5T640-160v-40H320v40q0 17-11.5 28.5T280-120zm242-640h224-448zm158 280H240h480zm-400-80h480v-120H240zm100 240q25 0 42.5-17.5T400-380t-17.5-42.5T340-440t-42.5 17.5T280-380t17.5 42.5T340-320Zm280 0q25 0 42.5-17.5T680-380t-17.5-42.5T620-440t-42.5 17.5T560-380t17.5 42.5T620-320ZM258-760h448q-15-17-64.5-28.5T482-800q-107 0-156.5 12.5T258-760Zm62 480h320q33 0 56.5-23.5T720-360v-120H240v120q0 33 23.5 56.5T320-280Z"/></svg>';
+function calcRoute(directionsService, markersi, iks) {
   const maxMarkersPerRoute = 23;
   let splitRoutes = [];
 
   // Loop through markers in chunks of maxMarkersPerRoute
   for (let i = 0; i < markersi.length; i += maxMarkersPerRoute) {
-    const route = markersi.slice(i, Math.min(i + maxMarkersPerRoute, markersi.length));
+    const route = markersi.slice(
+      i,
+      Math.min(i + maxMarkersPerRoute, markersi.length)
+    );
     splitRoutes.push(route);
   }
 
-  
   for (const route of splitRoutes) {
     let directionsDisplay = new google.maps.DirectionsRenderer();
     directionsDisplay.setMap(map);
     iks.addEventListener("click", function () {
-      directionsDisplay.setMap(null)
-    })
-
+      directionsDisplay.setMap(null);
+    });
 
     const waypoints = [];
-    for (let i = 0; i < route.length-1; i++) {
+    for (let i = 0; i < route.length - 1; i++) {
       waypoints.push({
         location: { lat: route[i].latitude, lng: route[i].longitude },
-        stopover: false
+        stopover: false,
       });
     }
-   
+
     const request = {
       waypoints,
       origin: { lat: route[0].latitude, lng: route[0].longitude },
       destination: { lat: route.at(-1).latitude, lng: route.at(-1).longitude },
-      travelMode: google.maps.TravelMode.DRIVING
+      travelMode: google.maps.TravelMode.DRIVING,
     };
-    console.log(request)
+    console.log(request);
     directionsService.route(request, function (response, status) {
       if (status == google.maps.DirectionsStatus.OK) {
-        console.log(response)
+        console.log(response);
         directionsDisplay.setDirections(response);
-      } else{
-        console.log(status)
+      } else {
+        console.log(status);
       }
     });
   }
 }
 
-
-
 async function showBusById(tripId, iks) {
   const response = await fetch(
     "https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/route/arrivals-on-route?trip-id=" +
-    tripId
+      tripId
   );
   const movies = await response.json();
   var directionsService = new google.maps.DirectionsService();
 
-  var sheet = document.querySelector(".mainSheet")
-  sheet.appendChild(document.createElement("ajokyxw"))
+  var sheet = document.querySelector(".mainSheet");
+ 
   const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-  
+
   for (let p = 0; p < markers.length; p++) {
-    markerCluster.markers[p].map = null
+    markerCluster.markers[p].map = null;
   }
-  markerCluster.markers = []
+  markerCluster.markers = [];
   var bounds = new google.maps.LatLngBounds();
   for (var i = 0, LtLgLen = markers.length; i < LtLgLen; i++) {
     bounds.extend(markers[i].position);
   }
   map.fitBounds(bounds);
 
-  calcRoute(directionsService,movies.data, iks)
+  calcRoute(directionsService, movies.data, iks);
 }
 
 function addElement(tag, parent, className) {
@@ -691,7 +710,5 @@ const lineColors = {
   76: "D4B158",
   77: "61937F",
   79: "EF8251",
-  80: "75685C"
+  80: "75685C",
 };
-
-
