@@ -52,29 +52,30 @@ async function makeMap() {
     centerControlDiv.style.right = "25px !important";
   }
 
-  await initMap();
-  const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+  if (map === undefined) {
+    await initMap();
+    const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
-  for (let po = 0; po < stationList.length; po++) {
-    const pinSvg = parser.parseFromString(
-      pinSvgString,
-      "image/svg+xml"
-    ).documentElement;
-    let mrk = new AdvancedMarkerElement({
-      map: map,
-      content: pinSvg,
-      position: {
-        lat: stationList[po].latitude,
-        lng: stationList[po].longitude,
-      },
-      title: stationList[po].name,
-    });
-    markers.push(mrk);
-    mrk.addListener("click", function () {
-      stationClick(po);
-    });
+    for (let po = 0; po < stationList.length; po++) {
+      const pinSvg = parser.parseFromString(
+        pinSvgString,
+        "image/svg+xml"
+      ).documentElement;
+      let mrk = new AdvancedMarkerElement({
+        map: map,
+        content: pinSvg,
+        position: {
+          lat: stationList[po].latitude,
+          lng: stationList[po].longitude,
+        },
+        title: stationList[po].name,
+      });
+      markers.push(mrk);
+      mrk.addListener("click", function () {
+        stationClick(po);
+      });
+    }
   }
-
   function getColor(count, maxMarkers) {
     // Create a sequential color scale using d3-scale-chromatic
     const colorScale = d3
@@ -178,73 +179,72 @@ window.addEventListener("DOMContentLoaded", async function () {
 });
 
 window.addEventListener("load", async function () {
+  const pullToRefresh = document.querySelector(".pull-to-refresh");
 
+  let touchstartY = 0;
 
- const pullToRefresh = document.querySelector('.pull-to-refresh');
- 
-let touchstartY = 0;
-
-var list 
-var touchDiff = 0;
-document.addEventListener('touchstart', e => {
-  
-  loadingC.removeAttribute("indeterminate")
+  var list;
+  var touchDiff = 0;
+  document.addEventListener("touchstart", (e) => {
+    loadingC.removeAttribute("indeterminate");
+    setTimeout(() => {
+      loadingC.shadowRoot.querySelector(".active-track").style.transition =
+        "all 0s";
+    }, 1);
+    touchDiff = 0;
+    loadingC.setAttribute("value", "0");
+    touchstartY = e.touches[0].clientY;
+  });
+  var bottomSheet;
+  var loadingC = this.document.querySelector(".pll-loader");
   setTimeout(() => {
-    loadingC.shadowRoot.querySelector(".active-track").style.transition = "all 0s"
-  }, 1);
-touchDiff = 0
-  loadingC.setAttribute("value", "0")
-  touchstartY = e.touches[0].clientY;
-});
-var bottomSheet
-var loadingC = this.document.querySelector('.pll-loader');
-setTimeout(() => {
-  bottomSheet= document.querySelector(".sheetContents")
-  list = this.document.getElementById('listOfStations')
-}, 400);
+    bottomSheet = document.querySelector(".sheetContents");
+    list = this.document.getElementById("listOfStations");
+  }, 400);
 
-document.addEventListener('touchmove', e => {
- if(bottomSheet.style.height == "100dvh"){
-
-
-  if(document.querySelector(".sheetContents").scrollTop == 0){
-
-
-  const touchY = e.touches[0].clientY;
- touchDiff = touchY - touchstartY;
-  if (touchDiff > 0 && window.scrollY === 0) {
-    pullToRefresh.style.top = touchDiff/(touchY/250) + 'px' ;
-    loadingC.setAttribute("value", Math.min(touchDiff/150, 1).toString())
-  }
-}else{
-  touchDiff = 0
-  touchstartY = e.touches[0].clientY
-}
-}
-});
-document.addEventListener('touchend', async () => {
-  console.log(touchDiff);
-  loadingC.setAttribute("indeterminate", "")
-  if(touchDiff>150){
-
-    pullToRefresh.style.transition = "all .3s"
-    pullToRefresh.style.top = "150px"
-    setTimeout(() => {
-      pullToRefresh.style.transition = "all 0s"
-     
-    }, 400);
-   console.log('refresh');
-   if(isArrivalsOpen) {await refreshArrivals(); pullToRefresh.style.top = "0"}else{ await createBuses(); pullToRefresh.style.top = "0"}
-   }else{
-    pullToRefresh.style.transition = "all .3s"
-    pullToRefresh.style.top = "0"
-    setTimeout(() => {
-      pullToRefresh.style.transition = "all 0s"
-    
-    }, 400);
-  }
-
-});
+  document.addEventListener("touchmove", (e) => {
+    if (bottomSheet.style.height == "100dvh") {
+      if (document.querySelector(".sheetContents").scrollTop == 0) {
+        const touchY = e.touches[0].clientY;
+        touchDiff = touchY - touchstartY;
+        if (touchDiff > 0 && window.scrollY === 0) {
+          pullToRefresh.style.top = touchDiff / (touchY / 250) + "px";
+          loadingC.setAttribute(
+            "value",
+            Math.min(touchDiff / 150, 1).toString()
+          );
+        }
+      } else {
+        touchDiff = 0;
+        touchstartY = e.touches[0].clientY;
+      }
+    }
+  });
+  document.addEventListener("touchend", async () => {
+    console.log(touchDiff);
+    loadingC.setAttribute("indeterminate", "");
+    if (touchDiff > 150) {
+      pullToRefresh.style.transition = "all .3s";
+      pullToRefresh.style.top = "150px";
+      setTimeout(() => {
+        pullToRefresh.style.transition = "all 0s";
+      }, 400);
+      console.log("refresh");
+      if (isArrivalsOpen) {
+        await refreshArrivals();
+        pullToRefresh.style.top = "0";
+      } else {
+        await createBuses();
+        pullToRefresh.style.top = "0";
+      }
+    } else {
+      pullToRefresh.style.transition = "all .3s";
+      pullToRefresh.style.top = "0";
+      setTimeout(() => {
+        pullToRefresh.style.transition = "all 0s";
+      }, 400);
+    }
+  });
 });
 var arrivalsMain = {};
 var tripIds = [];
@@ -358,11 +358,14 @@ function createStationItems() {
         item.appendChild(buses);
         item.addEventListener("click", () => {
           item2.style.viewTransitionName = "stitm";
-          
+
           document.startViewTransition(async () => {
             item2.style.viewTransitionName = "";
-           
-           stationClick(station);
+
+            stationClick(station);
+            interval = setInterval(() => {
+              stationClick(isArrivalsOpen, true);
+            }, 10000);
           });
         });
       }
@@ -400,7 +403,7 @@ function searchRefresh() {
   let query = document.querySelector(".search").value;
   createStationItems(true, query);
 }
-
+var interval
 function haversineDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Radius of the Earth in kilometers
   const dLat = ((lat2 - lat1) * Math.PI) / 180; // Convert degrees to radians
@@ -428,22 +431,20 @@ function showOnMap(lnga, lata) {
   }, 300);
 }
 async function stationClick(station, noAnimation) {
-  var response
-  var movies
+  var response;
+  var movies;
   if (noAnimation) {
     response = await fetch(
       " https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
         stationList[station].ref_id
     );
     movies = await response.json();
-  try {
-    document.querySelector(".title").remove();
-    document.querySelector(".arrivalsScroll").remove();
-  } catch (e) {
-    console.log(e);
-    
-  }
-  
+    try {
+      document.querySelector(".title").remove();
+      document.querySelector(".arrivalsScroll").remove();
+    } catch (e) {
+      console.log(e);
+    }
   }
   let title = addElement("h1", document.querySelector(".mainSheet"), "title");
   title.innerHTML = stationList[station].name;
@@ -455,22 +456,24 @@ async function stationClick(station, noAnimation) {
   mapca.addEventListener("click", function () {
     showOnMap(stationList[station].longitude, stationList[station].latitude);
   });
+console.log("refresh");
+
   var arrivalsScroll = addElement(
     "div",
     document.querySelector(".mainSheet"),
     "arrivalsScroll"
   );
+ 
   document.querySelector(".sheetContents").scrollTop = 0;
   isArrivalsOpen = station;
-  
+
   setTimeout(() => {
     document.getElementById("listOfStations").style.display = "none";
   }, 300);
 
-
   if (noAnimation) {
     arrivalsScroll.style.transition = "all 0s";
-  } else{
+  } else {
     response = await fetch(
       " https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
         stationList[station].ref_id
@@ -478,11 +481,11 @@ async function stationClick(station, noAnimation) {
     movies = await response.json();
   }
 
-
   if (movies.data.arrivals.length > 0) {
+    arrivalsScroll.appendChild(nextBusTemplate(movies.data.arrivals[0]));
     for (const arrival of movies.data.arrivals) {
-      if (document.getElementById("bus_" + arrival.route_name)) {
-        document.getElementById("eta_" + arrival.route_name).innerHTML +=
+      if (arrivalsScroll.querySelector("#bus_" + arrival.route_name)) {
+        arrivalsScroll.querySelector("#eta_" + arrival.route_name).innerHTML +=
           "<span class=arrivalTime>" +
           (arrival.type == 0 ? "<md-icon>near_me</md-icon>" : "") +
           arrival.eta_min +
@@ -507,7 +510,7 @@ async function stationClick(station, noAnimation) {
         etaDiv.id = "eta_" + arrival.route_name;
 
         const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
-        if (arrival.eta_min !== 1) {
+        if (arrival.type !== 2) {
           if (arrival.type == 0) {
             arrivalTimeSpan.innerHTML =
               "<md-icon>near_me</md-icon>" + arrival.eta_min + " min";
@@ -527,6 +530,7 @@ async function stationClick(station, noAnimation) {
   } else {
     arrivalsScroll.innerHTML += "Trenutno ni na sporedu nobenega avtobusa";
   }
+  
   iks.addEventListener("click", function () {
     document.getElementById("listOfStations").style.display = "block";
     arrivalsScroll.style.transform = "translateX(30px)";
@@ -539,12 +543,51 @@ async function stationClick(station, noAnimation) {
     for (let p = 0; p < markers.length; p++) {
       markerCluster.markers[p].map = map;
     }
+    clearInterval(interval);
     setTimeout(() => {
       arrivalsScroll.remove();
       title.remove();
-
     }, 400);
   });
+  
+}
+const nextBusTemplate = (arrival) => {
+  let arrivalItem = addElement("div", null, "arrivalItem");
+  arrivalItem.classList.add("nextBus");
+  arrivalItem.innerHTML = `<md-icon>arrow_circle_right</md-icon>`;
+  arrivalItem.style.order = "0";
+  const busNumberDiv = addElement("div", arrivalItem, "busNo2");
+
+  busNumberDiv.style.backgroundColor =
+    "#" + lineColors[arrival.route_name.replace(/\D/g, "")];
+  busNumberDiv.id = "next_bus_" + arrival.route_name;
+  busNumberDiv.textContent = arrival.route_name;
+  addElement("md-ripple", busNumberDiv);
+  const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+
+  const tripNameSpan = addElement("span", arrivalDataDiv);
+  tripNameSpan.textContent = arrival.trip_name.split(" - ").at(-1);
+
+  const etaDiv = addElement("div", arrivalDataDiv, "eta");
+  etaDiv.id = "next_eta_" + arrival.route_name;
+
+  const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
+  if (arrival.eta_min !== 1) {
+    if (arrival.type == 0) {
+      arrivalTimeSpan.innerHTML =
+        "<md-icon>near_me</md-icon>" + arrival.eta_min + " min";
+      arrivalTimeSpan.classList.add("arrivalGreen");
+    } else {
+      arrivalTimeSpan.innerHTML = arrival.eta_min + " min";
+    }
+  } else {
+    arrivalTimeSpan.innerHTML = "PRIHOD";
+    arrivalTimeSpan.classList.add("arrivalRed");
+  }
+  busNumberDiv.addEventListener("click", () => {
+    showBusById(arrival.trip_id, iks);
+  });
+  return arrivalItem;
 }
 const pinSvgString =
   '<svg xmlns="http://www.w3.org/2000/svg" width="25px" height="25px" viewBox="0 0 1080 1080" xml:space="preserve"><g transform="translate(540 540)"/><g transform="translate(540 540)"/><rect style="stroke:#000;stroke-width:0;stroke-dasharray:none;stroke-linecap:butt;stroke-dashoffset:0;stroke-linejoin:miter;stroke-miterlimit:4;fill:#78a75a;fill-rule:nonzero;opacity:1" vector-effect="non-scaling-stroke" x="-33.084" y="-33.084" width="66.167" height="66.167" rx="13" ry="13" transform="translate(540 540)scale(16.4)"/><path style="stroke:#000;stroke-width:0;stroke-dasharray:none;stroke-linecap:butt;stroke-dashoffset:0;stroke-linejoin:miter;stroke-miterlimit:4;fill:#fff;fill-rule:nonzero;opacity:1" vector-effect="non-scaling-stroke" transform="translate(60 1040)" d="M240-120q-17 0-28.5-11.5T200-160v-82q-18-20-29-44.5T160-340v-380q0-83 77-121.5T480-880q172 0 246 37t74 123v380q0 29-11 53.5T760-242v82q0 17-11.5 28.5T720-120h-40q-17 0-28.5-11.5T640-160v-40H320v40q0 17-11.5 28.5T280-120zm242-640h224-448zm158 280H240h480zm-400-80h480v-120H240zm100 240q25 0 42.5-17.5T400-380t-17.5-42.5T340-440t-42.5 17.5T280-380t17.5 42.5T340-320Zm280 0q25 0 42.5-17.5T680-380t-17.5-42.5T620-440t-42.5 17.5T560-380t17.5 42.5T620-320ZM258-760h448q-15-17-64.5-28.5T482-800q-107 0-156.5 12.5T258-760Zm62 480h320q33 0 56.5-23.5T720-360v-120H240v120q0 33 23.5 56.5T320-280Z"/></svg>';
@@ -603,7 +646,7 @@ async function showBusById(tripId, iks) {
   var directionsService = new google.maps.DirectionsService();
 
   var sheet = document.querySelector(".mainSheet");
- 
+
   const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
   for (let p = 0; p < markers.length; p++) {

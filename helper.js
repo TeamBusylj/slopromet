@@ -199,7 +199,7 @@ setTimeout(() => {
                 // Set the height of .mainSheet using the calculated percentage height
                 if (mainContent.innerHTML.includes("arrivalsScroll")&& !mainContent.innerHTML.includes('ajokyxw')) {
                   
-                    console.log("kkek")
+                   
                       setSheetHeight(100);
                 } else {
                     console.log("kkk")
