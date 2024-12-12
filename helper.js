@@ -231,7 +231,7 @@ async function loop(firsttim) {
     busObject = tempBusObject.data;
 
     // Create or update markers
-    displayMarkers(firsttim);
+    displayBuses(firsttim);
 
     // Optionally repeat the loop every 5 seconds
     // setTimeout(loop, 5000);
@@ -245,30 +245,13 @@ async function validateTimestamp(timestamp) {
     let currentTime = new Date().getTime();
     return currentTime - compareTime.getTime() <= 300000;
 }
-var vectorSource, vectorLayer, rasterLayer, markers;
-async function displayMarkers(firsttim) {
-    try {
-        map.removeLayer(markers);
-       markers = undefined
-      } catch (error) {
-        console.log(error);
-        
-      }
-    var iconFeature = new ol.Feature({
-        geometry: new ol.geom.MultiPoint([[-90, 0], [-45, 45], [0, 0], [45, -45], [90, 0]]).transform('EPSG:4326','EPSG:3857'),
-        name: 'Null Islands',
-        population: 4000,
-        rainfall: 500
-      });
-      var iconStyle = new ol.style.Style({
-        image: new ol.style.Icon(/** @type {module:ol/style/Icon~Options} */ ({
-          anchor: [0.5, 46],
-          anchorXUnits: 'fraction',
-          anchorYUnits: 'pixels',
-          src: 'https://raw.githubusercontent.com/TeamBusylj/slopromet/refs/heads/main/images/bus.svg',
-          scale: 0.5
-        }))
-      });
+var vectorSource, vectorLayer, rasterLayer, markers, iconFeature, iconStyle;
+async function displayBuses(firsttim) {
+    
+     if(!firsttim)   {map.removeLayer(markers);
+       markers = undefined}
+    
+  
       
      
        markers = new ol.layer.Vector({
@@ -278,21 +261,7 @@ async function displayMarkers(firsttim) {
 
       iconFeature.setStyle(iconStyle);
 
-       vectorSource = new ol.source.Vector({ // VectorSource({
-        features: [iconFeature]
-      });
-
-       vectorLayer = new ol.layer.Vector({ // VectorLayer({
-        source: vectorSource
-      });
-
-        rasterLayer = new ol.layer.Tile({
-            source: new ol.source.OSM({
-              url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-              crossOrigin: null
-            })
-          })
-      if(firsttim)makeMap()
+     
       map.addLayer(markers);
     for (const i in busObject) {
         

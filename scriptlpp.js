@@ -12,7 +12,36 @@ function debounce(func, delay) {
 var map;
 const parser = new DOMParser();
 async function makeMap() {
- // Initialize the map
+  iconFeature = new ol.Feature({
+    geometry: new ol.geom.MultiPoint([[-90, 0], [-45, 45], [0, 0], [45, -45], [90, 0]]).transform('EPSG:4326','EPSG:3857'),
+    name: 'Null Islands',
+    population: 4000,
+    rainfall: 500
+  });
+ iconStyle = new ol.style.Style({
+    image: new ol.style.Icon(/** @type {module:ol/style/Icon~Options} */ ({
+      anchor: [0.5, 46],
+      anchorXUnits: 'fraction',
+      anchorYUnits: 'pixels',
+      src: 'https://raw.githubusercontent.com/TeamBusylj/slopromet/refs/heads/main/images/bus.svg',
+      scale: 0.5
+    }))
+  });
+  vectorSource = new ol.source.Vector({ // VectorSource({
+    features: [iconFeature]
+  });
+
+   vectorLayer = new ol.layer.Vector({ // VectorLayer({
+    source: vectorSource
+  });
+
+    rasterLayer = new ol.layer.Tile({
+        source: new ol.source.OSM({
+          url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+          crossOrigin: null
+        })
+      })
+
  map = new ol.Map({
   layers: [rasterLayer, vectorLayer],
   target: 'map',
@@ -126,8 +155,9 @@ setInterval(getLocation, 60000);
 async function createBuses() {
   await getLocation();
   stationList = JSON.parse(stationDetails).data;
-  loop(1)
-  createStationItems();
+ makeMap()
+
+   createStationItems();
 }
 
 var isArrivalsOpen = false;
