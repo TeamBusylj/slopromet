@@ -3,6 +3,8 @@ body{
   display: flex;
     flex-direction: column;
     height: 100vh;
+    font-family: sans-serif;
+    user-select: none;
 }
 .gmnoprint{
     display: none;
@@ -10,23 +12,26 @@ body{
 
 h1.title {
     position: absolute;
-    top: 0;
-    padding: 13px 0;
-    transition: all .4s  cubic-bezier(0.05, 0.7, 0.1, 1);
+    top: 40px;
+    margin: 0;
+    display: block;
+    height: 64px;
+    justify-content: center;
+    align-items: center;
+    display: flex
+;
+    transition: all .4s cubic-bezier(0.05, 0.7, 0.1, 1);
     left: 0;
     background: var(--md-sys-color-surface);
-    z-index: 10;
-   
+    z-index: 60;
     width: 100%;
     color: var(--md-sys-color-on-surface);
-    font-family: Roboto;
     text-align: center;
 }
 .arrivalsContainer {
     position: absolute;
     top: 12px;
     transition: all .4s  cubic-bezier(0.05, 0.7, 0.1, 1);
-    font-family: Roboto;
     transform: translateX(30px);
     opacity: 0;
     width: 100%;
@@ -90,16 +95,8 @@ html, body{
     background: var(--md-sys-color-surface-container-highest);
 }
 .searchContain {
-    position: absolute;
-    top: 30px;
-    padding: 0;
-    background-color: var(--md-sys-color-surface);
-    height: 50px;
-    display: flex
-;
-    justify-content: center;
-    width: 93%;
-    margin-bottom: 20px;
+    position: relative;
+    width: 100%;
     z-index: 2;
 }
 .gm-style iframe + div { border:none!important; }
@@ -148,7 +145,7 @@ md-fab.centerMap {
     font-size: 1.2rem;
 }
 md-list#listOfStations {
-    margin-top: 55px;
+    margin-top: 5px;
     overflow-y: scroll;
     height: 100%;
     width: 100%;
@@ -218,6 +215,7 @@ md-list-item.stationItem {
 }
 .arrivalTime md-icon {
    animation: rotatingIcon 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+   transform: rotate(-10deg);
 }
 @keyframes blinking {
     0%,100%{color: var(--md-sys-color-on-error-container);}
@@ -276,8 +274,7 @@ md-list-item.stationItem {
     color: white;
     padding: 5px;
     position: relative;
-    overflow: hidden;
- 
+ cursor: pointer;
 }
 
 
@@ -291,13 +288,28 @@ md-list-item.stationItem {
 }
 .nextBus {
     background: transparent;
-    border-bottom: 1px var(--md-sys-color-outline) solid;
     border-radius: 0;
     width: 90%;
 }
 
-
-  
+.busTemplate {
+    display: flex;
+    border-bottom: 1px var(--md-sys-color-outline) solid;
+    margin-bottom: 10px;
+    padding: 10px 0;
+    width: 100%;
+    flex-wrap: wrap;
+}
+.busTemplate .arrivalItem {
+    width: auto;
+    margin: 0;
+    padding: 10px;
+    flex: 1 1 0;
+    gap: 10px;
+}
+.busTemplate .arrivalItem .arrivalData {
+    gap: 0px;
+}
 span.nextBusTitle {
     width: 100%;
     color: var(--md-sys-color-on-surface);
@@ -308,15 +320,12 @@ span.nextBusTitle {
 .arrivalsScroll {
     overflow-y: scroll;
     view-transition-name: stitm;
-    top: 50px;
     display: flex;
    border-radius: 20px;
     width: 100%;
     position: relative;
     background: var(--md-sys-color-surface);
     color: var(--md-sys-color-on-surface);
-    font-family: Roboto;
-
     min-height: 84vh;
     overflow-x: hidden;
     flex-direction: column;

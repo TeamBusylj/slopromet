@@ -69,10 +69,11 @@ body{
     position: absolute;
     top: 0px;
     width: 100%;
-    display: flex
-;
+    display: flex;
+    cursor: ns-resize;
     justify-content: center;
-    height: 50px;
+    height: 40px;
+    z-index: 50;
 }
   .sheetContents:not(.not-selectable) {
     transition: all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1);
@@ -104,7 +105,7 @@ body{
   .mainSheet {
     display: flex;
     transition: all calc(var(--transDur) - 0.1s);
-    padding: 30px 5vw 30px 5vw;
+    padding: 40px 5vw 30px 5vw;
     position: relative;
     flex-wrap: wrap;
 
