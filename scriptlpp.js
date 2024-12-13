@@ -23,7 +23,7 @@ async function makeMap() {
       anchor: [0.5, 46],
       anchorXUnits: 'pixels',
       anchorYUnits: 'pixels',
-      src: 'https://raw.githubusercontent.com/TeamBusylj/slopromet/refs/heads/main/images/bus.svg',
+      src: 'https://raw.githubusercontent.com/TeamBusylj/slopromet/refs/heads/main/images/bus_shape.svg',
       scale: 0.5
     }))
   });
