@@ -21,7 +21,7 @@ async function makeMap() {
  iconStyle = new ol.style.Style({
     image: new ol.style.Icon(/** @type {module:ol/style/Icon~Options} */ ({
       anchor: [0.5, 46],
-      anchorXUnits: 'pixels',
+      anchorXUnits: 'fraction',
       anchorYUnits: 'pixels',
       src: 'https://raw.githubusercontent.com/TeamBusylj/slopromet/refs/heads/main/images/bus_shape.svg',
       scale: 0.5

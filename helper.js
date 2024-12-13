@@ -266,6 +266,8 @@ async function displayBuses(firsttim) {
         
         const bus = busObject[i];
         if(bus.trip_id == null) continue;
+        console.log(bus);
+        
         const coordinates = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
         var marker = new ol.Feature(new ol.geom.Point(coordinates));
     markers.getSource().addFeature(marker);
