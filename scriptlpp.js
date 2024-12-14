@@ -18,15 +18,7 @@ async function makeMap() {
     population: 4000,
     rainfall: 500
   });
- iconStyle = new ol.style.Style({
-    image: new ol.style.Icon(/** @type {module:ol/style/Icon~Options} */ ({
-      anchor: [0.5, 46],
-      anchorXUnits: 'fraction',
-      anchorYUnits: 'pixels',
-      src: 'https://raw.githubusercontent.com/TeamBusylj/slopromet/refs/heads/main/images/bus_shape.svg',
-      scale: 0.5
-    }))
-  });
+
   vectorSource = new ol.source.Vector({ // VectorSource({
     features: [iconFeature]
   });
@@ -393,7 +385,7 @@ console.log("refresh");
         arrivalTimeSpan.classList.add("arrivalRed");
       }
         busNumberDiv.addEventListener("click", () => {
-          showBusById(arrival.trip_id, iks);
+          showBusById(arrival.route_name);
         });
       }
     }
@@ -466,12 +458,21 @@ const nextBusTemplate = (arrivals, parent) => {
     arrivalTimeSpan.classList.add("arrivalRed");
   }
   busNumberDiv.addEventListener("click", () => {
-    showBusById(arrival.trip_id, iks);
+    showBusById(arrival.route_name);
   });
   i++
 }
 }
+function showBusById(line) {
+  console.log(line);
+  
+  setTimeout(() => {
+    document.querySelector(".sheetContents").style.height = "30dvh";
+sheetHeight = 30;
+  }, 50);
 
+  loop(1, line)
+}
 
 
 function addElement(tag, parent, className) {

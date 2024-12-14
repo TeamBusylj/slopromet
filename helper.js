@@ -1,3 +1,4 @@
+var sheetHeight
 function makeBottomheet(title, height) {
     let bottomSheet = addElement("div", document.body, "bottomSheet");
     bottomSheet.innerHTML = "<md-elevation></md-elevation>"
@@ -31,7 +32,7 @@ function makeBottomheet(title, height) {
     let toolbarColor = document
         .querySelector('meta[name="theme-color"]')
         .getAttribute("content");
-    let sheetHeight;
+    
     
     const setSheetHeight = (value) => {
         sheetHeight = Math.max(0, Math.min(100, value));
@@ -62,14 +63,11 @@ function makeBottomheet(title, height) {
     let dragPosition;
 
     const onDragStart = (event) => {
-       
+       if(!event.target.closest('.bottomSheet')) return
         dragPosition = touchPosition(event).pageY;
-        if (
-            mainContent.innerHTML.includes("md-list") &&
-            sheetContents.scrollHeight > sheetContents.clientHeight
-        ){
-           if(sheetHeight<97)sheetContents.style.overflow = "hidden"; else sheetContents.style.overflow = "scroll"
-        }
+      
+           if(sheetHeight>97)sheetContents.style.overflow = "scroll";
+        
         sheetContents.classList.add("not-selectable");
         vh = Math.max(
             document.documentElement.clientHeight || 0,
@@ -89,13 +87,15 @@ function makeBottomheet(title, height) {
     };
 
     const onDragMove = (event) => {
+        if(!event.target.closest('.bottomSheet')) return
         if ((mouseDown || event.type == "touchmove" ) && event.target.closest('.bottomSheet')) {
             const y = touchPosition(event).pageY;
             var deltaY = dragPosition - y;
-
+            
+if(deltaY>0 && sheetHeight==98) return;
             
             if (
-                mainContent.innerHTML.includes("md-list") &&
+             
                 sheetContents.scrollHeight > sheetContents.clientHeight && deltaY<0
             ){
                if(sheetContents.scrollTop>1) deltaY = 0
@@ -112,7 +112,7 @@ function makeBottomheet(title, height) {
 
             if (
                 
-                mainContent.innerHTML.includes("md-list") && sheetHeight < 30 &&deltaY<0
+                sheetHeight < 30 &&deltaY<0
             ) {
                deltaY = 0;
             } 
@@ -138,18 +138,18 @@ function makeBottomheet(title, height) {
             );
             sheetHeight3 = (mainContentHeight / vh) * 100;
 
-            if (mainContent.innerHTML.includes("md-list")) {
+           
                 if (sheetHeight > 65) {
                     setSheetHeight(98);
                 } else {
                     setSheetHeight(30);
                 } 
-            }  else if (sheetHeight > sheetHeight3 + (100 - sheetHeight3) / 2) {
+           if (sheetHeight > sheetHeight3 + (100 - sheetHeight3) / 2) {
                 setSheetHeight(98);
             } 
 
            
-        }, 6);
+        }, 2);
     };
 
     window.addEventListener("mousedown", onDragStart);
@@ -167,51 +167,11 @@ function makeBottomheet(title, height) {
             Math.min(sheetContents.offsetHeight, 50, (720 / window.innerHeight) * 100)
         ); 
     }
-
-    
-setTimeout(() => {
-    const observer = new MutationObserver((mutations) =>
-    mutations.forEach((mutation) => {
-        if (mutation.type === "childList") {
-            setTimeout(() => {
-                const mainContentHeight = Math.min(
-                    mainContent.clientHeight,
-                    mainContent.scrollHeight
-                ); // Adding 60px for padding or margin
-
-                // Calculate the percentage height of mainContent relative to the viewport height
-                const sheetHeight2 = (mainContentHeight / vh) * 100;
-
-                // Set the height of .mainSheet using the calculated percentage height
-                if (mainContent.innerHTML.includes("arrivalsScroll")&& !mainContent.innerHTML.includes('ajokyxw')) {
-                  
-                   
-                      setSheetHeight(98);
-                } else {
-                    console.log("kkk")
-                    if(mainContent.innerHTML.includes('ajokyxw')){
-                        setSheetHeight(30);
-                    }else{
-                        
-                    }
-      
-                }
-
-            }, 10);
-            
-        }
-    })
-);
-
-observer.observe(mainContent, { childList: true });
-}, 1000);
-
-
     return mainContent;
 }
 var busObject;
 var busMarker = [];
-async function loop(firsttim) {
+async function loop(firsttim, line) {
     // Fetch bus data
     let response = await fetch("https://mestnipromet.cyou/api/v1/resources/buses/info");
     let tempBusObject = await response.json();
@@ -231,7 +191,7 @@ async function loop(firsttim) {
     busObject = tempBusObject.data;
 
     // Create or update markers
-    displayBuses(firsttim);
+    displayBuses(firsttim, line);
 
     // Optionally repeat the loop every 5 seconds
     // setTimeout(loop, 5000);
@@ -245,33 +205,46 @@ async function validateTimestamp(timestamp) {
     return currentTime - compareTime.getTime() <= 300000;
 }
 var vectorSource, vectorLayer, rasterLayer, markers, iconFeature, iconStyle;
-async function displayBuses(firsttim) {
-    
-     if(!firsttim)   {map.removeLayer(markers);
-       markers = undefined}
-    
-  
-      
-     
-       markers = new ol.layer.Vector({
+async function displayBuses(firsttim, line) {
+    if (!firsttim) {
+        map.removeLayer(markers);
+        markers = undefined;
+    }
+
+    markers = new ol.layer.Vector({
         source: new ol.source.Vector(),
-        style: iconStyle
-      });
+    });
 
-      iconFeature.setStyle(iconStyle);
+    map.addLayer(markers);
 
-     
-      map.addLayer(markers);
     for (const i in busObject) {
-        
         const bus = busObject[i];
-        if(bus.trip_id == null) continue;
-        console.log(bus);
-        
+        if (bus.trip_id == null || bus.line_number !== line) continue;
+
         const coordinates = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
-        var marker = new ol.Feature(new ol.geom.Point(coordinates));
-    markers.getSource().addFeature(marker);
-  
+
+        // Create a feature for the bus
+        const marker = new ol.Feature({
+            geometry: new ol.geom.Point(coordinates),
+        });
+
+        // Create a style for the bus with rotation
+        const busStyle = new ol.style.Style({
+            image: new ol.style.Icon({
+                anchor: [0.5, 24],
+                anchorXUnits: 'fraction',
+                anchorYUnits: 'pixels',
+                src: 'images/bus_shape.svg',
+                scale: 0.5,
+                rotation: (bus.direction * Math.PI) / 180, // Convert degrees to radians
+            }),
+        });
+
+        // Set the style for the marker
+        marker.setStyle(busStyle);
+
+        // Add the marker to the layer
+        markers.getSource().addFeature(marker);
     }
 }
 //l = latitude, j = longitude, n = name, g = route_groups_on_station, id = ref_id, i = int_id
