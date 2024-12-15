@@ -9,8 +9,9 @@ function debounce(func, delay) {
     }, delay);
   };
 }
-var map;
+var map, busVectorLayer, busLayer, busStationLayer;
 const parser = new DOMParser();
+  
 async function makeMap() {
   iconFeature = new ol.Feature({
     geometry: new ol.geom.MultiPoint([[-90, 0], [-45, 45], [0, 0], [45, -45], [90, 0]]).transform('EPSG:4326','EPSG:3857'),
@@ -39,12 +40,31 @@ async function makeMap() {
   target: 'map',
   view: new ol.View({
       center: ol.proj.fromLonLat([14.5058, 46.0569]), // Default center (longitude, latitude)
-      zoom: 15,
+      zoom: 13,
   }),
 });
+const busSource = new ol.source.Vector(); // Contains bus markers
+const busStationSource = new ol.source.Vector(); // Contains station locations
+const busVectorSource = new ol.source.Vector(); // Contains vector graphics or routes
 
+// Create vector layers for each source
+busLayer = new ol.layer.Vector({
+    source: busSource,
+});
+
+busStationLayer = new ol.layer.Vector({
+    source: busStationSource,
+});
+
+ busVectorLayer = new ol.layer.Vector({
+    source: busVectorSource,
+});
+
+// Add the layers to the map
+map.addLayer(busLayer);
+map.addLayer(busStationLayer);
+map.addLayer(busVectorLayer);
 }
-
 const delayedSearch = debounce(searchRefresh, 300);
 window.addEventListener("DOMContentLoaded", async function () {
   createBuses();
@@ -209,9 +229,10 @@ function createStationItems() {
         }
         let buses = addElement("div", item, "buses");
         for (const bus of stationList[station].g) {
+          
           buses.innerHTML +=
-            "<div class=busNo style=background-color:#" +
-            lineColors[bus.replace(/\D/g, "")] +
+            "<div class=busNo style=background-color:" +
+            "RGB(" + lineColors[bus.replace(/\D/g, "")].toString() + ")" +
             " id=bus2_" +
             bus +
             ">" +
@@ -359,9 +380,8 @@ console.log("refresh");
         arrivalItem.style.order = arrival.route_name.replace(/\D/g, "");
         const busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
-        busNumberDiv.style.backgroundColor =
-          "#" + lineColors[arrival.route_name.replace(/\D/g, "")];
-        busNumberDiv.id = "bus_" + arrival.route_name;
+        busNumberDiv.style.backgroundColor ="RGB(" + lineColors[arrival.route_name.replace(/\D/g, "")].toString() + ")"; 
+               busNumberDiv.id = "bus_" + arrival.route_name;
         busNumberDiv.textContent = arrival.route_name;
         addElement("md-ripple", busNumberDiv);
         const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
@@ -385,7 +405,7 @@ console.log("refresh");
         arrivalTimeSpan.classList.add("arrivalRed");
       }
         busNumberDiv.addEventListener("click", () => {
-          showBusById(arrival.route_name);
+          showBusById(arrival.route_name, arrival.stations.arrival);
         });
       }
     }
@@ -431,8 +451,7 @@ const nextBusTemplate = (arrivals, parent) => {
   arrivalItem.style.order = arrival.type === 2 ? 0 : arrival.eta_min;
   const busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
-  busNumberDiv.style.backgroundColor =
-    "#" + lineColors[arrival.route_name.replace(/\D/g, "")];
+  busNumberDiv.style.backgroundColor ="RGB(" + lineColors[arrival.route_name.replace(/\D/g, "")].toString() + ")";
   busNumberDiv.id = "next_bus_" + arrival.route_name;
   busNumberDiv.textContent = arrival.route_name;
   addElement("md-ripple", busNumberDiv);
@@ -458,20 +477,20 @@ const nextBusTemplate = (arrivals, parent) => {
     arrivalTimeSpan.classList.add("arrivalRed");
   }
   busNumberDiv.addEventListener("click", () => {
-    showBusById(arrival.route_name);
+    
+    showBusById(arrival.route_name, arrival.stations.arrival);
   });
   i++
 }
 }
-function showBusById(line) {
-  console.log(line);
+function showBusById(line, trip) {
   
   setTimeout(() => {
     document.querySelector(".sheetContents").style.height = "30dvh";
 sheetHeight = 30;
   }, 50);
 
-  loop(1, line)
+  loop(1, line, trip)
 }
 
 
@@ -486,85 +505,4 @@ function addElement(tag, parent, className) {
   return element;
 }
 
-const lineColors = {
-  1: "C93336",
-  2: "8C8841",
-  3: "EC593A",
-  5: "9F539E",
-  6: "939598",
-  7: "1CBADC",
-  8: "116AB0",
-  9: "86AACD",
-  11: "EDC23B",
-  12: "214AA0",
-  13: "CFD34D",
-  14: "EF59A1",
-  15: "A2238E",
-  16: "582C81",
-  18: "895735",
-  19: "EA9EB4",
-  20: "1F8751",
-  21: "52BA50",
-  22: "F6A73A",
-  23: "40AE49",
-  24: "ED028C",
-  25: "0F95CA",
-  26: "231F20",
-  27: "57A897",
-  30: "9AD2AE",
-  40: "496E6D",
-  42: "A78B6B",
-  43: "4E497A",
-  44: "817EA8",
-  51: "6C8BC6",
-  52: "00565D",
-  53: "C7B3CA",
-  56: "953312",
-  60: "ACBB71",
-  61: "F9A64A",
-  71: "6C8BC6",
-  72: "4CA391",
-  73: "FECA0A",
-  78: "C96D6A",
-  4: "F28B30",
-  10: "A2BF2F",
-  17: "B83D45",
-  28: "E58C4D",
-  29: "B2D28A",
-  31: "7A56A1",
-  32: "DA9D56",
-  33: "77A8B3",
-  34: "E35692",
-  35: "514D6E",
-  36: "D4A747",
-  37: "3A7C7E",
-  38: "E67527",
-  39: "9C6E58",
-  41: "D6E7A3",
-  45: "A74243",
-  46: "8F6B8E",
-  47: "D3954A",
-  48: "72C9B6",
-  49: "CB4577",
-  50: "6A789A",
-  54: "D8AF56",
-  55: "43577B",
-  57: "E58E50",
-  58: "908B9E",
-  59: "BFD264",
-  62: "9E7352",
-  63: "3F9D9E",
-  64: "EF7D50",
-  65: "5D5C6B",
-  66: "D3B257",
-  67: "4D917F",
-  68: "E27851",
-  69: "A2755B",
-  70: "A8CDB5",
-  74: "D65274",
-  75: "B8B3D5",
-  76: "D4B158",
-  77: "61937F",
-  79: "EF8251",
-  80: "75685C",
-};
+
