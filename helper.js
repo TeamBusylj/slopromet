@@ -193,8 +193,7 @@ async function loop(firsttim, line, trip) {
     // Create or update markers
     displayBuses(firsttim, line, trip);
 
-    // Optionally repeat the loop every 5 seconds
-     setTimeout(() => loop(0, line, trip), 5000);
+  
 }
 
 
@@ -220,7 +219,7 @@ let busid
         
         if (bus.trip_id && bus.line_number == line && bus.line_destination == trip) {
          
-                
+                if(firsttim){
 busid = bus
         const coordinates = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
 
@@ -242,13 +241,39 @@ busid = bus
             }),
         });
 
-        // Set the style for the marker
-        marker.busId = bus.trip_id;
+
+    
+        marker.busId = bus.bus_id;
+     
         marker.setStyle(busStyle);
 
         // Add the marker to the layer
         tempMarkersSource.getSource().addFeature(marker);
+    }else{
+        console.log(markers.getSource().getFeatures());
         
+        let newCoordinates = ol.proj.fromLonLat([bus.longitude, bus.latitude]);
+
+        markers.getSource().forEachFeature(function (feature) {
+            if (bus.bus_id === feature.busId) {
+                now = new Date().getTime();
+    
+                const animate = () => {
+                    const shouldContinue = moveFeature(feature, newCoordinates, (bus.direction * Math.PI) / 180);
+    
+                    // Re-render map for smooth animation
+                    map.render();
+    
+                    if (shouldContinue) {
+                        requestAnimationFrame(animate); // Continue animation
+                    }
+                };
+    
+                animate(); // Start animation loop
+            }
+        });
+       
+    }
    }}
     if(firsttim){
     let response = await fetch("https://lpp.ojpp.derp.si/api/route/arrivals-on-route?trip-id=" + busid.trip_id);
@@ -297,11 +322,12 @@ coordinates = coordinates.data;
                 src: index === 0 || index === data.length - 1 ? "/images/bus.svg" : "/images/bus.svg",
                
                 anchor: [0.5, 24],
-               
+                color: lineColors[lno.replace(/\D/g, "")],
+
                 anchorXUnits: 'fraction',
                 anchorYUnits: 'pixels',
                 
-                scale: 0.2,
+                scale: 0.3,
             }),
            /* text: new ol.style.Text({
                 text: `${station.order_no}. ${station.name}`,
@@ -311,17 +337,36 @@ coordinates = coordinates.data;
                 backgroundFill: new ol.style.Fill({ color: '#fff' }),
             }),*/
         }));
-
+        map.on('click', function(evt) {
+            var feature = map.forEachFeatureAtPixel(evt.pixel,
+              function(feature) {
+                return feature;
+              });
+            if (feature === stationFeature) {
+                console.log(station);
+                stationClick(stationList.findIndex(obj => obj.n === station.name), true);
+                setTimeout(() => {
+                    document.querySelector(".sheetContents").style.height = "98dvh";
+                sheetHeight = 98;
+                  }, 50);
+            }
+          });
         tempStationSource.addFeature(stationFeature);
     });
-
-
-
+    console.log(coordinates);
+if(coordinates[0][0][0]){
+const getLongestInnerArray = (arr) => arr.reduce((longest, current) => current.length > longest.length ? current : longest, []);
+coordinates =getLongestInnerArray(coordinates)
+   
+}
+   
     if (coordinates[0][0] > coordinates[0][1]) {
         coordinates.forEach(coordSet => {
-            coordSet.reverse();
+          coordSet.reverse();
         });
     } 
+    console.log(coordinates);
+    
     const routeFeature = new ol.Feature({
         geometry: new ol.geom.LineString(coordinates.map(c => {;return ol.proj.fromLonLat(c)})),
     });
@@ -357,7 +402,8 @@ coordinates = coordinates.data;
         map.addLayer(markers);
         map.getView().fit(busVectorLayer.getSource().getExtent(), {
             size: map.getSize(),
-            maxZoom: 16
+            maxZoom: 20,
+            padding: [10,10,100,10]
           });
     
 }

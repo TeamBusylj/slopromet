@@ -9,7 +9,39 @@ function debounce(func, delay) {
     }, delay);
   };
 }
-var map, busVectorLayer, busLayer, busStationLayer;
+function moveFeature(feature, newCoordinates, dir) {
+  const currentGeometry = feature.getGeometry();
+
+  // Check if the feature has a geometry to update
+  if (currentGeometry && currentGeometry instanceof ol.geom.Point) {
+      // Smooth transition logic
+      const currentCoordinates = currentGeometry.getCoordinates();
+
+      // Interpolate coordinates for smooth movement
+      const x = currentCoordinates[0] + (newCoordinates[0] - currentCoordinates[0]) * 0.1;
+      const y = currentCoordinates[1] + (newCoordinates[1] - currentCoordinates[1]) * 0.1;
+
+      // Update the feature's geometry
+      feature.setGeometry(new ol.geom.Point([x, y]));
+
+      // Apply the predefined direction (rotation) to the feature's style
+      const style = feature.getStyle();
+      if (style && style.getImage) {
+          const image = style.getImage();
+          image.setRotation(dir); // Use the provided direction for rotation
+      }
+
+      // Check if the marker is close enough to the target to stop
+      if (Math.abs(newCoordinates[0] - x) < 0.0001 && Math.abs(newCoordinates[1] - y) < 0.0001) {
+          feature.setGeometry(new ol.geom.Point(newCoordinates));
+          return false; // Stop animation
+      }
+      return true; // Continue animation
+  }
+  return false;
+}
+
+var map, busVectorLayer, busLayer, busStationLayer, animating,speed, now;
 const parser = new DOMParser();
   
 async function makeMap() {
@@ -41,6 +73,9 @@ async function makeMap() {
   view: new ol.View({
       center: ol.proj.fromLonLat([14.5058, 46.0569]), // Default center (longitude, latitude)
       zoom: 13,
+      loadTilesWhileAnimating: true,
+      padding: [10,10,100,10]
+     
   }),
 });
 const busSource = new ol.source.Vector(); // Contains bus markers
@@ -64,13 +99,17 @@ busStationLayer = new ol.layer.Vector({
 map.addLayer(busLayer);
 map.addLayer(busStationLayer);
 map.addLayer(busVectorLayer);
+
+
+
+
 }
 const delayedSearch = debounce(searchRefresh, 300);
 window.addEventListener("DOMContentLoaded", async function () {
   createBuses();
   let sht = makeBottomheet(null, 98);
   sht.innerHTML = `
-<div class="searchContain"> <md-filled-text-field class="search" placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
+<div class="searchContain"> <md-filled-text-field value=bava class="search" placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
  <md-circular-progress indeterminate id="loader"></md-circular-progress>
     <md-list id="listOfStations"></md-list>`;
   this.document
@@ -175,6 +214,8 @@ async function createBuses() {
 var isArrivalsOpen = false;
 
 function createStationItems() {
+  
+  
   var search = false;
   var query = "";
   if (document.querySelector(".search").value !== "") {
@@ -190,7 +231,7 @@ function createStationItems() {
   if (navigator.geolocation) {
     let centertation = [];
     for (const station in stationList) {
-     
+      
       
       let item2 = addElement("md-list-item", null, "stationItem");
       item2.setAttribute("interactive", "");
@@ -317,6 +358,8 @@ function showOnMap(lnga, lata) {
   }, 300);
 }
 async function stationClick(station, noAnimation) {
+  
+  
   var response;
   var movies;
   if (noAnimation) {
@@ -329,6 +372,8 @@ async function stationClick(station, noAnimation) {
       document.querySelector(".title").remove();
       document.querySelector(".arrivalsScroll").remove();
     } catch (e) {
+      console.log(e);
+      
     }
   }
   let title = addElement("h1", document.querySelector(".mainSheet"), "title");
@@ -483,14 +528,18 @@ const nextBusTemplate = (arrivals, parent) => {
   i++
 }
 }
+var busUpdateInterval;
 function showBusById(line, trip) {
-  
+  clearInterval(busUpdateInterval);
   setTimeout(() => {
     document.querySelector(".sheetContents").style.height = "30dvh";
 sheetHeight = 30;
   }, 50);
 
   loop(1, line, trip)
+  busUpdateInterval = setInterval(() => {
+     loop(0, line, trip)
+  }, 5000)
 }
 
 
