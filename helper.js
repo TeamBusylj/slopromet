@@ -250,7 +250,6 @@ busid = bus
         // Add the marker to the layer
         tempMarkersSource.getSource().addFeature(marker);
     }else{
-        console.log(markers.getSource().getFeatures());
         
         let newCoordinates = ol.proj.fromLonLat([bus.longitude, bus.latitude]);
 

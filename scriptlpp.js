@@ -14,95 +14,103 @@ function moveFeature(feature, newCoordinates, dir) {
 
   // Check if the feature has a geometry to update
   if (currentGeometry && currentGeometry instanceof ol.geom.Point) {
-      // Smooth transition logic
-      const currentCoordinates = currentGeometry.getCoordinates();
+    // Smooth transition logic
+    const currentCoordinates = currentGeometry.getCoordinates();
 
-      // Interpolate coordinates for smooth movement
-      const x = currentCoordinates[0] + (newCoordinates[0] - currentCoordinates[0]) * 0.1;
-      const y = currentCoordinates[1] + (newCoordinates[1] - currentCoordinates[1]) * 0.1;
+    // Interpolate coordinates for smooth movement
+    const x =
+      currentCoordinates[0] + (newCoordinates[0] - currentCoordinates[0]) * 0.1;
+    const y =
+      currentCoordinates[1] + (newCoordinates[1] - currentCoordinates[1]) * 0.1;
 
-      // Update the feature's geometry
-      feature.setGeometry(new ol.geom.Point([x, y]));
+    // Update the feature's geometry
+    feature.setGeometry(new ol.geom.Point([x, y]));
 
-      // Apply the predefined direction (rotation) to the feature's style
-      const style = feature.getStyle();
-      if (style && style.getImage) {
-          const image = style.getImage();
-          image.setRotation(dir); // Use the provided direction for rotation
-      }
+    // Apply the predefined direction (rotation) to the feature's style
+    const style = feature.getStyle();
+    if (style && style.getImage) {
+      const image = style.getImage();
+      image.setRotation(dir); // Use the provided direction for rotation
+    }
 
-      // Check if the marker is close enough to the target to stop
-      if (Math.abs(newCoordinates[0] - x) < 0.0001 && Math.abs(newCoordinates[1] - y) < 0.0001) {
-          feature.setGeometry(new ol.geom.Point(newCoordinates));
-          return false; // Stop animation
-      }
-      return true; // Continue animation
+    // Check if the marker is close enough to the target to stop
+    if (
+      Math.abs(newCoordinates[0] - x) < 0.0001 &&
+      Math.abs(newCoordinates[1] - y) < 0.0001
+    ) {
+      feature.setGeometry(new ol.geom.Point(newCoordinates));
+      return false; // Stop animation
+    }
+    return true; // Continue animation
   }
   return false;
 }
 
-var map, busVectorLayer, busLayer, busStationLayer, animating,speed, now;
+var map, busVectorLayer, busLayer, busStationLayer, animating, speed, now;
 const parser = new DOMParser();
-  
+
 async function makeMap() {
   iconFeature = new ol.Feature({
-    geometry: new ol.geom.MultiPoint([[-90, 0], [-45, 45], [0, 0], [45, -45], [90, 0]]).transform('EPSG:4326','EPSG:3857'),
-    name: 'Null Islands',
+    geometry: new ol.geom.MultiPoint([
+      [-90, 0],
+      [-45, 45],
+      [0, 0],
+      [45, -45],
+      [90, 0],
+    ]).transform("EPSG:4326", "EPSG:3857"),
+    name: "Null Islands",
     population: 4000,
-    rainfall: 500
+    rainfall: 500,
   });
 
-  vectorSource = new ol.source.Vector({ // VectorSource({
-    features: [iconFeature]
+  vectorSource = new ol.source.Vector({
+    // VectorSource({
+    features: [iconFeature],
   });
 
-   vectorLayer = new ol.layer.Vector({ // VectorLayer({
-    source: vectorSource
+  vectorLayer = new ol.layer.Vector({
+    // VectorLayer({
+    source: vectorSource,
   });
 
-    rasterLayer = new ol.layer.Tile({
-        source: new ol.source.OSM({
-          url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-          crossOrigin: null
-        })
-      })
+  rasterLayer = new ol.layer.Tile({
+    source: new ol.source.OSM({
+      url: "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+      crossOrigin: null,
+    }),
+  });
 
- map = new ol.Map({
-  layers: [rasterLayer, vectorLayer],
-  target: 'map',
-  view: new ol.View({
+  map = new ol.Map({
+    layers: [rasterLayer, vectorLayer],
+    target: "map",
+    view: new ol.View({
       center: ol.proj.fromLonLat([14.5058, 46.0569]), // Default center (longitude, latitude)
       zoom: 13,
       loadTilesWhileAnimating: true,
-      padding: [10,10,100,10]
-     
-  }),
-});
-const busSource = new ol.source.Vector(); // Contains bus markers
-const busStationSource = new ol.source.Vector(); // Contains station locations
-const busVectorSource = new ol.source.Vector(); // Contains vector graphics or routes
+      padding: [10, 10, 100, 10],
+    }),
+  });
+  const busSource = new ol.source.Vector(); // Contains bus markers
+  const busStationSource = new ol.source.Vector(); // Contains station locations
+  const busVectorSource = new ol.source.Vector(); // Contains vector graphics or routes
 
-// Create vector layers for each source
-busLayer = new ol.layer.Vector({
+  // Create vector layers for each source
+  busLayer = new ol.layer.Vector({
     source: busSource,
-});
+  });
 
-busStationLayer = new ol.layer.Vector({
+  busStationLayer = new ol.layer.Vector({
     source: busStationSource,
-});
+  });
 
- busVectorLayer = new ol.layer.Vector({
+  busVectorLayer = new ol.layer.Vector({
     source: busVectorSource,
-});
+  });
 
-// Add the layers to the map
-map.addLayer(busLayer);
-map.addLayer(busStationLayer);
-map.addLayer(busVectorLayer);
-
-
-
-
+  // Add the layers to the map
+  map.addLayer(busLayer);
+  map.addLayer(busStationLayer);
+  map.addLayer(busVectorLayer);
 }
 const delayedSearch = debounce(searchRefresh, 300);
 window.addEventListener("DOMContentLoaded", async function () {
@@ -126,7 +134,7 @@ window.addEventListener("load", async function () {
   var touchDiff = 0;
   document.addEventListener("touchstart", (e) => {
     loadingC.removeAttribute("indeterminate");
-    
+
     touchDiff = 0;
     loadingC.setAttribute("value", "0");
     touchstartY = e.touches[0].clientY;
@@ -157,7 +165,6 @@ window.addEventListener("load", async function () {
     }
   });
   document.addEventListener("touchend", async () => {
-  
     loadingC.setAttribute("indeterminate", "");
     if (touchDiff > 150) {
       pullToRefresh.style.transition = "all .3s";
@@ -194,8 +201,6 @@ async function getLocation() {
         maximumAge: 60000,
         enableHighAccuracy: true,
       });
-     
-      
     });
     latitude = position.coords.latitude;
     longitude = position.coords.longitude;
@@ -206,16 +211,14 @@ setInterval(getLocation, 60000);
 async function createBuses() {
   await getLocation();
   stationList = JSON.parse(stationDetails).data;
- makeMap()
+  makeMap();
 
-   createStationItems();
+  createStationItems();
 }
 
 var isArrivalsOpen = false;
 
 function createStationItems() {
-  
-  
   var search = false;
   var query = "";
   if (document.querySelector(".search").value !== "") {
@@ -231,8 +234,6 @@ function createStationItems() {
   if (navigator.geolocation) {
     let centertation = [];
     for (const station in stationList) {
-      
-      
       let item2 = addElement("md-list-item", null, "stationItem");
       item2.setAttribute("interactive", "");
       addElement("md-ripple", item2);
@@ -270,10 +271,11 @@ function createStationItems() {
         }
         let buses = addElement("div", item, "buses");
         for (const bus of stationList[station].g) {
-          
           buses.innerHTML +=
             "<div class=busNo style=background-color:" +
-            "RGB(" + lineColors[bus.replace(/\D/g, "")].toString() + ")" +
+            "RGB(" +
+            lineColors[bus.replace(/\D/g, "")].toString() +
+            ")" +
             " id=bus2_" +
             bus +
             ">" +
@@ -289,9 +291,9 @@ function createStationItems() {
 
             stationClick(station);
             interval = setInterval(async () => {
-              let i = document.querySelector(".sheetContents").scrollTop
+              let i = document.querySelector(".sheetContents").scrollTop;
               await stationClick(isArrivalsOpen, true);
-              document.querySelector(".sheetContents").scrollTop = i
+              document.querySelector(".sheetContents").scrollTop = i;
             }, 10000);
           });
         });
@@ -330,7 +332,7 @@ function searchRefresh() {
   let query = document.querySelector(".search").value;
   createStationItems(true, query);
 }
-var interval
+var interval;
 function haversineDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Radius of the Earth in kilometers
   const dLat = ((lat2 - lat1) * Math.PI) / 180; // Convert degrees to radians
@@ -357,62 +359,101 @@ function showOnMap(lnga, lata) {
       .appendChild(document.createElement("ajokyxw"));
   }, 300);
 }
+var arrivalsScroll
 async function stationClick(station, noAnimation) {
-  
-  
-  var response;
-  var movies;
+  var data;
+
   if (noAnimation) {
-    response = await fetch(
+    let response = await fetch(
       " https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
         stationList[station].id
     );
-    movies = await response.json();
-    try {
-      document.querySelector(".title").remove();
-      document.querySelector(".arrivalsScroll").remove();
-    } catch (e) {
-      console.log(e);
-      
-    }
-  }
-  let title = addElement("h1", document.querySelector(".mainSheet"), "title");
-  title.innerHTML = stationList[station].n;
-  let iks = addElement("md-icon-button", title, "iks");
-  iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
-
-  let mapca = addElement("md-icon-button", title, "mapca");
-  mapca.innerHTML = "<md-icon>map</md-icon>";
-  mapca.addEventListener("click", function () {
-    showOnMap(stationList[station].j, stationList[station].l);
-  });
-console.log("refresh");
-
-  var arrivalsScroll = addElement(
-    "div",
-    document.querySelector(".mainSheet"),
-    "arrivalsScroll"
-  );
- 
-  document.querySelector(".sheetContents").scrollTop = 0;
-  isArrivalsOpen = station;
-
-    document.getElementById("listOfStations").style.display = "none";
-
-  if (noAnimation) {
-    arrivalsScroll.style.transition = "all 0s";
+    data = await response.json();
   } else {
-    response = await fetch(
+    let title = addElement("h1", document.querySelector(".mainSheet"), "title");
+    title.innerHTML = stationList[station].n;
+    var iks = addElement("md-icon-button", title, "iks");
+    iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
+
+    let mapca = addElement("md-icon-button", title, "mapca");
+    mapca.innerHTML = "<md-icon>map</md-icon>";
+    mapca.addEventListener("click", function () {
+      showOnMap(stationList[station].j, stationList[station].l);
+    });
+
+    document.querySelector(".mainSheet").innerHTML += `<md-tabs id=tabs>
+    <md-primary-tab id="arrivalsTab" aria-controls="arrivals-panel">Prihodi</md-primary-tab>
+    <md-primary-tab id="timeTab" aria-controls="time-panel">Urnik</md-primary-tab>
+  </md-tabs>
+  `;
+    arrivalsScroll = addElement(
+      "div",
+      document.querySelector(".mainSheet"),
+      "arrivalsScroll"
+    );
+
+    arrivalsScroll.setAttribute("role", "tabpanel");
+    arrivalsScroll.setAttribute("aria-labelledby", "arrivalsTab");
+    arrivalsScroll.setAttribute("id", "arrivals-panel");
+
+    let tabs = document.getElementById("tabs");
+    let currentPanel = document.querySelector(".arrivalsScroll");
+    tabs.addEventListener("change", () => {
+      console.log(tabs.activeTab);
+
+      if (currentPanel) {
+        currentPanel.style.display = "none";
+      }
+
+      const panelId = tabs.activeTab?.getAttribute("aria-controls");
+      const root = tabs.getRootNode();
+      currentPanel = root.querySelector(`#${panelId}`);
+      if (currentPanel) {
+        currentPanel.style.display = "flex";
+      }
+    });
+    iks.addEventListener("click", function () {
+      console.log("click");
+      
+      document.getElementById("listOfStations").style.display = "block";
+      arrivalsScroll.style.transform = "translateX(30px)";
+      arrivalsScroll.style.opacity = "0";
+      title.style.transform = "translateX(30px)";
+      title.style.opacity = "0";
+      isArrivalsOpen = false;
+
+      clearInterval(interval);
+      setTimeout(() => {
+        arrivalsScroll.remove();
+        title.remove();
+      }, 400);
+    });
+
+    var timeTScroll = addElement(
+      "div",
+      document.querySelector(".mainSheet"),
+      "timeTScroll"
+    );
+    timeTScroll.setAttribute("role", "tabpanel");
+    timeTScroll.setAttribute("aria-labelledby", "timeTab");
+    timeTScroll.setAttribute("id", "time-panel");
+    timeTScroll.setAttribute("aria-hidden", "true");
+    let response = await fetch(
       " https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
         stationList[station].id
     );
-    movies = await response.json();
+    data = await response.json();
   }
-
-  if (movies.data.arrivals.length > 0) {
+  isArrivalsOpen = station;
+  document.getElementById("listOfStations").style.display = "none";
+  showArrivals(arrivalsScroll, data);
+}
+function showArrivals(arrivalsScroll, data) {
+  arrivalsScroll.innerHTML = "";
+  if (data.data.arrivals.length > 0) {
     let busTemplate = addElement("div", arrivalsScroll, "busTemplate");
-    nextBusTemplate(movies.data.arrivals, busTemplate);
-    for (const arrival of movies.data.arrivals) {
+    nextBusTemplate(data.data.arrivals, busTemplate);
+    for (const arrival of data.data.arrivals) {
       if (arrivalsScroll.querySelector("#bus_" + arrival.route_name)) {
         arrivalsScroll.querySelector("#eta_" + arrival.route_name).innerHTML +=
           "<span class=arrivalTime>" +
@@ -425,8 +466,11 @@ console.log("refresh");
         arrivalItem.style.order = arrival.route_name.replace(/\D/g, "");
         const busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
-        busNumberDiv.style.backgroundColor ="RGB(" + lineColors[arrival.route_name.replace(/\D/g, "")].toString() + ")"; 
-               busNumberDiv.id = "bus_" + arrival.route_name;
+        busNumberDiv.style.backgroundColor =
+          "RGB(" +
+          lineColors[arrival.route_name.replace(/\D/g, "")].toString() +
+          ")";
+        busNumberDiv.id = "bus_" + arrival.route_name;
         busNumberDiv.textContent = arrival.route_name;
         addElement("md-ripple", busNumberDiv);
         const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
@@ -440,15 +484,18 @@ console.log("refresh");
         const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
         if (arrival.type == 0) {
           arrivalTimeSpan.innerHTML =
-        "<md-icon style='animation-delay:"+randomOneDecimal()+"s;'>near_me</md-icon>"+ arrival.eta_min + " min";
+            "<md-icon style='animation-delay:" +
+            randomOneDecimal() +
+            "s;'>near_me</md-icon>" +
+            arrival.eta_min +
+            " min";
           arrivalTimeSpan.classList.add("arrivalGreen");
         } else if (arrival.type == 1) {
           arrivalTimeSpan.innerHTML = arrival.eta_min + " min";
+        } else if (arrival.type == 2) {
+          arrivalTimeSpan.innerHTML = "PRIHOD";
+          arrivalTimeSpan.classList.add("arrivalRed");
         }
-      else if(arrival.type == 2) {
-        arrivalTimeSpan.innerHTML = "PRIHOD";
-        arrivalTimeSpan.classList.add("arrivalRed");
-      }
         busNumberDiv.addEventListener("click", () => {
           showBusById(arrival.route_name, arrival.stations.arrival);
         });
@@ -457,22 +504,6 @@ console.log("refresh");
   } else {
     arrivalsScroll.innerHTML += "Trenutno ni na sporedu nobenega avtobusa";
   }
-  
-  iks.addEventListener("click", function () {
-    document.getElementById("listOfStations").style.display = "block";
-    arrivalsScroll.style.transform = "translateX(30px)";
-    arrivalsScroll.style.opacity = "0";
-    title.style.transform = "translateX(30px)";
-    title.style.opacity = "0";
-    isArrivalsOpen = false;
-   
-    clearInterval(interval);
-    setTimeout(() => {
-      arrivalsScroll.remove();
-      title.remove();
-    }, 400);
-  });
-  
 }
 const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
 
@@ -480,7 +511,6 @@ const nextBusTemplate = (arrivals, parent) => {
   var isNextbus = false;
   let i = 0;
   for (const arrival of arrivals) {
-    
     if (arrival.eta_min > 1) {
       if (!isNextbus) {
         isNextbus = true;
@@ -489,59 +519,65 @@ const nextBusTemplate = (arrivals, parent) => {
       }
     }
 
-  let arrivalItem = addElement("div", parent, "arrivalItem");
-  i == 0 ? arrivalItem.classList.add("nextBus") : arrivalItem.style.background = "transparent";
-  let icon = i == 0 ? "arrow_circle_right" : "";
-  //arrivalItem.innerHTML = `<md-icon>${icon}</md-icon>`;
-  arrivalItem.style.order = arrival.type === 2 ? 0 : arrival.eta_min;
-  const busNumberDiv = addElement("div", arrivalItem, "busNo2");
+    let arrivalItem = addElement("div", parent, "arrivalItem");
+    i == 0
+      ? arrivalItem.classList.add("nextBus")
+      : (arrivalItem.style.background = "transparent");
+    let icon = i == 0 ? "arrow_circle_right" : "";
+    //arrivalItem.innerHTML = `<md-icon>${icon}</md-icon>`;
+    arrivalItem.style.order = arrival.type === 2 ? 0 : arrival.eta_min;
+    const busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
-  busNumberDiv.style.backgroundColor ="RGB(" + lineColors[arrival.route_name.replace(/\D/g, "")].toString() + ")";
-  busNumberDiv.id = "next_bus_" + arrival.route_name;
-  busNumberDiv.textContent = arrival.route_name;
-  addElement("md-ripple", busNumberDiv);
-  const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+    busNumberDiv.style.backgroundColor =
+      "RGB(" +
+      lineColors[arrival.route_name.replace(/\D/g, "")].toString() +
+      ")";
+    busNumberDiv.id = "next_bus_" + arrival.route_name;
+    busNumberDiv.textContent = arrival.route_name;
+    addElement("md-ripple", busNumberDiv);
+    const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
 
-  const tripNameSpan = addElement("span", arrivalDataDiv);
-  tripNameSpan.textContent = arrival.trip_name.split(" - ").at(-1);
+    const tripNameSpan = addElement("span", arrivalDataDiv);
+    tripNameSpan.textContent = arrival.trip_name.split(" - ").at(-1);
 
-  const etaDiv = addElement("div", arrivalDataDiv, "eta");
-  etaDiv.id = "next_eta_" + arrival.route_name;
+    const etaDiv = addElement("div", arrivalDataDiv, "eta");
+    etaDiv.id = "next_eta_" + arrival.route_name;
 
-  const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
- 
+    const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
+
     if (arrival.type == 0) {
       arrivalTimeSpan.innerHTML =
-        "<md-icon style='animation-delay:"+randomOneDecimal()+"s;'>near_me</md-icon>" + arrival.eta_min + " min";
+        "<md-icon style='animation-delay:" +
+        randomOneDecimal() +
+        "s;'>near_me</md-icon>" +
+        arrival.eta_min +
+        " min";
       arrivalTimeSpan.classList.add("arrivalGreen");
     } else if (arrival.type == 1) {
       arrivalTimeSpan.innerHTML = arrival.eta_min + " min";
+    } else if (arrival.type == 2) {
+      arrivalTimeSpan.innerHTML = "PRIHOD";
+      arrivalTimeSpan.classList.add("arrivalRed");
     }
-  else if(arrival.type == 2) {
-    arrivalTimeSpan.innerHTML = "PRIHOD";
-    arrivalTimeSpan.classList.add("arrivalRed");
+    busNumberDiv.addEventListener("click", () => {
+      showBusById(arrival.route_name, arrival.stations.arrival);
+    });
+    i++;
   }
-  busNumberDiv.addEventListener("click", () => {
-    
-    showBusById(arrival.route_name, arrival.stations.arrival);
-  });
-  i++
-}
-}
+};
 var busUpdateInterval;
 function showBusById(line, trip) {
   clearInterval(busUpdateInterval);
   setTimeout(() => {
     document.querySelector(".sheetContents").style.height = "30dvh";
-sheetHeight = 30;
+    sheetHeight = 30;
   }, 50);
 
-  loop(1, line, trip)
+  loop(1, line, trip);
   busUpdateInterval = setInterval(() => {
-     loop(0, line, trip)
-  }, 5000)
+    loop(0, line, trip);
+  }, 5000);
 }
-
 
 function addElement(tag, parent, className) {
   var element = document.createElement(tag);
@@ -553,5 +589,3 @@ function addElement(tag, parent, className) {
   }
   return element;
 }
-
-
