@@ -326,6 +326,39 @@ md-primary-tab[active=""] {
 .busTemplate .arrivalItem .arrivalData {
     gap: 0px;
 }
+.lineTimes {
+    position: absolute !important;
+    top: 40px !important;
+    padding-top: 30px;
+    background-color: var(--md-sys-color-surface) !important;
+    width: 90% !important;
+    height: 100% !important;
+    z-index: 100 !important;
+    animation: showIn .5s cubic-bezier(0, 0, 0.1, 1) !important;
+    transition: transform .5s !important;
+    transform: translateX(0) !important;
+}
+.lineTimes .busNo2 {
+    background: var(--md-sys-color-surface-container-high);
+}
+.lineTimes .busNo2 {
+    background: var(--md-sys-color-surface-container-high);
+}
+.lineTimes .arrivalItem {
+    background: none;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
+    border-radius: 0;
+}
+@keyframes showIn {
+    0%{
+       transform: translateX(100vw);
+      
+    }
+    100%{
+        transform: translateX(0);
+    
+    }
+}
 span.nextBusTitle {
     width: 100%;
     color: var(--md-sys-color-on-surface);

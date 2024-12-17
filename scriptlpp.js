@@ -88,8 +88,51 @@ async function makeMap() {
       zoom: 13,
       loadTilesWhileAnimating: true,
       padding: [10, 10, 100, 10],
+    
     }),
   });
+  const geolocation = new ol.Geolocation({
+    // enableHighAccuracy must be set to true to have the heading value.
+    trackingOptions: {
+      enableHighAccuracy: true,
+    },
+    projection: "EPSG:3857",
+  });
+  geolocation.setTracking(true);
+  const accuracyFeature = new ol.Feature();
+  accuracyFeature.setGeometry(geolocation.getAccuracyGeometry());
+
+geolocation.on('change:accuracyGeometry', function () {
+  accuracyFeature.setGeometry(geolocation.getAccuracyGeometry());
+});
+
+const positionFeature = new ol.Feature();
+positionFeature.setStyle(
+  new ol.style.Style({
+    image: new ol.style.Circle({
+      radius: 6,
+      fill: new ol.style.Fill({
+        color: '#3399CC',
+      }),
+      stroke: new ol.style.Stroke({
+        color: '#fff',
+        width: 2,
+      }),
+    }),
+  }),
+);
+
+geolocation.on('change:position', function () {
+  const coordinates = geolocation.getPosition();
+  positionFeature.setGeometry(coordinates ? new ol.geom.Point(coordinates) : null);
+});
+
+new ol.layer.Vector({
+  map: map,
+  source: new ol.source.Vector({
+    features: [accuracyFeature, positionFeature],
+  }),
+});
   const busSource = new ol.source.Vector(); // Contains bus markers
   const busStationSource = new ol.source.Vector(); // Contains station locations
   const busVectorSource = new ol.source.Vector(); // Contains vector graphics or routes
@@ -207,7 +250,7 @@ async function getLocation() {
   } catch {}
 }
 
-setInterval(getLocation, 60000);
+setInterval(getLocation, 10000);
 async function createBuses() {
   await getLocation();
   stationList = JSON.parse(stationDetails).data;
@@ -283,19 +326,15 @@ function createStationItems() {
             "</div>";
         }
         item.appendChild(buses);
-        item.addEventListener("click", () => {
-          item2.style.viewTransitionName = "stitm";
-
-          document.startViewTransition(async () => {
-            item2.style.viewTransitionName = "";
-
-            stationClick(station);
+        item.addEventListener("click", async () => {
+         
+            await stationClick(station);
             interval = setInterval(async () => {
               let i = document.querySelector(".sheetContents").scrollTop;
               await stationClick(isArrivalsOpen, true);
               document.querySelector(".sheetContents").scrollTop = i;
             }, 10000);
-          });
+          
         });
       }
     }
@@ -362,7 +401,7 @@ function showOnMap(lnga, lata) {
 var arrivalsScroll
 async function stationClick(station, noAnimation) {
   var data;
-
+  document.getElementById("listOfStations").style.display = "none";
   if (noAnimation) {
     let response = await fetch(
       " https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
@@ -372,8 +411,24 @@ async function stationClick(station, noAnimation) {
   } else {
     let title = addElement("h1", document.querySelector(".mainSheet"), "title");
     title.innerHTML = stationList[station].n;
-    var iks = addElement("md-icon-button", title, "iks");
+    let iks = addElement("md-icon-button", title, "iks");
     iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
+    iks.addEventListener("click", function () {
+      console.log("click");
+      
+      document.getElementById("listOfStations").style.display = "block";
+      arrivalsScroll.style.transform = "translateX(30px)";
+      arrivalsScroll.style.opacity = "0";
+      title.style.transform = "translateX(30px)";
+      title.style.opacity = "0";
+      isArrivalsOpen = false;
+
+      clearInterval(interval);
+      setTimeout(() => {
+        arrivalsScroll.remove();
+        title.remove();
+      }, 400);
+    });
 
     let mapca = addElement("md-icon-button", title, "mapca");
     mapca.innerHTML = "<md-icon>map</md-icon>";
@@ -398,6 +453,23 @@ async function stationClick(station, noAnimation) {
 
     let tabs = document.getElementById("tabs");
     let currentPanel = document.querySelector(".arrivalsScroll");
+    
+ 
+    var timeTScroll = addElement(
+      "div",
+      document.querySelector(".mainSheet"),
+      "timeTScroll"
+    );
+    timeTScroll.setAttribute("role", "tabpanel");
+    timeTScroll.setAttribute("aria-labelledby", "timeTab");
+    timeTScroll.setAttribute("id", "time-panel");
+    timeTScroll.classList.add("arrivalsScroll")
+    timeTScroll.style.display = "none";
+    let response = await fetch(
+      "https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
+        stationList[station].id
+    );
+    data = await response.json();
     tabs.addEventListener("change", () => {
       console.log(tabs.activeTab);
 
@@ -411,42 +483,14 @@ async function stationClick(station, noAnimation) {
       if (currentPanel) {
         currentPanel.style.display = "flex";
       }
+      if(currentPanel == timeTScroll){
+        showLines(timeTScroll, stationList[station]);
+      }
     });
-    iks.addEventListener("click", function () {
-      console.log("click");
-      
-      document.getElementById("listOfStations").style.display = "block";
-      arrivalsScroll.style.transform = "translateX(30px)";
-      arrivalsScroll.style.opacity = "0";
-      title.style.transform = "translateX(30px)";
-      title.style.opacity = "0";
-      isArrivalsOpen = false;
-
-      clearInterval(interval);
-      setTimeout(() => {
-        arrivalsScroll.remove();
-        title.remove();
-      }, 400);
-    });
-
-    var timeTScroll = addElement(
-      "div",
-      document.querySelector(".mainSheet"),
-      "timeTScroll"
-    );
-    timeTScroll.setAttribute("role", "tabpanel");
-    timeTScroll.setAttribute("aria-labelledby", "timeTab");
-    timeTScroll.setAttribute("id", "time-panel");
-    timeTScroll.setAttribute("aria-hidden", "true");
-    let response = await fetch(
-      " https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
-        stationList[station].id
-    );
-    data = await response.json();
   }
   isArrivalsOpen = station;
-  document.getElementById("listOfStations").style.display = "none";
   showArrivals(arrivalsScroll, data);
+  
 }
 function showArrivals(arrivalsScroll, data) {
   arrivalsScroll.innerHTML = "";
@@ -472,8 +516,8 @@ function showArrivals(arrivalsScroll, data) {
           ")";
         busNumberDiv.id = "bus_" + arrival.route_name;
         busNumberDiv.textContent = arrival.route_name;
-        addElement("md-ripple", busNumberDiv);
         const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+        addElement("md-ripple", arrivalItem);
 
         const tripNameSpan = addElement("span", arrivalDataDiv);
         tripNameSpan.textContent = arrival.trip_name.split(" - ").at(-1);
@@ -496,7 +540,7 @@ function showArrivals(arrivalsScroll, data) {
           arrivalTimeSpan.innerHTML = "PRIHOD";
           arrivalTimeSpan.classList.add("arrivalRed");
         }
-        busNumberDiv.addEventListener("click", () => {
+        arrivalItem.addEventListener("click", () => {
           showBusById(arrival.route_name, arrival.stations.arrival);
         });
       }
@@ -504,6 +548,76 @@ function showArrivals(arrivalsScroll, data) {
   } else {
     arrivalsScroll.innerHTML += "Trenutno ni na sporedu nobenega avtobusa";
   }
+}
+async function showLines(parent, station) {
+  let response = await fetch(
+    "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/routes-on-station?station-code=" +
+      station.id
+  );
+  let data = await response.json();
+  data.data.forEach(arrival => {
+    if(!arrival.is_garage){
+
+   
+    let arrivalItem = addElement("div", parent, "arrivalItem");
+    arrivalItem.style.order = arrival.route_number[0] == "N" ? arrival.route_number.replace(/\D/g, "")+100:arrival.route_number.replace(/\D/g, "");
+    const busNumberDiv = addElement("div", arrivalItem, "busNo2");
+
+    busNumberDiv.style.backgroundColor =
+      "RGB(" +
+      lineColors[arrival.route_number.replace(/\D/g, "")].toString() +
+      ")";
+    busNumberDiv.id = "bus_" + arrival.route_number;
+    busNumberDiv.textContent = arrival.route_number;
+    const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+    addElement("md-ripple", arrivalItem);
+
+    const tripNameSpan = addElement("span", arrivalDataDiv);
+    tripNameSpan.textContent = arrival.route_group_name;
+    arrivalItem.addEventListener("click", () => {
+      console.log(arrival);
+      
+      showLineTime(arrival.route_number, station.id);
+    });
+  }
+  });
+}
+async function showLineTime(routeN, station_id) {
+  let container = addElement("div", document.querySelector(".mainSheet"), "lineTimes");
+  container.classList.add("arrivalsScroll");
+  let iks = addElement("md-icon-button", container, "iks");
+    iks.innerHTML = "<md-icon>close</md-icon>";
+    iks.addEventListener("click", function () {
+   container.style.transform = "translateX(100vw)";
+   setTimeout(() => {
+    container.remove();
+   }, 500);
+    });
+    let response = await fetch(`https://cors.proxy.prometko.si/https://data.lpp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN.replace(/\D/g, "")}&previous-hours=${hoursDay(0)}&next-hours=${hoursDay(1)}`);
+    let data1 = await response.json();    
+    data1 = data1.data.route_groups[0].routes
+    data1.forEach(route => {
+      
+      if(route.group_name+route.route_number_suffix==routeN){
+        route.timetable.forEach(time => {
+        let arrivalItem = addElement("div", container, "arrivalItem");
+        const busNumberDiv = addElement("div", arrivalItem, "busNo2");
+        busNumberDiv.id = "bus_" + time.route_number;
+        busNumberDiv.textContent = time.hour;
+        const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+        const etaDiv = addElement("div", arrivalDataDiv, "eta");
+        const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
+        arrivalTimeSpan.innerHTML = time.minutes.toString();
+        })
+      };
+      
+    })
+}
+function hoursDay(what) {
+  const now = new Date();
+  const hoursFromMidnight = now.getHours() + now.getMinutes() / 60;
+  const hoursToMidnight = 24 - hoursFromMidnight;
+  return what ? Math.ceil(hoursToMidnight) : Math.ceil(hoursFromMidnight);
 }
 const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
 
