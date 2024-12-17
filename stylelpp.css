@@ -11,16 +11,14 @@ body{
 }
 
 h1.title {
-    position: absolute;
-    top: 40px;
+    
     margin: 0;
     display: block;
     height: 64px;
     justify-content: center;
     align-items: center;
-    display: flex
-;
-    transition: all .4s cubic-bezier(0.05, 0.7, 0.1, 1);
+    display: flex;
+    transition: all .4s;
     left: 0;
     background: var(--md-sys-color-surface);
     z-index: 60;
@@ -98,6 +96,8 @@ html, body{
     position: relative;
     width: 100%;
     z-index: 2;
+    transition: all .5s;
+    transform: translateX(0);
 }
 .gm-style iframe + div { border:none!important; }
 #map div div a[target='_blank'] div{
@@ -148,15 +148,46 @@ md-list#listOfStations {
     margin-top: 5px;
     overflow-y: scroll;
     height: 100%;
-    width: 100%;
+transition: all .5s;
+}
+.hideStations {
+    position: absolute;
+    height: max-content !important;
+    top: 97px;
+    animation: hideOut .5s  forwards;
+    transform: translateX(0);
+    left: 0;
+    margin: 0 5vw;
+}
+.hideStations .stationItem{
+    animation: none !important;
+}
+@keyframes hideOut {
+    0%{
+       transform: translateX(0);
+      
+    }
+    100%{
+        transform: translateX(-100vw);
+    
+    }
+}
+.arrivalsHolder {
+    transform: translateX(100vh);
+    transition: all .5s;
+    position: absolute;
+    top: 40px;
+    z-index: 100;
+    margin: 0 20px;
+    left: 0;
 }
 md-list-item.stationItem {
     background: var(--md-sys-color-surface-container);
-    margin: 10px;
+    margin: 10px 0;
    
     border-radius: 20px;
     cursor: pointer;
-    animation: show .1s ease-in-out forwards;
+   
 }
 ::view-transition-old(stitm){
   object-fit: fill;
@@ -250,15 +281,15 @@ md-list-item.stationItem {
     width: 25px;
    
 }
-md-tabs#tabs {
+md-tabs.tabs {
     width: 100%;
     --md-primary-tab-active-indicator-color: transparent;
     border: none;
     margin-top: 10px;
     --md-primary-tab-container-shape: 15px;
-    transition: all .3s;
+    transition: all .5s ;
 }
-#tabs::part(divider) {
+.tabs::part(divider) {
    margin-top: 10px;
    width: 110%;
 }
@@ -334,9 +365,9 @@ md-primary-tab[active=""] {
     width: 90% !important;
     height: 100% !important;
     z-index: 100 !important;
-    animation: showIn .5s cubic-bezier(0, 0, 0.1, 1) !important;
+    animation: showIn .5s;
     transition: transform .5s !important;
-    transform: translateX(0) !important;
+    transform: translateX(0);
 }
 .lineTimes .busNo2 {
     background: var(--md-sys-color-surface-container-high);
@@ -348,6 +379,26 @@ md-primary-tab[active=""] {
     background: none;
     border-bottom: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
     border-radius: 0;
+}
+.lineTimes .arrivalTime {
+    padding: 0;
+    background: none;
+    margin: 0;
+    flex-wrap: wrap;
+    width: 100%;
+}
+sub {
+    font-size: x-small;
+    margin-left: 2px;
+    vertical-align: baseline;
+}
+.arrivalItem.currentTime > .busNo2 {
+    background: #860000;
+}
+.lineTimes md-icon-button.iks {
+    top: 0;
+    left: 0;
+    
 }
 @keyframes showIn {
     0%{
@@ -379,19 +430,10 @@ span.nextBusTitle {
     overflow-x: hidden;
     flex-direction: column;
     align-items: center;
+    transition: all .5s;
+    transform: translateX(0);
 }
-@keyframes kkk {
-    0%{
-        min-height: 84vh;
-        border-radius: 20px;
-        background: var(--md-sys-color-surface-container);
-    }
-    100%{
-        border-radius: 0px;
-        min-height: calc(100vh - 100px);
-        background: var(--md-sys-color-surface);
-    }
-}
+
 .hideLoad{
     transition: all .3s;
     scale: 0;

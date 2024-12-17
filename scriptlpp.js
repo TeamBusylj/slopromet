@@ -400,8 +400,16 @@ function showOnMap(lnga, lata) {
 }
 var arrivalsScroll
 async function stationClick(station, noAnimation) {
+  var notYet = false;
+  var container 
+  setTimeout(() => {
+    container.style.transform = "translateX(0)";
+    document.querySelector(".searchContain").style.transform = "translateX(-100vw)";
+    document.getElementById("listOfStations").style.transform = "translateX(-100vw)";
+  }, 1);
   var data;
-  document.getElementById("listOfStations").style.display = "none";
+ 
+
   if (noAnimation) {
     let response = await fetch(
       " https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
@@ -409,55 +417,29 @@ async function stationClick(station, noAnimation) {
     );
     data = await response.json();
   } else {
-    let title = addElement("h1", document.querySelector(".mainSheet"), "title");
+    container = addElement("div", document.querySelector(".mainSheet"), "arrivalsHolder");
+    const title = addElement("h1",container, "title");
     title.innerHTML = stationList[station].n;
-    let iks = addElement("md-icon-button", title, "iks");
-    iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
-    iks.addEventListener("click", function () {
-      console.log("click");
-      
-      document.getElementById("listOfStations").style.display = "block";
-      arrivalsScroll.style.transform = "translateX(30px)";
-      arrivalsScroll.style.opacity = "0";
-      title.style.transform = "translateX(30px)";
-      title.style.opacity = "0";
-      isArrivalsOpen = false;
-
-      clearInterval(interval);
-      setTimeout(() => {
-        arrivalsScroll.remove();
-        title.remove();
-      }, 400);
-    });
-
-    let mapca = addElement("md-icon-button", title, "mapca");
-    mapca.innerHTML = "<md-icon>map</md-icon>";
-    mapca.addEventListener("click", function () {
-      showOnMap(stationList[station].j, stationList[station].l);
-    });
-
-    document.querySelector(".mainSheet").innerHTML += `<md-tabs id=tabs>
-    <md-primary-tab id="arrivalsTab" aria-controls="arrivals-panel">Prihodi</md-primary-tab>
-    <md-primary-tab id="timeTab" aria-controls="time-panel">Urnik</md-primary-tab>
-  </md-tabs>
-  `;
-    arrivalsScroll = addElement(
-      "div",
-      document.querySelector(".mainSheet"),
-      "arrivalsScroll"
-    );
+    
+   var tabs = addElement("md-tabs", container, "tabs");
+  tabs.innerHTML = `<md-primary-tab id="arrivalsTab" aria-controls="arrivals-panel">Prihodi</md-primary-tab>
+   <md-primary-tab id="timeTab" aria-controls="time-panel">Urnik</md-primary-tab>`;
+   arrivalsScroll = addElement(
+    "div",
+    container,
+    "arrivalsScroll"
+  );
+    
 
     arrivalsScroll.setAttribute("role", "tabpanel");
     arrivalsScroll.setAttribute("aria-labelledby", "arrivalsTab");
     arrivalsScroll.setAttribute("id", "arrivals-panel");
-
-    let tabs = document.getElementById("tabs");
     let currentPanel = document.querySelector(".arrivalsScroll");
     
  
     var timeTScroll = addElement(
       "div",
-      document.querySelector(".mainSheet"),
+      container,
       "timeTScroll"
     );
     timeTScroll.setAttribute("role", "tabpanel");
@@ -483,14 +465,39 @@ async function stationClick(station, noAnimation) {
       if (currentPanel) {
         currentPanel.style.display = "flex";
       }
-      if(currentPanel == timeTScroll){
+      if(currentPanel == timeTScroll && !notYet){
+        notYet = true
         showLines(timeTScroll, stationList[station]);
       }
+      
     });
+    let iks = addElement("md-icon-button", title, "iks");
+    iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
+    iks.addEventListener("click", function () {
+      container.style.transform = "translateX(100vw)";
+      document.getElementById("listOfStations").style.transform = "translateX(0vw)";
+      isArrivalsOpen = false;
+      document.querySelector(".searchContain").style.transform = "translateX(0vw)";
+
+      clearInterval(interval);
+      setTimeout(() => {
+       container.remove()
+       document.getElementById("listOfStations").classList.remove("hideStations")
+
+      }, 500);
+      
+    });
+
+    let mapca = addElement("md-icon-button", title, "mapca");
+    mapca.innerHTML = "<md-icon>map</md-icon>";
+    mapca.addEventListener("click", function () {
+      showOnMap(stationList[station].j, stationList[station].l);
+    });
+    
   }
   isArrivalsOpen = station;
   showArrivals(arrivalsScroll, data);
-  
+ 
 }
 function showArrivals(arrivalsScroll, data) {
   arrivalsScroll.innerHTML = "";
@@ -583,19 +590,24 @@ async function showLines(parent, station) {
   });
 }
 async function showLineTime(routeN, station_id) {
+  let response = await fetch(`https://cors.proxy.prometko.si/https://data.lpp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN.replace(/\D/g, "")}&previous-hours=${hoursDay(0)}&next-hours=${hoursDay(1)}`);
+    let data1 = await response.json();    
+    data1 = data1.data.route_groups[0].routes
+  document.querySelector(".sheetContents").scrollTop = 0;
   let container = addElement("div", document.querySelector(".mainSheet"), "lineTimes");
   container.classList.add("arrivalsScroll");
+  document.querySelector(".arrivalsHolder").style.transform = "translateX(-100vw)";
   let iks = addElement("md-icon-button", container, "iks");
-    iks.innerHTML = "<md-icon>close</md-icon>";
+    iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
     iks.addEventListener("click", function () {
    container.style.transform = "translateX(100vw)";
+   document.querySelector(".arrivalsHolder").style.transform = "translateX(0vw)";
+
    setTimeout(() => {
     container.remove();
    }, 500);
     });
-    let response = await fetch(`https://cors.proxy.prometko.si/https://data.lpp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN.replace(/\D/g, "")}&previous-hours=${hoursDay(0)}&next-hours=${hoursDay(1)}`);
-    let data1 = await response.json();    
-    data1 = data1.data.route_groups[0].routes
+    
     data1.forEach(route => {
       
       if(route.group_name+route.route_number_suffix==routeN){
@@ -603,12 +615,13 @@ async function showLineTime(routeN, station_id) {
         let arrivalItem = addElement("div", container, "arrivalItem");
         const busNumberDiv = addElement("div", arrivalItem, "busNo2");
         busNumberDiv.id = "bus_" + time.route_number;
-        busNumberDiv.textContent = time.hour;
+        busNumberDiv.innerHTML = time.hour+"<sub>h</sub>";
         const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
         const etaDiv = addElement("div", arrivalDataDiv, "eta");
         const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
-        arrivalTimeSpan.innerHTML = time.minutes.toString();
-        })
+        arrivalTimeSpan.innerHTML = "<span class=timet>"+time.minutes.toString().replace(/,/g, "<sub>min</sub>&nbsp;&nbsp;</span><span class=timet>").replace(/\b\d\b/g, match => "0" + match)+"<sub>min</sub>";
+      if(time.is_current)arrivalItem.classList.add("currentTime"); 
+      })
       };
       
     })
