@@ -244,7 +244,7 @@ busid = bus
                color:lineColors[bus.line_number.replace(/\D/g, "")],
                 anchorXUnits: 'fraction',
                 anchorYUnits: 'pixels',
-                src: bus.model.includes("MAN Lion's City G")?'./images/bus_shape_lion.svg':'./images/bus_shape.svg',
+                src: bus.model.includes("MAN Lion's City G CNG-H")?'./images/bus_shape_lion.svg':'./images/bus_shape.svg',
                 scale: 0.5,
                 rotation: (bus.direction * Math.PI) / 180, // Convert degrees to radians
             }),
