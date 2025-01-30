@@ -223,8 +223,9 @@ let busid
     for (const i in busObject) {
         const bus = busObject[i];
        
-        
+
         if (bus.trip_id && bus.line_number == line && bus.line_destination == trip) {
+        
          
                 if(firsttim){
 busid = bus
@@ -304,6 +305,7 @@ coordinates = coordinates.data;
         let coords = data.map(d => `${d.longitude},${d.latitude}`).join(";");
         coordinates = await fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`);
         coordinates = await coordinates.json().data;
+        
         coordinates = coordinates.routes[0].geometry.coordinates;
     }
 
@@ -362,7 +364,6 @@ coordinates = coordinates.data;
           });
         tempStationSource.addFeature(stationFeature);
     });
-    console.log(coordinates);
 if(coordinates[0][0][0]){
 const getLongestInnerArray = (arr) => arr.reduce((longest, current) => current.length > longest.length ? current : longest, []);
 coordinates =getLongestInnerArray(coordinates)
