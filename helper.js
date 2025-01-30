@@ -244,7 +244,7 @@ busid = bus
                color:lineColors[bus.line_number.replace(/\D/g, "")],
                 anchorXUnits: 'fraction',
                 anchorYUnits: 'pixels',
-                src: bus.model.includes("MAN Lion's City G")?'images/bus_shape_lion.svg':'images/bus_shape.svg',
+                src: bus.model.includes("MAN Lion's City G")?'./images/bus_shape_lion.svg':'./images/bus_shape.svg',
                 scale: 0.5,
                 rotation: (bus.direction * Math.PI) / 180, // Convert degrees to radians
             }),
@@ -329,7 +329,7 @@ coordinates = coordinates.data;
         // Set styles for stations
         stationFeature.setStyle(new ol.style.Style({
             image: new ol.style.Icon({
-                src: index === 0 || index === data.length - 1 ? "/images/bus.svg" : "/images/bus.svg",
+                src: index === 0 || index === data.length - 1 ? "./images/bus.svg" : "./images/bus.svg",
                
                 anchor: [0.5, 24],
                 color: lineColors[lno.replace(/\D/g, "")],
