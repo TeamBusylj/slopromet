@@ -180,6 +180,7 @@ transition: all .5s;
     z-index: 100;
     margin: 0 20px;
     left: 0;
+    width: 90%;
 }
 md-list-item.stationItem {
     background: var(--md-sys-color-surface-container);

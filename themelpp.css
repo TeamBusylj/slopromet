@@ -73,7 +73,7 @@ body{
     cursor: ns-resize;
     justify-content: center;
     height: 40px;
-    z-index: 50;
+    z-index: 200;
 }
 
   .sheetContents:not(.not-selectable) {

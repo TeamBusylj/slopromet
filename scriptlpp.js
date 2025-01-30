@@ -403,9 +403,11 @@ async function stationClick(station, noAnimation) {
   var notYet = false;
   var container 
   setTimeout(() => {
+    if(!noAnimation){
     container.style.transform = "translateX(0)";
     document.querySelector(".searchContain").style.transform = "translateX(-100vw)";
     document.getElementById("listOfStations").style.transform = "translateX(-100vw)";
+    }
   }, 1);
   var data;
  
