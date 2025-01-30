@@ -160,7 +160,7 @@ window.addEventListener("DOMContentLoaded", async function () {
   createBuses();
   let sht = makeBottomheet(null, 98);
   sht.innerHTML = `
-<div class="searchContain"> <md-filled-text-field value=bava class="search" placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
+<div class="searchContain"> <md-filled-text-field class="search" placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
  <md-circular-progress indeterminate id="loader"></md-circular-progress>
     <md-list id="listOfStations"></md-list>`;
   this.document

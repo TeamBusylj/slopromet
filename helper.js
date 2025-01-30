@@ -175,8 +175,11 @@ async function loop(firsttim, line, trip) {
     // Fetch bus data
     let response = await fetch("https://mestnipromet.cyou/api/v1/resources/buses/info");
     let tempBusObject = await response.json();
-
+    tempBusObject = tempBusObject.data
+    let busImageData = await fetch("https://mestnipromet.cyou/tracker/js/json/images.json");
+    busImageData = await busImageData.json()
     for (const i in tempBusObject) {
+        
         tempBusObject[i].timeValidity = await validateTimestamp(tempBusObject[i].timestamp);
 
         if (tempBusObject[i].line_number !== "" && tempBusObject[i].timeValidity === true) {
@@ -186,9 +189,14 @@ async function loop(firsttim, line, trip) {
         } else {
             tempBusObject[i].category = 3;
         }
+        for (const j in busImageData) {
+            if (tempBusObject[i].bus_name.includes(busImageData[j].no)) {
+                tempBusObject[i] = { ...tempBusObject[i], ...busImageData[j] };
+            }
+        }
     }
 
-    busObject = tempBusObject.data;
+    busObject = tempBusObject;
 
     // Create or update markers
     displayBuses(firsttim, line, trip);
@@ -228,14 +236,15 @@ busid = bus
             geometry: new ol.geom.Point(coordinates),
         });
 
+
         // Create a style for the bus with rotation
         const busStyle = new ol.style.Style({
             image: new ol.style.Icon({
                 anchor: [0.5, 24],
-               
+               color:lineColors[bus.line_number.replace(/\D/g, "")],
                 anchorXUnits: 'fraction',
                 anchorYUnits: 'pixels',
-                src: 'images/bus_shape.svg',
+                src: bus.model.includes("MAN Lion's City G")?'images/bus_shape_lion.svg':'images/bus_shape.svg',
                 scale: 0.5,
                 rotation: (bus.direction * Math.PI) / 180, // Convert degrees to radians
             }),
@@ -275,6 +284,8 @@ busid = bus
     }
    }}
     if(firsttim){
+        console.log(busid);
+        
     let response = await fetch("https://lpp.ojpp.derp.si/api/route/arrivals-on-route?trip-id=" + busid.trip_id);
         response = await response.json();
         generateRouteVector(response.data, busid.trip_id, busid.line_number);
