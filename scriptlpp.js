@@ -73,14 +73,15 @@ async function makeMap() {
     source: vectorSource,
   });
 
-  rasterLayer = new ol.layer.Tile({
-    source: new ol.source.OSM({
-      url: "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-      crossOrigin: null,
-    }),
-  });
-
+ 
+rasterLayer = new ol.layer.Tile({
+  source: new ol.source.StadiaMaps({
+    layer: 'alidade_smooth_dark',
+    retina: true,
+  }),
+}),
   map = new ol.Map({
+    interactions: ol.interaction.defaults.defaults().extend([new ol.interaction.DblClickDragZoom()]),
     layers: [rasterLayer, vectorLayer],
     target: "map",
     view: new ol.View({
@@ -154,7 +155,9 @@ new ol.layer.Vector({
   map.addLayer(busLayer);
   map.addLayer(busStationLayer);
   map.addLayer(busVectorLayer);
+  
 }
+
 const delayedSearch = debounce(searchRefresh, 300);
 window.addEventListener("DOMContentLoaded", async function () {
   createBuses();
@@ -166,6 +169,8 @@ window.addEventListener("DOMContentLoaded", async function () {
   this.document
     .querySelector(".search")
     .addEventListener("input", delayedSearch);
+     busImageData = await fetch("https://mestnipromet.cyou/tracker/js/json/images.json");
+    busImageData = await busImageData.json()
 });
 
 window.addEventListener("load", async function () {
@@ -418,10 +423,11 @@ async function stationClick(station, noAnimation) {
         stationList[station].id
     );
     data = await response.json();
+    document.querySelector("h1.title span").textContent=stationList[station].n;
   } else {
     container = addElement("div", document.querySelector(".mainSheet"), "arrivalsHolder");
     const title = addElement("h1",container, "title");
-    title.innerHTML = stationList[station].n;
+    title.innerHTML ="<span>"+stationList[station].n+"</span>";
     
    var tabs = addElement("md-tabs", container, "tabs");
   tabs.innerHTML = `<md-primary-tab id="arrivalsTab" aria-controls="arrivals-panel">Prihodi</md-primary-tab>

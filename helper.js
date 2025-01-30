@@ -171,17 +171,16 @@ if(deltaY>0 && sheetHeight==98) return;
 }
 var busObject;
 var busMarker = [];
+var busImageData 
 async function loop(firsttim, line, trip) {
     // Fetch bus data
     let response = await fetch("https://mestnipromet.cyou/api/v1/resources/buses/info");
     let tempBusObject = await response.json();
     tempBusObject = tempBusObject.data
-    let busImageData = await fetch("https://mestnipromet.cyou/tracker/js/json/images.json");
-    busImageData = await busImageData.json()
     for (const i in tempBusObject) {
         
         tempBusObject[i].timeValidity = await validateTimestamp(tempBusObject[i].timestamp);
-
+       
         if (tempBusObject[i].line_number !== "" && tempBusObject[i].timeValidity === true) {
             tempBusObject[i].category = 1;
         } else if (tempBusObject[i].engine === true && tempBusObject[i].timeValidity === true) {
