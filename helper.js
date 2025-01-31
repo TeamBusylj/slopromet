@@ -100,9 +100,8 @@ if(deltaY>0 && sheetHeight==98) return;
             ){
                if(sheetContents.scrollTop>1) deltaY = 0
             }
-          
-            
-          if(sheetHeight==98 && deltaY<0 && !event.target.closest('.handleHolder')) return
+        
+          if( !event.target.closest('.handleHolder')) return
          
             const mainContentHeight = Math.min(
                 mainContent.clientHeight,
@@ -241,7 +240,7 @@ busid = bus
         const busStyle = new ol.style.Style({
             image: new ol.style.Icon({
                 anchor: [0.5, 24],
-              //color:lineColors[bus.line_number.replace(/\D/g, "")],
+              //color:lineColorsObj[bus.line_number.replace(/\D/g, "")],
                 anchorXUnits: 'fraction',
                 anchorYUnits: 'pixels',
                 src: bus.model.includes("MAN Lion's City G CNG-H")?'./images/busimg_lion.svg':'./images/busimg.svg',
@@ -333,7 +332,7 @@ coordinates = coordinates.data;
                 src: index === 0 || index === data.length - 1 ? "./images/bus.svg" : "./images/bus.svg",
                
                 anchor: [0.5, 24],
-                color: lineColors[lno.replace(/\D/g, "")],
+                color: lineColorsObj[lno.replace(/\D/g, "")],
 
                 anchorXUnits: 'fraction',
                 anchorYUnits: 'pixels',
@@ -385,7 +384,7 @@ coordinates =getLongestInnerArray(coordinates)
     // Style for the route
     routeFeature.setStyle(new ol.style.Style({
         stroke: new ol.style.Stroke({
-            color: lineColors[lno.replace(/\D/g, "")],
+            color: lineColorsObj[lno.replace(/\D/g, "")],
             width: 6,
         }),
     }));
@@ -417,7 +416,19 @@ coordinates =getLongestInnerArray(coordinates)
           });
     
 }
-const lineColors = {
+const lineColors = (i) => {
+    const color = lineColorsObj[i]; // Example: [201, 51, 54]
+    
+    if (!color) return ''; // Return empty string if the index is not found
+
+    const darkenColor = (rgbArray, amount) => 
+        rgbArray.map(channel => Math.max(0, channel - amount));
+
+    const darkerColor = darkenColor(color, 70);
+    
+    return `linear-gradient(165deg,rgb(${color.join(',')}),rgb(${darkerColor.join(',')}))`;
+};
+const lineColorsObj = {
     1: [201, 51, 54],
     2: [140, 136, 65],
     3: [236, 89, 58],

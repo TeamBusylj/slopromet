@@ -3,7 +3,7 @@ body{
   display: flex;
     flex-direction: column;
     height: 100vh;
-    font-family: sans-serif;
+    font-family: sans-serif !important;
     user-select: none;
 }
 .gmnoprint{
@@ -62,18 +62,13 @@ md-circular-progress#loader {
 }
 
 .search {
-    /* margin-top: 20px; */
+   
     --_active-indicator-height: 0;
     --_hover-active-indicator-height: 0;
     --_focus-active-indicator-height: 0;
     width: 100%;
     --md-filled-text-field-container-shape: 150px;
-    /* margin-left: auto; */
-    /* margin-right: auto; */
-  
-    
-    
-    /* position: relative; */
+    --_container-color:linear-gradient(188deg, var(--md-sys-color-surface-container-highest), #171915);
     display: block;
 
 }
@@ -85,12 +80,15 @@ html, body{
     overflow: hidden;
   
 }
+.station {
+    padding: 3px;
+}
 .center {
     margin-left: 10px;
     padding: 5px 18px;
     white-space: nowrap;
     border-radius: 100px;
-    background: var(--md-sys-color-surface-container-highest);
+    background: linear-gradient(163deg, var(--md-sys-color-surface-container-highest), #00000021);
 }
 .searchContain {
     position: relative;
@@ -225,7 +223,7 @@ md-list-item.stationItem {
 .arrivalTime {
     white-space: nowrap;
     width: min-content;
-    background: var(--md-sys-color-surface-container-high);
+    background: linear-gradient(163deg, var(--md-sys-color-surface-container-highest), #00000021);
     padding: 5px 13px;
     margin-top: 10px;
     border-radius: 100px;
@@ -238,12 +236,12 @@ md-list-item.stationItem {
     --md-icon-size: 19px;
 }
 .arrivalRed {
-    background: var(--md-sys-color-error-container);
+    background: linear-gradient(163deg, var(--md-sys-color-error-container), #480105);
     animation: blinking 2s ease-in infinite;
     color: var(--md-sys-color-on-error-container) ;
 }
 .arrivalGreen {
-    background: var(--md-sys-color-surface-container-highest);
+    background: linear-gradient(163deg, var(--md-sys-color-surface-container-highest), #00000021);
 }
 .arrivalTime md-icon {
    animation: rotatingIcon 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -295,7 +293,7 @@ md-tabs.tabs {
    width: 110%;
 }
 md-primary-tab[active=""] {
-    --_container-color: var(--md-sys-color-secondary-container);
+    --_container-color: linear-gradient(170deg, #2b461d, #101a0b);
     color: var(--md-sys-color-on-secondary-container);
 }
 .busNo {

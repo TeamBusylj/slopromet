@@ -321,10 +321,10 @@ function createStationItems() {
         let buses = addElement("div", item, "buses");
         for (const bus of stationList[station].g) {
           buses.innerHTML +=
-            "<div class=busNo style=background-color:" +
-            "RGB(" +
-            lineColors[bus.replace(/\D/g, "")].toString() +
-            ")" +
+            "<div class=busNo style=background:" +
+           
+            lineColors(bus.replace(/\D/g, ""))+
+            
             " id=bus2_" +
             bus +
             ">" +
@@ -526,10 +526,10 @@ function showArrivals(arrivalsScroll, data) {
         arrivalItem.style.order = arrival.route_name.replace(/\D/g, "");
         const busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
-        busNumberDiv.style.backgroundColor =
-          "RGB(" +
-          lineColors[arrival.route_name.replace(/\D/g, "")].toString() +
-          ")";
+        busNumberDiv.style.background =
+         
+          lineColors(arrival.route_name.replace(/\D/g, ""))
+         
         busNumberDiv.id = "bus_" + arrival.route_name;
         busNumberDiv.textContent = arrival.route_name;
         const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
@@ -579,10 +579,10 @@ async function showLines(parent, station) {
     arrivalItem.style.order = arrival.route_number[0] == "N" ? arrival.route_number.replace(/\D/g, "")+100:arrival.route_number.replace(/\D/g, "");
     const busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
-    busNumberDiv.style.backgroundColor =
-      "RGB(" +
-      lineColors[arrival.route_number.replace(/\D/g, "")].toString() +
-      ")";
+    busNumberDiv.style.background =
+      
+      lineColors(arrival.route_number.replace(/\D/g, ""))
+     
     busNumberDiv.id = "bus_" + arrival.route_number;
     busNumberDiv.textContent = arrival.route_number;
     const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
@@ -664,10 +664,8 @@ const nextBusTemplate = (arrivals, parent) => {
     arrivalItem.style.order = arrival.type === 2 ? 0 : arrival.eta_min;
     const busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
-    busNumberDiv.style.backgroundColor =
-      "RGB(" +
-      lineColors[arrival.route_name.replace(/\D/g, "")].toString() +
-      ")";
+    busNumberDiv.style.background=lineColors(arrival.route_name.replace(/\D/g, ""))
+    
     busNumberDiv.id = "next_bus_" + arrival.route_name;
     busNumberDiv.textContent = arrival.route_name;
     addElement("md-ripple", busNumberDiv);
