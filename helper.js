@@ -411,7 +411,7 @@ coordinates =getLongestInnerArray(coordinates)
         markers = new ol.layer.Vector({ source: tempMarkersSource.getSource() });
         map.addLayer(markers);
         map.getView().fit(busVectorLayer.getSource().getExtent(), {
-            size: map.getSize(),
+            size: map.getSize() -4,
             maxZoom: 20,
             padding: [10,10,100,10]
           });
