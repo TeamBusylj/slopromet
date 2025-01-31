@@ -172,6 +172,7 @@ var busObject;
 var busMarker = [];
 var busImageData 
 async function loop(firsttim, line, trip) {
+    if(!firsttim && sheetHeight==98) return
     // Fetch bus data
     let response = await fetch("https://mestnipromet.cyou/api/v1/resources/buses/info");
     let tempBusObject = await response.json();
@@ -358,6 +359,7 @@ coordinates = coordinates.data;
                 setTimeout(() => {
                     document.querySelector(".sheetContents").style.height = "98dvh";
                 sheetHeight = 98;
+                document.querySelector(".sheetContents").scrollTop = 0;
                   }, 50);
             }
           });
