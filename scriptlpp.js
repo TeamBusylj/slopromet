@@ -162,8 +162,9 @@ const delayedSearch = debounce(searchRefresh, 300);
 window.addEventListener("DOMContentLoaded", async function () {
   createBuses();
   let sht = makeBottomheet(null, 98);
+  let bava = this.location.href.includes("teambusylj") ? "":"bava";
   sht.innerHTML = `
-<div class="searchContain"> <md-filled-text-field class="search" placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
+<div class="searchContain"> <md-filled-text-field class="search" value=${bava} placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
  <md-circular-progress indeterminate id="loader"></md-circular-progress>
     <md-list id="listOfStations"></md-list>`;
   this.document

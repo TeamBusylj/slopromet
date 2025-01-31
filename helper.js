@@ -245,7 +245,7 @@ busid = bus
                 anchorXUnits: 'fraction',
                 anchorYUnits: 'pixels',
                 src: bus.model.includes("MAN Lion's City G CNG-H")?'./images/bus_shape_lion.svg':'./images/busimg.svg',
-                scale: 0.5,
+                scale: 0.2,
                 rotation: (bus.direction * Math.PI) / 180, // Convert degrees to radians
             }),
         });
