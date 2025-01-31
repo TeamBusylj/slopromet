@@ -241,10 +241,10 @@ busid = bus
         const busStyle = new ol.style.Style({
             image: new ol.style.Icon({
                 anchor: [0.5, 24],
-               color:lineColors[bus.line_number.replace(/\D/g, "")],
+              //color:lineColors[bus.line_number.replace(/\D/g, "")],
                 anchorXUnits: 'fraction',
                 anchorYUnits: 'pixels',
-                src: bus.model.includes("MAN Lion's City G CNG-H")?'./images/bus_shape_lion.svg':'./images/busimg.svg',
+                src: bus.model.includes("MAN Lion's City G CNG-H")?'./images/busimg_lion.svg':'./images/busimg.svg',
                 scale: 0.2,
                 rotation: (bus.direction * Math.PI) / 180, // Convert degrees to radians
             }),

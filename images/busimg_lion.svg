@@ -51,8 +51,8 @@
       <stop offset=".9" stop-color="#ff8415" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="linear-gradient1" x1="283.8" y1="879.1" x2="283.8" y2="170.1" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#fff"/>
-      <stop offset="1" stop-color="#f0f0f0"/>
+      <stop offset="0" stop-color="#666"/>
+      <stop offset="1" stop-color="#fff"/>
     </linearGradient>
   </defs>
   <rect class="st5" x="69.6" y="45.3" width="426.5" height="859.8" rx="88.3" ry="88.3"/>
