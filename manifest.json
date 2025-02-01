@@ -6,7 +6,7 @@
     "name": "SloPromet",
     "short_name": "SloPromet",
     "id": "slopromet",
-    "start_url": "/",
+    "start_url": "/slopromet",
     "dir": "ltr",
     "lang": "sl",
     "icons": [
