@@ -2,5 +2,12 @@
     "theme_color": "#10150d",
     "background_color": "#10150d",
     "display": "standalone",
-    "orientation": "portrait"
+    "orientation": "portrait",
+    "name": "SloPromet",
+    "short_name": "SloPromet",
+    "id": "slopromet",
+    "start_url": "/",
+    "dir": "ltr",
+    "lang": "sl",
+    "icons":"AppImages/icons.json"
   }
