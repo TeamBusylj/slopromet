@@ -593,12 +593,12 @@ async function showLines(parent, station) {
     arrivalItem.addEventListener("click", () => {
       console.log(arrival);
       
-      showLineTime(arrival.route_number, station.id);
+      showLineTime(arrival.route_number, station.id, arrival.route_group_name);
     });
   }
   });
 }
-async function showLineTime(routeN, station_id) {
+async function showLineTime(routeN, station_id, routeName) {
   let response = await fetch(`https://cors.proxy.prometko.si/https://data.lpp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN.replace(/\D/g, "")}&previous-hours=${hoursDay(0)}&next-hours=${hoursDay(1)}`);
     let data1 = await response.json();    
     data1 = data1.data.route_groups[0].routes
@@ -618,7 +618,9 @@ async function showLineTime(routeN, station_id) {
     });
     
     data1.forEach(route => {
+      console.log(route.parent_name+","+routeName);
       
+      if(route.parent_name !== routeName) return;
       if(route.group_name+route.route_number_suffix==routeN){
         route.timetable.forEach(time => {
         let arrivalItem = addElement("div", container, "arrivalItem");
@@ -639,7 +641,7 @@ function hoursDay(what) {
   const now = new Date();
   const hoursFromMidnight = now.getHours() + now.getMinutes() / 60;
   const hoursToMidnight = 24 - hoursFromMidnight;
-  return what ? Math.ceil(hoursToMidnight) : Math.ceil(hoursFromMidnight);
+  return what ? hoursToMidnight.toFixed(2) : hoursFromMidnight.toFixed(2);
 }
 const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
 

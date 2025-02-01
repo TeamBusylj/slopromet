@@ -4,36 +4,40 @@
   <defs>
     <style>
       .st0 {
-        fill: url(#linear-gradient1);
+        fill: url(#linear-gradient2);
       }
 
       .st1 {
-        fill: url(#radial-gradient);
+        fill: url(#linear-gradient1);
       }
 
       .st2 {
-        fill: url(#linear-gradient);
+        fill: url(#radial-gradient);
       }
 
       .st3 {
+        fill: url(#linear-gradient);
+      }
+
+      .st4 {
         stroke: #000;
         stroke-miterlimit: 10;
         stroke-width: .5px;
       }
 
-      .st3, .st4 {
+      .st4, .st5 {
         fill: #3d3d3d;
       }
 
-      .st5 {
+      .st6 {
         fill: #fff;
       }
 
-      .st6 {
+      .st7 {
         fill: url(#radial-gradient1);
       }
 
-      .st7 {
+      .st8 {
         fill: url(#radial-gradient2);
       }
     </style>
@@ -54,13 +58,18 @@
       <stop offset="0" stop-color="#666"/>
       <stop offset="1" stop-color="#fff"/>
     </linearGradient>
+    <linearGradient id="linear-gradient2" x1="283.8" y1="579.3" x2="283.8" y2="381.5" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c8c8c8"/>
+      <stop offset="1" stop-color="#f0f0f0"/>
+    </linearGradient>
   </defs>
-  <rect class="st5" x="69.6" y="45.3" width="426.5" height="859.8" rx="88.3" ry="88.3"/>
-  <circle class="st1" cx="167.8" cy="72.3" r="58"/>
-  <circle class="st6" cx="391.8" cy="77.5" r="58"/>
-  <rect class="st3" x="86.6" y="67.1" width="394.4" height="826.6" rx="90.7" ry="90.7"/>
-  <rect class="st2" x="100.3" y="86.1" width="367.2" height="745.6" rx="81.8" ry="81.8"/>
-  <rect class="st7" x="122.9" y="49.5" width="326.9" height="241.2"/>
-  <rect class="st4" x="100.3" y="150.4" width="367.2" height="715.4" rx="81.8" ry="81.8"/>
-  <rect class="st0" x="100.3" y="170.1" width="367.2" height="709" rx="81.8" ry="81.8"/>
+  <rect class="st6" x="69.6" y="45.3" width="426.5" height="859.8" rx="88.3" ry="88.3"/>
+  <circle class="st2" cx="167.8" cy="72.3" r="58"/>
+  <circle class="st7" cx="391.8" cy="77.5" r="58"/>
+  <rect class="st4" x="86.6" y="67.1" width="394.4" height="826.6" rx="90.7" ry="90.7"/>
+  <rect class="st3" x="100.3" y="86.1" width="367.2" height="745.6" rx="81.8" ry="81.8"/>
+  <rect class="st8" x="122.9" y="49.5" width="326.9" height="241.2"/>
+  <rect class="st5" x="100.3" y="150.4" width="367.2" height="715.4" rx="81.8" ry="81.8"/>
+  <rect class="st1" x="100.3" y="170.1" width="367.2" height="709" rx="81.8" ry="81.8"/>
+  <polygon class="st0" points="283.8 381.5 169.6 579.3 398.1 579.3 283.8 381.5"/>
 </svg>
