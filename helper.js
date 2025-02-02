@@ -294,6 +294,8 @@ async function displayBuses(firsttim, line, trip) {
       }
       break;
     } else{
+   
+    
     if( bus.trip_id && bus.line_number == line)busid=bus
     }
   }
@@ -304,6 +306,7 @@ async function displayBuses(firsttim, line, trip) {
       "https://lpp.ojpp.derp.si/api/route/arrivals-on-route?trip-id=" +
         busid.trip_id
     );
+    
     response = await response.json();
     generateRouteVector(
       response.data,
