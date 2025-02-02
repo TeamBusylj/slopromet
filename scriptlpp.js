@@ -50,22 +50,10 @@ var map, busVectorLayer, busLayer, busStationLayer, animating, speed, now;
 const parser = new DOMParser();
 
 async function makeMap() {
-  iconFeature = new ol.Feature({
-    geometry: new ol.geom.MultiPoint([
-      [-90, 0],
-      [-45, 45],
-      [0, 0],
-      [45, -45],
-      [90, 0],
-    ]).transform("EPSG:4326", "EPSG:3857"),
-    name: "Null Islands",
-    population: 4000,
-    rainfall: 500,
-  });
+
 
   vectorSource = new ol.source.Vector({
-    // VectorSource({
-    features: [iconFeature],
+   
   });
 
   vectorLayer = new ol.layer.Vector({
@@ -75,20 +63,26 @@ async function makeMap() {
 
  
 rasterLayer = new ol.layer.Tile({
-  source: new ol.source.StadiaMaps({
-    layer: 'alidade_smooth_dark',
+  preload:Infinity,
+  source: !window.matchMedia('(prefers-color-scheme: dark)').matches ?   new ol.source.XYZ({
+    url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
+  }) :
+  new ol.source.StadiaMaps({
+    layer:  'alidade_smooth_dark',
     retina: true,
   }),
 }),
+
   map = new ol.Map({
     interactions: ol.interaction.defaults.defaults().extend([new ol.interaction.DblClickDragZoom()]),
     layers: [rasterLayer, vectorLayer],
     target: "map",
+   
     view: new ol.View({
       center: ol.proj.fromLonLat([14.5058, 46.0569]), // Default center (longitude, latitude)
       zoom: 13,
       loadTilesWhileAnimating: true,
-      padding: [10, 10, 100, 10],
+      padding :[20, 30, 50, 30]
     
     }),
   });
