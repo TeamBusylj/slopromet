@@ -521,7 +521,6 @@ function showArrivals(arrivalsScroll, data) {
   if (data.data.arrivals.length > 0) {
     let busTemplate = addElement("div", arrivalsScroll, "busTemplate");
     nextBusTemplate(data.data.arrivals, busTemplate);
-    console.log(data.data.arrivals);
     let listOfArrivals =[]
     for (const arrival of data.data.arrivals) {
       if (listOfArrivals.includes(arrival.trip_id)) {
@@ -568,7 +567,7 @@ function showArrivals(arrivalsScroll, data) {
           arrivalTimeSpan.classList.add("arrivalRed");
         }
         arrivalItem.addEventListener("click", () => {
-          showBusById(arrival.route_name, arrival.stations.arrival);
+          showBusById(arrival.route_name, arrival.trip_id);
         });
       }
     }
@@ -716,22 +715,22 @@ const nextBusTemplate = (arrivals, parent) => {
       arrivalTimeSpan.classList.add("arrivalRed");
     }
     busNumberDiv.addEventListener("click", () => {
-      showBusById(arrival.route_name, arrival.stations.arrival);
+      showBusById(arrival.route_name, arrival.trip_id);
     });
     i++;
   }
 };
 var busUpdateInterval;
-function showBusById(line, trip) {
+function showBusById(line, trip_id) {
   clearInterval(busUpdateInterval);
   setTimeout(() => {
     document.querySelector(".sheetContents").style.height = "30dvh";
     sheetHeight = 30;
   }, 50);
 
-  loop(1, line, trip);
+  loop(1, line,trip_id);
   busUpdateInterval = setInterval(() => {
-    loop(0, line, trip);
+    loop(0, line, trip_id);
   }, 5000);
 }
 

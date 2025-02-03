@@ -178,54 +178,38 @@ var busImageData;
    * @param {string} trip - The trip name of the bus.
    * @returns {void}
    */
-async function loop(firsttim, line, trip) {
+async function loop(firsttim, line, trip_id) {
   if (!firsttim && sheetHeight == 98) return;
   if(firsttim){
       document.querySelector(".loader").style.display = "grid";
       document.querySelector(".loader").style.setProperty("--_color", "RGB("+lineColorsObj[line.replace(/\D/g, "")]+")");
   } 
   // Fetch bus data
-  let response = await fetch(
-    "https://mestnipromet.cyou/api/v1/resources/buses/info"
-  );
-  let tempBusObject = await response.json();
-  tempBusObject = tempBusObject.data;
-  for (const i in tempBusObject) {
-    tempBusObject[i].timeValidity = await validateTimestamp(
-      tempBusObject[i].timestamp
-    );
+  let response = (await (await fetch("https://cors.proxy.prometko.si/https://data.lpp.si/api/bus/buses-on-route?route-group-number="+line, {
+    headers: { "apiKey": "D2F0C381-6072-45F9-A05E-513F1515DD6A",  "Accept": "Travana"}
+})).json()).data;
 
-    if (
-      tempBusObject[i].line_number !== "" &&
-      tempBusObject[i].timeValidity === true
-    ) {
-      tempBusObject[i].category = 1;
-    } else if (
-      tempBusObject[i].engine === true &&
-      tempBusObject[i].timeValidity === true
-    ) {
-      tempBusObject[i].category = 2;
-    } else {
-      tempBusObject[i].category = 3;
-    }
+let tempBusObject = response;
+
+for (const i in tempBusObject) {
     for (const j in busImageData) {
-      if (tempBusObject[i].bus_name.includes(busImageData[j].no)) {
-        tempBusObject[i] = { ...tempBusObject[i], ...busImageData[j] };
-      }
+        if (tempBusObject[i].bus_name.includes(busImageData[j].no)) {
+            tempBusObject[i] = {
+                ...tempBusObject[i],
+                ...busImageData[j]
+            };
+        }
     }
-  }
+}
+  
 
   busObject = tempBusObject;
 
   // Create or update markers
-  displayBuses(firsttim, line, trip);
+  displayBuses(firsttim, line, trip_id);
 }
 
-async function validateTimestamp(timestamp) {
-  let compareTime = new Date(timestamp);
-  let currentTime = new Date().getTime();
-  return currentTime - compareTime.getTime() <= 300000;
-}
+
 var vectorSource,
   vectorLayer,
   rasterLayer,
@@ -233,7 +217,7 @@ var vectorSource,
   iconFeature,
   iconStyle,
   tempMarkersSource;
-async function displayBuses(firsttim, line, trip) {
+async function displayBuses(firsttim, line, trip_id) {
   tempMarkersSource = new ol.layer.Vector({
     source: new ol.source.Vector(),
   });
@@ -243,13 +227,14 @@ async function displayBuses(firsttim, line, trip) {
     const bus = busObject[i];
 
     if (
-      bus.trip_id &&
-      bus.line_number == line &&
-      bus.line_destination == trip
+      bus.trip_id == trip_id
     ) {
       if (firsttim) {
+        console.log(bus);
+        
         busid = bus;
         const coordinates = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
+
 
         // Create a feature for the bus
         const marker = new ol.Feature({
@@ -259,21 +244,21 @@ async function displayBuses(firsttim, line, trip) {
         // Create a style for the bus with rotation
         const busStyle = new ol.style.Style({
           image: new ol.style.Icon({
-            anchor: [0.5, 24],
-            //color:lineColorsObj[bus.line_number.replace(/\D/g, "")],
+            anchor: [0.5, 48],
             anchorXUnits: "fraction",
             anchorYUnits: "pixels",
             src: bus.model.includes("MAN Lion's City G CNG-H")
               ? "./images/busimg_lion.svg"
               : "./images/busimg.svg",
-            scale: 0.2,
-            rotation: (bus.direction * Math.PI) / 180, // Convert degrees to radians
+            scale: .2,
+            rotation: (bus.cardinal_direction * Math.PI) / 180, // Convert degrees to radians
           }),
         });
 
-        marker.busId = bus.bus_id;
+        marker.busId = bus.bus_unit_id        ;
 
         marker.setStyle(busStyle);
+console.log(marker);
 
         // Add the marker to the layer
         tempMarkersSource.getSource().addFeature(marker);
@@ -281,14 +266,14 @@ async function displayBuses(firsttim, line, trip) {
         let newCoordinates = ol.proj.fromLonLat([bus.longitude, bus.latitude]);
 
         markers.getSource().forEachFeature(function (feature) {
-          if (bus.bus_id === feature.busId) {
+          if (bus.bus_unit_id === feature.busId) {
             now = new Date().getTime();
 
             const animate = () => {
               const shouldContinue = moveFeature(
                 feature,
                 newCoordinates,
-                (bus.direction * Math.PI) / 180
+                (bus.cardinal_direction * Math.PI) / 180
               );
 
               // Re-render map for smooth animation
@@ -303,15 +288,11 @@ async function displayBuses(firsttim, line, trip) {
           }
         });
       }
-      break;
-    } else{
-   
     
-    if( bus.trip_id && bus.line_number == line)busid=bus
     }
   }
   if (firsttim) {
-    console.log(busid);
+   
 
     let response = await fetch(
       "https://lpp.ojpp.derp.si/api/route/arrivals-on-route?trip-id=" +
@@ -322,8 +303,8 @@ async function displayBuses(firsttim, line, trip) {
     generateRouteVector(
       response.data,
       busid.trip_id,
-      busid.line_number,
-      busid.line_id
+      busid.route_number,
+      busid.route_id
     );
   } else{
    
@@ -432,7 +413,6 @@ async function generateRouteVector(data, trip_id, lno, lid) {
       ),
     ];
   }
-  console.log(coords.geojson_shape.coordinates);
   // Add features to the source
   lineStrings.forEach((line, index) => {
     const routeFeature = new ol.Feature({
