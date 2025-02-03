@@ -171,6 +171,13 @@ function makeBottomheet(title, height) {
 var busObject;
 var busMarker = [];
 var busImageData;
+  /**
+   * Main loop for fetching bus data and displaying it on the map.
+   * @param {boolean} firsttim - Whether this is the first time the loop is run.
+   * @param {string} line - The line number of the bus.
+   * @param {string} trip - The trip name of the bus.
+   * @returns {void}
+   */
 async function loop(firsttim, line, trip) {
   if (!firsttim && sheetHeight == 98) return;
   if(firsttim){
