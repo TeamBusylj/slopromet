@@ -173,6 +173,10 @@ var busMarker = [];
 var busImageData;
 async function loop(firsttim, line, trip) {
   if (!firsttim && sheetHeight == 98) return;
+  if(firsttim){
+      document.querySelector(".loader").style.display = "grid";
+      document.querySelector(".loader").style.setProperty("--_color", "RGB("+lineColorsObj[line.replace(/\D/g, "")]+")");
+  } 
   // Fetch bus data
   let response = await fetch(
     "https://mestnipromet.cyou/api/v1/resources/buses/info"
@@ -314,6 +318,14 @@ async function displayBuses(firsttim, line, trip) {
       busid.line_number,
       busid.line_id
     );
+  } else{
+   
+      document.querySelector(".loader").style.backgroundSize = "0% 0%";
+          setTimeout(() => {
+            document.querySelector(".loader").style.display = "none";
+            document.querySelector(".loader").style.backgroundSize = "40% 40%";
+          }, 300);
+    
   }
 }
 async function generateRouteVector(data, trip_id, lno, lid) {
@@ -467,7 +479,15 @@ async function generateRouteVector(data, trip_id, lno, lid) {
         zoom: zoom,
         duration: duration
       });
+      setTimeout(() => {
+        document.querySelector(".loader").style.backgroundSize = "0% 0%";
+        setTimeout(() => {
+          document.querySelector(".loader").style.display = "none";
+          document.querySelector(".loader").style.backgroundSize = "40% 40%";
+        }, 300);
+      }, 1000);
   }, 1);
+
  
 }
 const lineColors = (i) => {

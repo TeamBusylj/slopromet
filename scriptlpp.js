@@ -502,13 +502,29 @@ async function stationClick(station, noAnimation) {
   showArrivals(arrivalsScroll, data);
  
 }
+/**
+ * Displays the arrivals of buses on the provided element.
+ *
+ * This function clears the content of the `arrivalsScroll` element and populates it 
+ * with information about upcoming bus arrivals. For each arrival, it checks if the 
+ * bus route is already displayed. If not, it creates new elements to display the 
+ * bus number, trip name, and estimated time of arrival (ETA). It applies different 
+ * styles based on the type of arrival.
+ *
+ * @param {HTMLElement} arrivalsScroll - The DOM element where the arrivals will be displayed.
+ * @param {Object} data - The data object containing bus arrival information.
+ * @param {Array} data.data.arrivals - An array of bus arrival objects.
+ */
+
 function showArrivals(arrivalsScroll, data) {
   arrivalsScroll.innerHTML = "";
   if (data.data.arrivals.length > 0) {
     let busTemplate = addElement("div", arrivalsScroll, "busTemplate");
     nextBusTemplate(data.data.arrivals, busTemplate);
+    console.log(data.data.arrivals);
+    let listOfArrivals =[]
     for (const arrival of data.data.arrivals) {
-      if (arrivalsScroll.querySelector("#bus_" + arrival.route_name)) {
+      if (listOfArrivals.includes(arrival.trip_id)) {
         arrivalsScroll.querySelector("#eta_" + arrival.route_name).innerHTML +=
           "<span class=arrivalTime>" +
           (arrival.type == 0 ? "<md-icon>near_me</md-icon>" : "") +
@@ -526,11 +542,12 @@ function showArrivals(arrivalsScroll, data) {
          
         busNumberDiv.id = "bus_" + arrival.route_name;
         busNumberDiv.textContent = arrival.route_name;
+        listOfArrivals.push(arrival.trip_id)
         const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
         addElement("md-ripple", arrivalItem);
 
         const tripNameSpan = addElement("span", arrivalDataDiv);
-        tripNameSpan.textContent = arrival.trip_name.split(" - ").at(-1);
+        tripNameSpan.textContent = arrival.stations.arrival;
 
         const etaDiv = addElement("div", arrivalDataDiv, "eta");
         etaDiv.id = "eta_" + arrival.route_name;
@@ -638,6 +655,15 @@ function hoursDay(what) {
   return what ? hoursToMidnight.toFixed(2) : hoursFromMidnight.toFixed(2);
 }
 const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
+
+/**
+ * Populates the parent element with bus arrival information, specifically for the next bus.
+ * Adds a new element for each arrival in the list if its ETA is greater than 1 minute.
+ * The first valid arrival is marked as the next bus, and further arrivals are skipped.
+ *
+ * @param {Array} arrivals - The list of arrival objects containing bus information.
+ * @param {HTMLElement} parent - The parent element to which the arrival items will be appended.
+ */
 
 const nextBusTemplate = (arrivals, parent) => {
   var isNextbus = false;
