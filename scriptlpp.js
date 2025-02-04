@@ -156,14 +156,16 @@ const delayedSearch = debounce(searchRefresh, 300);
 window.addEventListener("DOMContentLoaded", async function () {
   createBuses();
   let sht = makeBottomheet(null, 98);
-  let bava = this.location.href.includes("teambusylj") ? "":"bava";
+  let bava = this.location.href.includes("teambusylj") ? "":"ljubljana ap";
   sht.innerHTML = `
 <div class="searchContain"> <md-filled-text-field class="search" value='${bava}' placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
  <md-circular-progress indeterminate id="loader"></md-circular-progress>
     <md-list id="listOfStations"></md-list>`;
-  this.document
-    .querySelector(".search")
+    let search = this.document.querySelector(".search");
+    search 
     .addEventListener("input", delayedSearch);
+    search
+    .addEventListener(`focus`, () => search.select());
      busImageData = await fetch("https://mestnipromet.cyou/tracker/js/json/images.json");
     busImageData = await busImageData.json()
 });
@@ -281,9 +283,9 @@ function createStationItems() {
       item2.setAttribute("interactive", "");
       addElement("md-ripple", item2);
       let item = addElement("div", item2, "station");
-      item.innerHTML = '<span class="stationName">' + stationList[station].n;
-      +"</span>";
-
+    
+let textHolder = addElement("div", item, "textHolder");
+textHolder.innerHTML = '<span class="stationName">' + stationList[station].n+"</span>";
       const distance = haversineDistance(
         latitude,
         longitude,
@@ -294,18 +296,18 @@ function createStationItems() {
         let cornot = "";
         if (!centertation.includes(stationList[station].n)) {
           centertation.push(stationList[station].n);
-          cornot = '<span class="center">CENTER</span>';
+          cornot = '<md-icon class="center">adjust</md-icon>';
         }
 
         if (distance > 1) {
-          item.innerHTML +=
+          textHolder.innerHTML +=
             cornot +
             "<span class=stationDistance>" +
             distance.toFixed(1) +
             " km</span>";
           nearby[distance.toFixed(5)] = item2;
         } else {
-          item.innerHTML +=
+          textHolder.innerHTML +=
             cornot +
             "<span class=stationDistance>" +
             Math.round(distance * 1000) +
@@ -567,7 +569,7 @@ function showArrivals(arrivalsScroll, data) {
           arrivalTimeSpan.classList.add("arrivalRed");
         }
         arrivalItem.addEventListener("click", () => {
-          showBusById(arrival.route_name, arrival.trip_id);
+          showBusById(arrival);
         });
       }
     }
@@ -677,6 +679,7 @@ const nextBusTemplate = (arrivals, parent) => {
     }
 
     let arrivalItem = addElement("div", parent, "arrivalItem");
+    addElement("md-ripple", arrivalItem);
     i == 0
       ? arrivalItem.classList.add("nextBus")
       : (arrivalItem.style.background = "transparent");
@@ -714,24 +717,24 @@ const nextBusTemplate = (arrivals, parent) => {
       arrivalTimeSpan.innerHTML = "PRIHOD";
       arrivalTimeSpan.classList.add("arrivalRed");
     }
-    busNumberDiv.addEventListener("click", () => {
-      showBusById(arrival.route_name, arrival.trip_id);
+    arrivalItem.addEventListener("click", () => {
+      showBusById(arrival);
     });
     i++;
   }
 };
 var busUpdateInterval;
-function showBusById(line, trip_id) {
+function showBusById(arrival) {
   clearInterval(busUpdateInterval);
   setTimeout(() => {
     document.querySelector(".sheetContents").style.height = "30dvh";
     sheetHeight = 30;
   }, 50);
 
-  loop(1, line,trip_id);
+  loop(1, arrival);
   busUpdateInterval = setInterval(() => {
-    loop(0, line, trip_id);
-  }, 5000);
+    loop(0, arrival);
+  }, 50000);
 }
 
 function addElement(tag, parent, className) {

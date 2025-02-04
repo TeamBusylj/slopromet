@@ -49,11 +49,12 @@ md-icon-button.iks {
 }
 .buses {
     gap: 10px;
-    display: flex;
-    flex-direction: row;
-    margin-top: 7px;
-    flex-wrap: wrap;
-}
+    display: grid
+;
+    grid-template-columns: repeat(auto-fit, minmax(35px, 1fr));
+    gap: min(2vw, 10px);
+    margin-top: 7px;}
+    
 md-circular-progress#loader {
     position: absolute;
     top: 50%;
@@ -68,7 +69,7 @@ md-circular-progress#loader {
     --_focus-active-indicator-height: 0;
     width: 100%;
     --md-filled-text-field-container-shape: 150px;
-    --_container-color:linear-gradient(188deg, var(--md-sys-color-surface-container-highest), #171915);
+    --_container-color:linear-gradient(188deg, var(--md-sys-color-surface-container-highest), #1919192e);
     display: block;
 
 }
@@ -85,10 +86,16 @@ html, body{
 }
 .center {
     margin-left: 10px;
-    padding: 5px 18px;
+    padding: 4px 4px;
+    position: relative;
     white-space: nowrap;
     border-radius: 100px;
-    background: linear-gradient(163deg, var(--md-sys-color-surface-container-highest), #00000021);
+    background: linear-gradient(134deg, var(--md-sys-color-surface-bright), #00000026);
+}
+.textHolder {
+    align-items: center;
+    display: flex
+;
 }
 .searchContain {
     position: relative;
@@ -107,11 +114,17 @@ padding: 3px;
 @media (prefers-color-scheme: dark  ){
     #map div div a[target='_blank'] div{
         background-color:#242f3e;}
+        .arrivalRed {
+            background: linear-gradient(329deg, var(--md-sys-color-on-error), var(--md-sys-color-error-container)) !important;}
 }
 
 @media (prefers-color-scheme: light ){
     #map div div a[target='_blank'] div{
         background-color:#fbf9f7;}
+        .arrivalRed {
+            background: linear-gradient(163deg, var(--md-sys-color-error), var(--md-sys-color-on-error-container)) !important}
+        
+        
 }
 #map div div a[target='_blank'] div img {
    left: unset !important;
@@ -161,10 +174,10 @@ md-fab.centerMap {
 
 .search md-icon{margin-left: 10px;}
 .stationDistance {
-   float: right;
-   margin-right: 5px;
-   opacity: .8;
-   font-weight: 300;
+    margin-left: auto;
+    margin-right: 5px;
+    opacity: .8;
+    font-weight: 300;
 }
 .stationName{
     font-weight: 400;
@@ -174,6 +187,7 @@ md-list#listOfStations {
     margin-top: 5px;
     overflow-y: scroll;
     height: 100%;
+    width: 100%;
 transition: all .5s;
 }
 .hideStations {
@@ -224,14 +238,28 @@ md-list-item.stationItem {
  object-fit: fill;
  max-height: 100%;
 }
-::view-transition-old(stitm),
-::view-transition-new(stitm) {
- height: 100%;
 
-  mix-blend-mode: normal;
+
+.busImg {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    height: 100%;
+    background: #000000ba;
+    width: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
 }
-
-
+img.busImgElement {
+    object-fit: fill;
+    max-width: 100%;
+    border-radius: 25px;
+    padding: 10px;
+    box-sizing: border-box;
+}
 @keyframes show {
     0%{
         scale: .95;
@@ -264,7 +292,6 @@ md-list-item.stationItem {
     --md-icon-size: 19px;
 }
 .arrivalRed {
-    background: linear-gradient(163deg, var(--md-sys-color-error-container), #480105);
     animation: blinking 2s ease-in infinite;
     color: var(--md-sys-color-on-error-container) ;
 }
@@ -321,7 +348,7 @@ md-tabs.tabs {
    width: 110%;
 }
 md-primary-tab[active=""] {
-    --_container-color: linear-gradient(170deg, #2b461d, #101a0b);
+    --_container-color: linear-gradient(170deg, var(--md-sys-color-secondary-container), var(--md-sys-color-inverse-primary));
     color: var(--md-sys-color-on-secondary-container);
 }
 .busNo {

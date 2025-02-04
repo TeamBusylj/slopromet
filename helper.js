@@ -178,16 +178,18 @@ var busImageData;
    * @param {string} trip - The trip name of the bus.
    * @returns {void}
    */
-async function loop(firsttim, line, trip_id) {
+async function loop(firsttim, arrival) {
   if (!firsttim && sheetHeight == 98) return;
+  
   if(firsttim){
       document.querySelector(".loader").style.display = "grid";
-      document.querySelector(".loader").style.setProperty("--_color", "RGB("+lineColorsObj[line.replace(/\D/g, "")]+")");
+      document.querySelector(".loader").style.setProperty("--_color", "RGB("+lineColorsObj[arrival.route_name.replace(/\D/g, "")]+")");
   } 
   // Fetch bus data
-  let response = (await (await fetch("https://cors.proxy.prometko.si/https://data.lpp.si/api/bus/buses-on-route?route-group-number="+line, {
+  let response = (await (await fetch("https://cors.proxy.prometko.si/https://data.lpp.si/api/bus/buses-on-route?route-group-number="+arrival.route_name, {
     headers: { "apiKey": "D2F0C381-6072-45F9-A05E-513F1515DD6A",  "Accept": "Travana"}
 })).json()).data;
+console.log(response, arrival);
 
 let tempBusObject = response;
 
@@ -206,7 +208,7 @@ for (const i in tempBusObject) {
   busObject = tempBusObject;
 
   // Create or update markers
-  displayBuses(firsttim, line, trip_id);
+  displayBuses(firsttim, arrival);
 }
 
 
@@ -217,7 +219,7 @@ var vectorSource,
   iconFeature,
   iconStyle,
   tempMarkersSource;
-async function displayBuses(firsttim, line, trip_id) {
+async function displayBuses(firsttim, arrival) {
   tempMarkersSource = new ol.layer.Vector({
     source: new ol.source.Vector(),
   });
@@ -226,11 +228,12 @@ async function displayBuses(firsttim, line, trip_id) {
   for (const i in busObject) {
     const bus = busObject[i];
 
+
     if (
-      bus.trip_id == trip_id
+      bus.trip_id == arrival.trip_id
     ) {
       if (firsttim) {
-        console.log(bus);
+        
         
         busid = bus;
         const coordinates = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
@@ -244,9 +247,9 @@ async function displayBuses(firsttim, line, trip_id) {
         // Create a style for the bus with rotation
         const busStyle = new ol.style.Style({
           image: new ol.style.Icon({
-            anchor: [0.5, 48],
+            anchor: [0.5, 0.5],
             anchorXUnits: "fraction",
-            anchorYUnits: "pixels",
+            anchorYUnits: "fraction",
             src: bus.model.includes("MAN Lion's City G CNG-H")
               ? "./images/busimg_lion.svg"
               : "./images/busimg.svg",
@@ -256,9 +259,9 @@ async function displayBuses(firsttim, line, trip_id) {
         });
 
         marker.busId = bus.bus_unit_id        ;
+        marker.busNo = bus.no
 
         marker.setStyle(busStyle);
-console.log(marker);
 
         // Add the marker to the layer
         tempMarkersSource.getSource().addFeature(marker);
@@ -291,20 +294,34 @@ console.log(marker);
     
     }
   }
+  map.on('click', function (evt) {
+    const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+      return feature;
+    });
+    if (feature && feature.busNo) {
+        let holder = document.querySelector(".busImg")
+        holder.innerHTML = "";
+        holder.style.display = "flex";
+     let img = addElement("img",holder, "busImgElement");
+      img.src = "https://mestnipromet.cyou/tracker/img/avtobusi/"+feature.busNo+".jpg";
+      img.onclick = () => holder.style.display = "none";
+    }
+  });
+
   if (firsttim) {
    
 
     let response = await fetch(
-      "https://lpp.ojpp.derp.si/api/route/arrivals-on-route?trip-id=" +
-        busid.trip_id
+      "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/stations-on-route?trip-id=" +
+      arrival.trip_id
     );
     
     response = await response.json();
-    generateRouteVector(
+    await generateRouteVector(
       response.data,
-      busid.trip_id,
-      busid.route_number,
-      busid.route_id
+      arrival.trip_id,
+      arrival.route_name,
+      arrival.route_id
     );
   } else{
    
@@ -321,17 +338,26 @@ async function generateRouteVector(data, trip_id, lno, lid) {
   if (busVectorLayer.trip === trip_id) return;
 
   // Fetch coordinates data
-  let coordinates = await fetch(
-    "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/routes?route-id=" +
-      lid +
-      "&shape=1"
+  var coordinates = await fetch(
+    "https://mestnipromet.cyou/api/v1/resources/buses/shape?trip_id=" +
+      trip_id
   );
   coordinates = await coordinates.json();
 
+
   // Ensure coordinates are in [longitude, latitude] format
 
-  const coords = coordinates.data.find((t) => t.trip_id === trip_id);
+  coordinates = coordinates.data
+  if (coordinates.length == 0) {
+    let coords = "";
+    for (const i in data) {
+        coords += data[i].longitude + "," + data[i].latitude + ";"
+    }
+    coordinates = await (await fetch("https://router.project-osrm.org/route/v1/driving/" + coords.substring(0, coords.length-2) + "?overview=full&geometries=geojson")).json();
 
+    
+    coordinates = coordinates.routes[0].geometry.coordinates;
+}
   // Create new vector sources for stations and routes
   const tempStationSource = new ol.source.Vector();
   const tempRouteSource = new ol.source.Vector();
@@ -395,19 +421,37 @@ async function generateRouteVector(data, trip_id, lno, lid) {
 
   let lineStrings = [];
 
+
   // Check if the geojson_shape is a MultiLineString or a LineString
-  if (coords.geojson_shape.type === "MultiLineString") {
+  
+  if (coordinates[0].length > 2) {
+    for (const j in coordinates)  {
+        if (j[0][0] < j[0][1]) {
+            for (const i in coordinates)  {
+                coordinates[j][i].reverse();
+            }
+        }
+    }
+   
     // For MultiLineString, iterate over each array of coordinates
-    lineStrings = coords.geojson_shape.coordinates.map((coordinatesa) => {
+    lineStrings = coordinates.map((coordinatesa) => {
       return new ol.geom.LineString(coordinatesa.map((c) => {
         return ol.proj.fromLonLat(c);
       }));
     });
-  } else if (coords.geojson_shape.type === "LineString") {
+  } else{
+    console.log(coordinates);
+    if (coordinates[0][0] > coordinates[0][1]) {
+        for (const i in coordinates)  {
+            coordinates[i].reverse();
+        }
+    }
+    console.log(coordinates);
+    
     // For a single LineString, just create a single geometry
     lineStrings = [
       new ol.geom.LineString(
-        coords.geojson_shape.coordinates.map((c) => {
+        coordinates.map((c) => {
           return ol.proj.fromLonLat(c);
         })
       ),
