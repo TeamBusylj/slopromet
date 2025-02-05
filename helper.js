@@ -12,23 +12,8 @@ function makeBottomheet(title, height) {
     btTitle.style.margin = "-" + (btTitle.offsetHeight + 34) + "px";
   }
   let handle = addElement("div", draggableArea, "bottomSheetHandle");
-  let scrim = addElement("div", document.body, "bottomSheetScrim");
-  if (height) {
-    scrim.style.display = "none";
-    scrim.style.visibillity = "hidden";
-  }
-  if (title == null) {
-    btTitle.style.display = "none";
-    btTitle.style.visibillity = "hidden";
-  }
+ 
 
-  setTimeout(() => {
-    scrim.style.opacity = ".32";
-  }, 10);
-  scrim.addEventListener("click", function () {
-    sheetHeight = 0;
-    onDragEnd();
-  });
   let toolbarColor = document
     .querySelector('meta[name="theme-color"]')
     .getAttribute("content");
@@ -83,6 +68,13 @@ function makeBottomheet(title, height) {
   window.onmouseup = function () {
     --mouseDown;
   };
+  function formatNumber(num) {
+    let str = num.toString().replace('.', ''); // Remove the decimal point for easier extraction
+    let firstTwo = str.slice(0, 2); // Get first two digits
+    let decimalPart = str[2] || '0'; // Get the third digit (first decimal), default to '0' if missing
+
+    return `${firstTwo[0]}.${firstTwo[1]}`;
+}
 
   const onDragMove = (event) => {
     if (!event.target.closest(".bottomSheet")) return;
@@ -110,8 +102,10 @@ function makeBottomheet(title, height) {
       );
       sheetHeight3 = (mainContentHeight / vh) * 100;
 
-      if (sheetHeight < 30 && deltaY < 0) {
-        deltaY = 0;
+      if (sheetHeight < 40 && deltaY < 0) {
+        console.log(y);
+        
+        deltaY = deltaY/formatNumber(y);
       }
       const deltaHeight = (deltaY / window.innerHeight) * 100;
 
@@ -136,7 +130,7 @@ function makeBottomheet(title, height) {
       if (sheetHeight > 65) {
         setSheetHeight(98);
       } else {
-        setSheetHeight(30);
+        setSheetHeight(40);
       }
       if (sheetHeight > sheetHeight3 + (100 - sheetHeight3) / 2) {
         setSheetHeight(98);
@@ -162,12 +156,7 @@ function makeBottomheet(title, height) {
   }
   return mainContent;
 }
-/*opposite station logic 
- if (this.code % 2 === 0) {
-            await generateStationSidebar(await String(parseInt(this.code) - 1));
-        } else {
-            await generateStationSidebar(String(parseInt(this.code) + 1));
-        } */
+
 var busObject;
 var busMarker = [];
 var busImageData;
@@ -221,7 +210,12 @@ var vectorSource,
   tempMarkersSource;
 async function displayBuses(firsttim, arrival) {
   tempMarkersSource = new ol.layer.Vector({
-    source: new ol.source.Vector(),
+    source: new ol.source.Vector({
+      updateWhileAnimating: true,   // Ensures updates while map is in motion
+      updateWhileInteracting: true
+    }),
+    updateWhileAnimating: true,   // Ensures updates while map is in motion
+    updateWhileInteracting: true
   });
 
   let busid;
@@ -247,6 +241,7 @@ async function displayBuses(firsttim, arrival) {
         // Create a style for the bus with rotation
         const busStyle = new ol.style.Style({
           image: new ol.style.Icon({
+            rotateWithView: true,
             anchor: [0.5, 0.5],
             anchorXUnits: "fraction",
             anchorYUnits: "fraction",
@@ -423,8 +418,8 @@ async function generateRouteVector(data, trip_id, lno, lid) {
 
 
   // Check if the geojson_shape is a MultiLineString or a LineString
-  
-  if (coordinates[0].length > 2) {
+  const hasLongSubarray = arr => arr.some(sub => Array.isArray(sub) && sub.length > 2);
+  if (hasLongSubarray(coordinates)) {
     for (const j in coordinates)  {
         if (j[0][0] < j[0][1]) {
             for (const i in coordinates)  {
@@ -479,20 +474,23 @@ async function generateRouteVector(data, trip_id, lno, lid) {
   if (busVectorLayer) {
     map.removeLayer(busVectorLayer);
   }
-  busVectorLayer = new ol.layer.Vector({ source: tempRouteSource });
+  busVectorLayer = new ol.layer.Vector({ source: tempRouteSource,  updateWhileAnimating: true,   // Ensures updates while map is in motion
+    updateWhileInteracting: true });
   busVectorLayer.trip = trip_id;
   map.addLayer(busVectorLayer);
 
   if (busStationLayer) {
     map.removeLayer(busStationLayer);
   }
-  busStationLayer = new ol.layer.Vector({ source: tempStationSource });
+  busStationLayer = new ol.layer.Vector({ source: tempStationSource, updateWhileAnimating: true,   // Ensures updates while map is in motion
+    updateWhileInteracting: true });
   map.addLayer(busStationLayer);
 
   if (markers) {
     map.removeLayer(markers);
   }
-  markers = new ol.layer.Vector({ source: tempMarkersSource.getSource() });
+  markers = new ol.layer.Vector({ source: tempMarkersSource.getSource(), updateWhileAnimating: true,   // Ensures updates while map is in motion
+    updateWhileInteracting: true });
   map.addLayer(markers);
   const myExtent = busVectorLayer.getSource().getExtent();
 
@@ -510,16 +508,14 @@ async function generateRouteVector(data, trip_id, lno, lid) {
         zoom: zoom,
         duration: duration
       });
+      document.querySelector(".loader").style.backgroundSize = "0% 0%";
       setTimeout(() => {
-        document.querySelector(".loader").style.backgroundSize = "0% 0%";
-        setTimeout(() => {
-          document.querySelector(".loader").style.display = "none";
-          document.querySelector(".loader").style.backgroundSize = "40% 40%";
-        }, 300);
-      }, 1000);
+        document.querySelector(".loader").style.display = "none";
+        document.querySelector(".loader").style.backgroundSize = "40% 40%";
+      }, 300);
   }, 1);
 
- 
+  
 }
 const lineColors = (i) => {
   const color = lineColorsObj[i]; // Example: [201, 51, 54]
