@@ -447,7 +447,7 @@ async function stationClick(station, noAnimation) {
     data = await response.json();
     let cornot = "";
     if(stationList[station].id % 2 !== 0) cornot = '<md-icon class="center">adjust</md-icon>';
-    document.querySelector(".titleHolder span").innerHTML=stationList[station].n+ cornot;
+    document.querySelector(".title span").innerHTML=stationList[station].n+ cornot;
     document.querySelector(".titleHolder").innerHTML += "<div class=none></div>";
     document.querySelector(".mapca").addEventListener("click", function () {
       oppositeStation(stationList[station].id);
@@ -474,11 +474,12 @@ async function stationClick(station, noAnimation) {
 
     
     console.log(stationList[station]);
-    let hh = addElement("div", title, "titleHolder");
-    let ttl = addElement("span", hh);
+   
+    let ttl = addElement("span", title);
     let cornot = "";
     if(stationList[station].id % 2 !== 0) cornot = '<md-icon class="center">adjust</md-icon>';
     ttl.innerHTML=stationList[station].n + cornot
+    let hh = addElement("div", title, "titleHolder");
      mapca = addElement("md-icon-button",hh, "mapca");
     mapca.innerHTML = "<md-icon>swap_calls</md-icon>";
     mapca.addEventListener("click", function () {
