@@ -266,7 +266,7 @@ md-list.listOfStations, md-list.favouriteStations {
   position: absolute;
   top: 40px;
   z-index: 100;
-
+padding-bottom: 50px;
   left: 0;
   width: 100%;
 }
@@ -506,6 +506,9 @@ sub {
   top: 0;
   left: 0;
 }
+.iksa{
+    visibility:hidden;pointer-events:none;
+}
 @keyframes showIn {
   0% {
     transform: translateX(100vw);
@@ -526,7 +529,7 @@ span.nextBusTitle {
 }
 .arrivalsScroll {
     z-index: 2;
-
+display: flex;
   width: calc(100% - 40px);
   margin: 0 20px;
   position: relative;

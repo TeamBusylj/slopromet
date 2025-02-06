@@ -395,7 +395,7 @@ async function generateRouteVector(data, trip_id, lno, lid) {
           true
         );
         setTimeout(() => {
-          document.querySelector(".sheetContents").style.transform = "translate3d(-50%,98dvh)";
+          document.querySelector(".bottomSheet").style.transform = "translate3d(-50%,98dvh, 0)";
           sheetHeight = 98;
           document.querySelector(".sheetContents").scrollTop = 0;
         }, 50);

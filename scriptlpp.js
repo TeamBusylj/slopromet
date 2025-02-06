@@ -470,13 +470,12 @@ async function stationClick(station, noAnimation) {
     if (!noAnimation) {
       container.style.transform = "translateX(0)";
       document.querySelector(".searchContain").style.transform =
-        "translateX(-100vw)";
       document.querySelector(".listOfStations").style.transform =
-        "translateX(-100vw)";
         document.querySelector(".favouriteStations").style.transform =
-        "translateX(-100vw)";
       document.getElementById("tabsFav").style.transform =
         "translateX(-100vw)";
+            document.querySelector(".listOfStations").style.height =
+        document.querySelector(".favouriteStations").style.height = "0"
     }
   }, 1);
   var data;
@@ -521,19 +520,19 @@ var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
       "arrivalsHolder"
     );
     const title = addElement("h1", container, "title");
-    let iks = addElement("md-icon-button", title, "iks");
+   let holder = addElement("div", title);
+    let iks = addElement("md-icon-button", holder, "iks");
     iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
     iks.addEventListener("click", function () {
       container.style.transform = "translateX(100vw)";
-      document.querySelector(".listOfStations").style.transform =
-        "translateX(0vw)";
       isArrivalsOpen = false;
+      document.querySelector(".listOfStations").style.transform =
       document.querySelector(".searchContain").style.transform =
-        "translateX(0vw)";
         document.querySelector(".favouriteStations").style.transform =
-        "translateX(0vw)";
       document.getElementById("tabsFav").style.transform =
         "translateX(0vw)";
+        document.querySelector(".listOfStations").style.height =
+        document.querySelector(".favouriteStations").style.height = "100%"
       clearInterval(interval);
       setTimeout(() => {
         container.remove();
@@ -542,6 +541,8 @@ var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
           .classList.remove("hideStations");
       }, 500);
     });
+    let plcHld = addElement("md-icon-button", holder, "iksa");
+    plcHld.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
 
     console.log(stationList[station]);
 
@@ -620,7 +621,7 @@ var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
     arrivalsScroll.style.opacity = "1";
   }
   isArrivalsOpen = station;
-  arrivalsScroll.style.display = "flex";
+
   showArrivals(arrivalsScroll, data);
 }
 /**
@@ -879,7 +880,7 @@ var busUpdateInterval;
 function showBusById(arrival) {
   clearInterval(busUpdateInterval);
   setTimeout(() => {
-    document.querySelector(".sheetContents").style.transform = "translate3d(-50%,98dvh)";
+    document.querySelector(".bottomSheet").style.transform = "translate3d(-50%,60dvh, 0px)";
     sheetHeight = 40;
   }, 50);
   try {
