@@ -441,7 +441,7 @@ async function stationClick(station, noAnimation) {
   var mapca
   if (noAnimation) {
     let response = await fetch(
-      " https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
+      "https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
         stationList[station].id
     );
     data = await response.json();
@@ -620,7 +620,7 @@ function showArrivals(arrivalsScroll, data) {
       }
     }
   } else {
-    arrivalsScroll.innerHTML += "Trenutno ni na sporedu nobenega avtobusa";
+    arrivalsScroll.innerHTML += "<p>Trenutno ni na sporedu nobenega avtobusa</p>";
   }
 }
 async function showLines(parent, station) {
@@ -655,17 +655,18 @@ async function showLines(parent, station) {
     arrivalItem.addEventListener("click", () => {
       console.log(arrival);
       
-      showLineTime(arrival.route_number, station.id, arrival.route_group_name);
+      showLineTime(arrival.route_number, station.id, arrival.route_group_name, arrival);
     });
   }
   });
 }
-async function showLineTime(routeN, station_id, routeName) {
-  let response = await fetch(`https://cors.proxy.prometko.si/https://data.lpp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN.replace(/\D/g, "")}&previous-hours=${hoursDay(0)}&next-hours=${hoursDay(1)}`);
-    let data1 = await response.json();    
-    data1 = data1.data.route_groups[0].routes
-  document.querySelector(".sheetContents").scrollTop = 0;
+async function showLineTime(routeN, station_id, routeName, arrival) {
+  let arrival2 = arrival
+  arrival2.route_name = routeN
+  showBusById(arrival2)
   let container = addElement("div", document.querySelector(".mainSheet"), "lineTimes");
+  container.style.transform = "translateX(0px) translateY(0px)";
+  container.style.opacity = "1";
   container.classList.add("arrivalsScroll");
   document.querySelector(".arrivalsHolder").style.transform = "translateX(-100vw)";
   let iks = addElement("md-icon-button", container, "iks");
@@ -678,7 +679,10 @@ async function showLineTime(routeN, station_id, routeName) {
     container.remove();
    }, 500);
     });
-    
+    let response = await fetch(`https://cors.proxy.prometko.si/https://data.lpp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN.replace(/\D/g, "")}&previous-hours=${hoursDay(0)}&next-hours=${hoursDay(1)}`);
+    let data1 = await response.json();    
+    data1 = data1.data.route_groups[0].routes
+  document.querySelector(".sheetContents").scrollTop = 0;
     data1.forEach(route => {
       console.log(route.parent_name+","+routeName);
       
@@ -784,13 +788,13 @@ try {
     loop(0, arrival);
   }, 50000);
 } catch (error) {
- 
+  console.log(error);
   document.querySelector(".loader").style.backgroundSize = "0% 0%";
   setTimeout(() => {
     document.querySelector(".loader").style.display = "none";
     document.querySelector(".loader").style.backgroundSize = "40% 40%";
   }, 300);
-  console.error(error);
+
 }
  
 }

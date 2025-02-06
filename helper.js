@@ -78,6 +78,7 @@ function makeBottomheet(title, height) {
 
   const onDragMove = (event) => {
     if (!event.target.closest(".bottomSheet")) return;
+    if(sheetContents.scrollTop > 1 && sheetHeight !== 98) sheetContents.style.overflow = "hidden"; else sheetContents.style.overflow = "scroll";
     if (
       (mouseDown || event.type == "touchmove") &&
       event.target.closest(".bottomSheet")
@@ -91,10 +92,10 @@ function makeBottomheet(title, height) {
         sheetContents.scrollHeight > sheetContents.clientHeight &&
         deltaY < 0
       ) {
-        if (sheetContents.scrollTop > 1) deltaY = 0;
+        if (sheetContents.scrollTop > 1) return
       }
 
-      if (!event.target.closest(".handleHolder")) return;
+  
 
       const mainContentHeight = Math.min(
         mainContent.clientHeight,
