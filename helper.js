@@ -1,16 +1,9 @@
 var sheetHeight;
 function makeBottomheet(title, height) {
   let bottomSheet = addElement("div", document.body, "bottomSheet");
-  bottomSheet.innerHTML = "<md-elevation></md-elevation>";
   let sheetContents = addElement("div", bottomSheet, "sheetContents");
   let draggableArea = addElement("div", bottomSheet, "handleHolder");
-  var btTitle;
-  if (title !== "") {
-    btTitle = addElement("div", draggableArea, "bottomSheetTitle");
-    btTitle.innerHTML = '<p style="margin:0;">' + title + "</p>";
-    addElement("md-elevation", btTitle);
-    btTitle.style.margin = "-" + (btTitle.offsetHeight + 34) + "px";
-  }
+  
   let handle = addElement("div", draggableArea, "bottomSheetHandle");
  
 
@@ -92,7 +85,7 @@ function makeBottomheet(title, height) {
         sheetContents.scrollHeight > sheetContents.clientHeight &&
         deltaY < 0
       ) {
-        if (sheetContents.scrollTop > 1) return
+        if (sheetContents.scrollTop > 1) deltaY = 0;
       }
 
   
@@ -116,7 +109,7 @@ function makeBottomheet(title, height) {
     }
   };
   const onDragEnd = () => {
-    setTimeout(() => {
+    sheetContents.style.overflow = "scroll";
       dragPosition = undefined;
       sheetContents.classList.remove("not-selectable");
 
@@ -136,7 +129,7 @@ function makeBottomheet(title, height) {
       if (sheetHeight > sheetHeight3 + (100 - sheetHeight3) / 2) {
         setSheetHeight(98);
       }
-    }, 2);
+ 
   };
 
   window.addEventListener("mousedown", onDragStart);
