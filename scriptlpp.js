@@ -879,7 +879,7 @@ var busUpdateInterval;
 function showBusById(arrival) {
   clearInterval(busUpdateInterval);
   setTimeout(() => {
-    document.querySelector(".sheetContents").style.height = "40dvh";
+    document.querySelector(".sheetContents").style.transform = "translate3d(-50%,98dvh)";
     sheetHeight = 40;
   }, 50);
   try {

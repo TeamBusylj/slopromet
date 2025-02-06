@@ -3,36 +3,7 @@
 body{
     --transDur:.3s;
 }
-.titleTxt {
-    position: absolute;
-    left: 10px;
-    top: 0;
-  }
-  .titleFull {
-    top: 20px !important;
-    position: fixed !important;
-    margin: 0 !important;
-    --md-elevation-level: 0 !important;
-  }
-  .sqe {
-    background-color: var(--md-sys-color-on-primary-fixed);
-  }
-  .bottomSheetTitle {
-    position: absolute;
-    color: var(--md-sys-color-on-surface);
-    font-family: sans-serif;
-    margin-top: -100px;
-    top: 20px;
-    --md-elevation-level: 2;
-    max-width: 70vw;
-    border-radius: 30px;
-    transition: all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1);
-    background: var(--md-sys-color-surface);
-    text-align: center;
-    padding: 20px 40px 20px 40px;
-    animation: scaleupy var(--transDur) 0.1s forwards cubic-bezier(0.05, 0.7, 0.1, 1);
-    scale: 0;
-}
+
   @keyframes scaleupy {
     from {
       scale: 0;
@@ -42,18 +13,18 @@ body{
     }
   }
   .bottomSheet {
-    position: absolute;
+    position: fixed;
     width: 100%;
-    overflow: hidden;
-    flex: 3 0 auto;
-    transition: all var(--transDur);
+    max-width: 1000px;
+      left: 50%;
+  transform: translate(-50%,100vh);
     background-color: var(--md-sys-color-surface);
     bottom: 0;
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
     z-index: 99;
-    /* height: 100%; */
-}
+    overflow: hidden;
+  }
   .bottomSheetHandle {
     transition: all var(--transDur);
     margin-top: 7px;
@@ -80,15 +51,10 @@ body{
     transition: all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1);
   }
   .sheetContents {
-    display: block;
-    overscroll-behavior: none;
-    align-items: center;
+
+    height: 100dvh;
     overflow: hidden;
-    justify-content: center;
-  }
-  .escapingSheet {
-    opacity: 0.9;
-    transform: scale(0.9, 1);
+  
   }
   .bottomSheetScrim {
     position: absolute;
@@ -114,7 +80,3 @@ body{
     overscroll-behavior: none;
     align-items: center;
   }
-  .fullscreenSheet {
-    border-radius: 0;
-  }
-  

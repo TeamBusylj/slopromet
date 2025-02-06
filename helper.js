@@ -11,28 +11,14 @@ function makeBottomheet(title, height) {
     .querySelector('meta[name="theme-color"]')
     .getAttribute("content");
 
-  const setSheetHeight = (value) => {
-    sheetHeight = Math.max(0, Math.min(100, value));
-
-    sheetContents.style.height = `${sheetHeight}dvh`;
-
-    if (sheetHeight === 100) {
-      bottomSheet.classList.add("fullscreenSheet");
-      document
-        .querySelector('meta[name="theme-color"]')
-        .setAttribute(
-          "content",
-          getComputedStyle(document.body).getPropertyValue(
-            "--md-sys-color-surface-container"
-          )
-        );
-    } else {
-      bottomSheet.classList.remove("fullscreenSheet");
-      document
-        .querySelector('meta[name="theme-color"]')
-        .setAttribute("content", toolbarColor);
-    }
-  };
+    const setSheetHeight = (value) => {
+      sheetHeight = Math.max(0, Math.min(100, value));
+  
+      bottomSheet.style.transform = `translate3d(-50%,${
+        100 - sheetHeight
+      }dvh, 0)`;
+    };
+  
 
   const touchPosition = (event) => (event.touches ? event.touches[0] : event);
 
@@ -129,7 +115,12 @@ function makeBottomheet(title, height) {
       if (sheetHeight > sheetHeight3 + (100 - sheetHeight3) / 2) {
         setSheetHeight(98);
       }
- 
+      bottomSheet.style.transition =
+      "all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1)";
+    setTimeout(() => {
+      bottomSheet.style.transition = "";
+      bottomSheet.style.willChange = "";
+    }, 400);
   };
 
   window.addEventListener("mousedown", onDragStart);
@@ -142,6 +133,11 @@ function makeBottomheet(title, height) {
   window.addEventListener("touchend", onDragEnd);
 
   let mainContent = addElement("main", sheetContents, "mainSheet");
+  bottomSheet.style.transition =
+  "all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1)";
+setTimeout(() => {
+  bottomSheet.style.transition = "";
+}, 400);
   if (height) setSheetHeight(height);
   else {
     setSheetHeight(
@@ -399,7 +395,7 @@ async function generateRouteVector(data, trip_id, lno, lid) {
           true
         );
         setTimeout(() => {
-          document.querySelector(".sheetContents").style.height = "98dvh";
+          document.querySelector(".sheetContents").style.transform = "translate3d(-50%,98dvh)";
           sheetHeight = 98;
           document.querySelector(".sheetContents").scrollTop = 0;
         }, 50);
