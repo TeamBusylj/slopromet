@@ -7,13 +7,15 @@ body {
 .gmnoprint {
   display: none;
 }
-
+.titleHolder {
+    margin-left: auto;
+}
 .title {
     z-index: 3;
     margin: 0 20px;
   display: block;
   height: max-content;
-  justify-content: space-between;
+  justify-content: left;
   align-items: center;
   display: flex;
   transition: all 0.4s;

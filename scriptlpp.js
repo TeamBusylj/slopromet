@@ -541,8 +541,7 @@ var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
           .classList.remove("hideStations");
       }, 500);
     });
-    let plcHld = addElement("md-icon-button", holder, "iksa");
-    plcHld.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
+   
 
     console.log(stationList[station]);
 
