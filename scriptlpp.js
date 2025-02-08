@@ -214,9 +214,13 @@ setInterval(getLocation, 10000);
 async function createBuses() {
   await getLocation();
   stationList = JSON.parse(stationDetails).data;
-  makeMap();
-  currentPanel=document.querySelector(".favouriteStations")
+  currentPanel=document.querySelector(".favouriteStations");
   createStationItems();
+  currentPanel.style.transform = "translateX(0px) translateY(0px)";
+  currentPanel.style.opacity = "1";
+  makeMap();
+ 
+  
 }
 
 var isArrivalsOpen = false;
@@ -312,7 +316,7 @@ favList.style.opacity = "1";
             "</div>";
         }
         item.appendChild(buses);
-        item.addEventListener("click", async () => {
+        item2.addEventListener("click", async () => {
           await stationClick(station);
           interval = setInterval(async () => {
             let i = document.querySelector(".sheetContents").scrollTop;
@@ -395,7 +399,7 @@ function createFavourite(parent, search, query){
           "</div>";
       }
       item.appendChild(buses);
-      item.addEventListener("click", async () => {
+      item2.addEventListener("click", async () => {
         await stationClick(station);
         interval = setInterval(async () => {
           let i = document.querySelector(".sheetContents").scrollTop;

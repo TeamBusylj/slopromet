@@ -24,7 +24,7 @@ body {
   color: var(--md-sys-color-on-surface);
   text-align: center;
   position: sticky;
-    top: 40px;
+    top: 0px;
 }
 
 @media only screen and (max-width: 500px) {
@@ -268,9 +268,12 @@ md-list.listOfStations, md-list.favouriteStations {
   position: absolute;
   top: 40px;
   z-index: 100;
-padding-bottom: 50px;
+  height: calc(100dvh - 50px);
   left: 0;
   width: 100%;
+  overscroll-behavior: none;
+  overflow-x : hidden;
+  overflow-y : scroll
 }
 md-list-item.stationItem {
   background: var(--md-sys-color-surface-container);
@@ -405,7 +408,7 @@ md-tabs.tabs {
   /* --md-primary-tab-active-indicator-color: transparent;*/
   border: none;
   position: sticky;
-  top: 80px;
+  top: 40px;
 
   transition: all 0.5s;
 }

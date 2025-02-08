@@ -56,8 +56,10 @@ function makeBottomheet(title, height) {
 }
 
   const onDragMove = (event) => {
+    const arrivalsHolder = document.querySelector(".arrivalsHolder");
     if (!event.target.closest(".bottomSheet")) return;
-    if(sheetContents.scrollTop > 1 && sheetHeight !== 98) sheetContents.style.overflow = "hidden"; else sheetContents.style.overflow = "scroll";
+    if((sheetContents.scrollTop > 1) && sheetHeight !== 98) sheetContents.style.overflow = "hidden"; else sheetContents.style.overflow = "scroll";
+    if(arrivalsHolder){ if (arrivalsHolder.scrollTop > 1 && sheetHeight !== 98) arrivalsHolder.style.overflow = "hidden"; else arrivalsHolder.style.overflow = "scroll";}
     if (
       (mouseDown || event.type == "touchmove") &&
       event.target.closest(".bottomSheet")
@@ -68,10 +70,11 @@ function makeBottomheet(title, height) {
       if (deltaY > 0 && sheetHeight == 98) return;
 
       if (
-        sheetContents.scrollHeight > sheetContents.clientHeight &&
+        (sheetContents.scrollHeight > sheetContents.clientHeight || arrivalsHolder) &&
         deltaY < 0
       ) {
-        if (sheetContents.scrollTop > 1) deltaY = 0;
+        if (sheetContents.scrollTop > 1 || (arrivalsHolder && arrivalsHolder.scrollTop > 1)) deltaY = 0;
+      
       }
 
   
@@ -96,6 +99,7 @@ function makeBottomheet(title, height) {
   };
   const onDragEnd = () => {
     sheetContents.style.overflow = "scroll";
+    if(document.querySelector(".arrivalsHolder"))document.querySelector(".arrivalsHolder").style.overflow = "scroll";
       dragPosition = undefined;
       sheetContents.classList.remove("not-selectable");
 
