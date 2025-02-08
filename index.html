@@ -27,9 +27,10 @@
 <script> function scrollWin() {  window.scrollTo(0, 0);} </script>
 <body>
 
-  <div id="map"></div>
+  <div id="map">
+    <md-fab class="centerMap" size="small" onclick="centerMap()" variant="surface"><md-icon slot="icon" aria-hidden="true">adjust</md-icon></md-fab> </div>
   
-<md-fab class="centerMap"><md-icon>adjust</md-icon></md-fab>
+
   <div class="loader"></div>
   <div class="busImg"></div>
   <script src="OpenLayers-2.13.1/OpenLayers.js"></script>

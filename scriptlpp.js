@@ -169,7 +169,19 @@ async function makeMap() {
   map.addLayer(busStationLayer);
   map.addLayer(busVectorLayer);
 }
-
+function centerMap() {
+  const view = map.getView();
+      var center = ol.proj.fromLonLat([longitude,latitude]);
+      var duration = 1000;
+      view.animate({
+        center: center,
+        duration: duration
+      });
+      view.animate( {
+        zoom: 16,
+        duration: duration
+      });
+}
 const delayedSearch = debounce(searchRefresh, 300);
 window.addEventListener("DOMContentLoaded", async function () {
   createBuses();
@@ -319,9 +331,7 @@ favList.style.opacity = "1";
         item2.addEventListener("click", async () => {
           await stationClick(station);
           interval = setInterval(async () => {
-            let i = document.querySelector(".sheetContents").scrollTop;
             await stationClick(isArrivalsOpen, true);
-            document.querySelector(".sheetContents").scrollTop = i;
           }, 10000);
         });
       }
@@ -402,9 +412,7 @@ function createFavourite(parent, search, query){
       item2.addEventListener("click", async () => {
         await stationClick(station);
         interval = setInterval(async () => {
-          let i = document.querySelector(".sheetContents").scrollTop;
           await stationClick(isArrivalsOpen, true);
-          document.querySelector(".sheetContents").scrollTop = i;
         }, 10000);
       });
     }
@@ -466,22 +474,20 @@ async function oppositeStation(id) {
 }
 var arrivalsScroll;
 async function stationClick(station, noAnimation) {
+  var stylesTransition = [
+      document.querySelector(".searchContain").style,
+      document.querySelector(".listOfStations").style,
+        document.querySelector(".favouriteStations").style,
+      document.getElementById("tabsFav").style
+  ]
+  setTimeout(() => {
+    document.querySelector(".sheetContents").scrollTop = 0;
+
+  }, 250);
   var notYet = false;
   var container;
-  console.log(stationList[station]);
 
-  setTimeout(() => {
-    if (!noAnimation) {
-      container.style.transform = "translateX(0)";
-      document.querySelector(".searchContain").style.transform =
-      document.querySelector(".listOfStations").style.transform =
-        document.querySelector(".favouriteStations").style.transform =
-      document.getElementById("tabsFav").style.transform =
-        "translateX(-100vw)";
-            document.querySelector(".listOfStations").style.height =
-        document.querySelector(".favouriteStations").style.height = "0"
-    }
-  }, 1);
+
   var data;
 var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
   var mapca;
@@ -523,20 +529,39 @@ var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
       document.querySelector(".mainSheet"),
       "arrivalsHolder"
     );
+
+      stylesTransition.forEach((style) => {
+        style.transform = "translateX(-100vw)";
+      })
+      stylesTransition.forEach((style) => {
+        style.opacity = "0";
+      })
+      setTimeout(() => {
+        container.style.transform = "translateX(0)";
+      }, 1);
+      setTimeout(() => {
+       
+        container.style.opacity = "1";
+      }, 100);
+    
     const title = addElement("h1", container, "title");
    let holder = addElement("div", title);
     let iks = addElement("md-icon-button", holder, "iks");
     iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
     iks.addEventListener("click", function () {
       container.style.transform = "translateX(100vw)";
+      container.style.opacity = "0";
       isArrivalsOpen = false;
       document.querySelector(".listOfStations").style.transform =
       document.querySelector(".searchContain").style.transform =
         document.querySelector(".favouriteStations").style.transform =
       document.getElementById("tabsFav").style.transform =
         "translateX(0vw)";
-        document.querySelector(".listOfStations").style.height =
-        document.querySelector(".favouriteStations").style.height = "100%"
+      document.querySelector(".listOfStations").style.opacity =
+      document.querySelector(".searchContain").style.opacity =
+        document.querySelector(".favouriteStations").style.opacity =
+      document.getElementById("tabsFav").style.opacity =
+        "1";
       clearInterval(interval);
       setTimeout(() => {
         container.remove();
@@ -777,7 +802,6 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
   );
   let data1 = await response.json();
   data1 = data1.data.route_groups[0].routes;
-  document.querySelector(".sheetContents").scrollTop = 0;
   data1.forEach((route) => {
     console.log(route.parent_name + "," + routeName);
 
@@ -890,7 +914,7 @@ function showBusById(arrival) {
     loop(1, arrival);
     busUpdateInterval = setInterval(() => {
       loop(0, arrival);
-    }, 50000);
+    }, 5000);
   } catch (error) {
     console.log(error);
     document.querySelector(".loader").style.backgroundSize = "0% 0%";

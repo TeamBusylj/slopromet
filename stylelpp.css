@@ -36,22 +36,7 @@ body {
         padding:0 !important;
     }
   }
-.arrivalsContainer {
-  position: absolute;
-  top: 12px;
-  transition: all 0.4s cubic-bezier(0.05, 0.7, 0.1, 1);
-  transform: translateX(30px);
-  opacity: 0;
-  width: 100%;
-  z-index: 3;
-  height: 100%;
-  background: var(--md-sys-color-surface);
-  color: var(--md-sys-color-on-surface);
-  display: flex;
-  overflow-y: hidden;
-  flex-direction: column;
-  align-items: center;
-}
+
 
 .buses {
   gap: 10px;
@@ -142,6 +127,10 @@ body {
       var(--md-sys-color-error-container)
     ) !important;
   }
+  .arrivalTime{
+    color: #c4dfc0;
+  }
+  
 }
 
 @media (prefers-color-scheme: light) {
@@ -155,6 +144,9 @@ body {
       var(--md-sys-color-on-error-container)
     ) !important;
   }
+  .arrivalTime{
+    color: #264720;
+  }
 }
 #map div div a[target="_blank"] div img {
   left: unset !important;
@@ -162,13 +154,16 @@ body {
 }
 
 md-fab.centerMap {
-  margin-bottom: 40px;
-  margin-right: 15px;
+    position: absolute;
+    bottom: 9dvh;
+    right: 17px;
+    z-index: 2;
 }
 #map {
   margin-bottom: -30px;
   width: 100%;
   height: 67dvh;
+  position: relative;
 }
 .ol-control {
   background: none !important;
@@ -233,14 +228,18 @@ md-fab.centerMap {
     'opsz' 40
 }
 md-list.listOfStations, md-list.favouriteStations {
-  margin-top: 5px;
-  overflow-y: scroll;
-  height: 100%;
-  width: 100%;
-  transition: all 0.5s;
-  transform: translateY(-20px);
-  opacity: 0;
-  padding: 0 40px;
+    overflow-y: scroll;
+    height: 100%;
+    width: 100%;
+    transition: all 0.5s;
+    transform: translateY(-20px);
+    opacity: 0;
+    padding: 0 40px;
+    overscroll-behavior: none;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: calc(100dvh - 180px);
+    position: relative;
 }
 .hideStations {
   position: absolute;
@@ -273,7 +272,8 @@ md-list.listOfStations, md-list.favouriteStations {
   width: 100%;
   overscroll-behavior: none;
   overflow-x : hidden;
-  overflow-y : scroll
+  overflow-y : scroll;
+  opacity: 0;
 }
 md-list-item.stationItem {
   background: var(--md-sys-color-surface-container);
@@ -295,6 +295,7 @@ md-list-item.stationItem {
   display: none;
   align-items: center;
   justify-content: center;
+
 }
 img.busImgElement {
   object-fit: fill;
@@ -302,6 +303,7 @@ img.busImgElement {
   border-radius: 25px;
   padding: 10px;
   box-sizing: border-box;
+  animation: show 0.5s forwards;
 }
 @keyframes show {
   0% {
@@ -473,10 +475,7 @@ md-tabs::part(divider) {
     position: absolute !important;
     top: 40px !important;
     /* padding-top: 30px; */
-    background-color: var(--md-sys-color-surface) !important;
-    width: 90% !important;
-    /* height: 100% !important; */
-    z-index: 100 !important;
+    height: calc(100dvh - 55px);
     animation: showIn 0.5s;
     transition: transform 0.5s !important;
     transform: translateX(0);
@@ -539,7 +538,6 @@ display: flex;
   margin: 0 20px;
   position: relative;
   color: var(--md-sys-color-on-surface);
-  min-height: 84dvh;
   overflow-x: hidden;
   flex-direction: column;
   align-items: center;

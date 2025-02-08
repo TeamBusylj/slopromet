@@ -3,22 +3,20 @@ function makeBottomheet(title, height) {
   let bottomSheet = addElement("div", document.body, "bottomSheet");
   let sheetContents = addElement("div", bottomSheet, "sheetContents");
   let draggableArea = addElement("div", bottomSheet, "handleHolder");
-  
+
   let handle = addElement("div", draggableArea, "bottomSheetHandle");
- 
 
   let toolbarColor = document
     .querySelector('meta[name="theme-color"]')
     .getAttribute("content");
 
-    const setSheetHeight = (value) => {
-      sheetHeight = Math.max(0, Math.min(100, value));
-  
-      bottomSheet.style.transform = `translate3d(-50%,${
-        100 - sheetHeight
-      }dvh, 0)`;
-    };
-  
+  const setSheetHeight = (value) => {
+    sheetHeight = Math.max(0, Math.min(100, value));
+
+    bottomSheet.style.transform = `translate3d(-50%,${
+      100 - sheetHeight
+    }dvh, 0)`;
+  };
 
   const touchPosition = (event) => (event.touches ? event.touches[0] : event);
 
@@ -27,8 +25,6 @@ function makeBottomheet(title, height) {
   const onDragStart = (event) => {
     if (!event.target.closest(".bottomSheet")) return;
     dragPosition = touchPosition(event).pageY;
-
-    if (sheetHeight > 97) sheetContents.style.overflow = "scroll";
 
     sheetContents.classList.add("not-selectable");
     vh = Math.max(
@@ -48,18 +44,25 @@ function makeBottomheet(title, height) {
     --mouseDown;
   };
   function formatNumber(num) {
-    let str = num.toString().replace('.', ''); // Remove the decimal point for easier extraction
+    let str = num.toString().replace(".", ""); // Remove the decimal point for easier extraction
     let firstTwo = str.slice(0, 2); // Get first two digits
-    let decimalPart = str[2] || '0'; // Get the third digit (first decimal), default to '0' if missing
+    let decimalPart = str[2] || "0"; // Get the third digit (first decimal), default to '0' if missing
 
     return `${firstTwo[0]}.${firstTwo[1]}`;
-}
+  }
 
   const onDragMove = (event) => {
-    const arrivalsHolder = document.querySelector(".arrivalsHolder");
+    const scrollList = document.querySelector(".lineTimes")
+      ? document.querySelector(".lineTimes")
+      : document.querySelector(".arrivalsHolder")
+      ? document.querySelector(".arrivalsHolder")
+      : document.querySelector(".listOfStations").style.display !== "none"
+      ? document.querySelector(".listOfStations")
+      : document.querySelector(".favouriteStations");
     if (!event.target.closest(".bottomSheet")) return;
-    if((sheetContents.scrollTop > 1) && sheetHeight !== 98) sheetContents.style.overflow = "hidden"; else sheetContents.style.overflow = "scroll";
-    if(arrivalsHolder){ if (arrivalsHolder.scrollTop > 1 && sheetHeight !== 98) arrivalsHolder.style.overflow = "hidden"; else arrivalsHolder.style.overflow = "scroll";}
+    if (scrollList.scrollTop > 1 && sheetHeight !== 98)
+      scrollList.style.overflow = "hidden";
+    else scrollList.style.overflow = "scroll";
     if (
       (mouseDown || event.type == "touchmove") &&
       event.target.closest(".bottomSheet")
@@ -70,14 +73,12 @@ function makeBottomheet(title, height) {
       if (deltaY > 0 && sheetHeight == 98) return;
 
       if (
-        (sheetContents.scrollHeight > sheetContents.clientHeight || arrivalsHolder) &&
+        (sheetContents.scrollHeight > sheetContents.clientHeight ||
+          scrollList) &&
         deltaY < 0
       ) {
-        if (sheetContents.scrollTop > 1 || (arrivalsHolder && arrivalsHolder.scrollTop > 1)) deltaY = 0;
-      
+        if (sheetContents.scrollTop > 1 || scrollList.scrollTop > 1) deltaY = 0;
       }
-
-  
 
       const mainContentHeight = Math.min(
         mainContent.clientHeight,
@@ -87,8 +88,8 @@ function makeBottomheet(title, height) {
 
       if (sheetHeight < 40 && deltaY < 0) {
         console.log(y);
-        
-        deltaY = deltaY/formatNumber(y);
+
+        deltaY = deltaY / formatNumber(y);
       }
       const deltaHeight = (deltaY / window.innerHeight) * 100;
 
@@ -98,28 +99,34 @@ function makeBottomheet(title, height) {
     }
   };
   const onDragEnd = () => {
-    sheetContents.style.overflow = "scroll";
-    if(document.querySelector(".arrivalsHolder"))document.querySelector(".arrivalsHolder").style.overflow = "scroll";
-      dragPosition = undefined;
-      sheetContents.classList.remove("not-selectable");
+    (document.querySelector(".lineTimes")
+      ? document.querySelector(".lineTimes")
+      : document.querySelector(".arrivalsHolder")
+      ? document.querySelector(".arrivalsHolder")
+      : document.querySelector(".listOfStations").style.display !== "none"
+      ? document.querySelector(".listOfStations")
+      : document.querySelector(".favouriteStations")
+    ).style.overflow = "scroll";
+    dragPosition = undefined;
+    sheetContents.classList.remove("not-selectable");
 
-      var sheetHeight3;
+    var sheetHeight3;
 
-      const mainContentHeight = Math.min(
-        mainContent.clientHeight,
-        mainContent.scrollHeight
-      );
-      sheetHeight3 = (mainContentHeight / vh) * 100;
+    const mainContentHeight = Math.min(
+      mainContent.clientHeight,
+      mainContent.scrollHeight
+    );
+    sheetHeight3 = (mainContentHeight / vh) * 100;
 
-      if (sheetHeight > 65) {
-        setSheetHeight(98);
-      } else {
-        setSheetHeight(40);
-      }
-      if (sheetHeight > sheetHeight3 + (100 - sheetHeight3) / 2) {
-        setSheetHeight(98);
-      }
-      bottomSheet.style.transition =
+    if (sheetHeight > 65) {
+      setSheetHeight(98);
+    } else {
+      setSheetHeight(40);
+    }
+    if (sheetHeight > sheetHeight3 + (100 - sheetHeight3) / 2) {
+      setSheetHeight(98);
+    }
+    bottomSheet.style.transition =
       "all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1)";
     setTimeout(() => {
       bottomSheet.style.transition = "";
@@ -138,10 +145,10 @@ function makeBottomheet(title, height) {
 
   let mainContent = addElement("main", sheetContents, "mainSheet");
   bottomSheet.style.transition =
-  "all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1)";
-setTimeout(() => {
-  bottomSheet.style.transition = "";
-}, 400);
+    "all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1)";
+  setTimeout(() => {
+    bottomSheet.style.transition = "";
+  }, 400);
   if (height) setSheetHeight(height);
   else {
     setSheetHeight(
@@ -150,50 +157,65 @@ setTimeout(() => {
   }
   return mainContent;
 }
-
+var currentBus = ""
 var busObject;
 var busMarker = [];
 var busImageData;
-  /**
-   * Main loop for fetching bus data and displaying it on the map.
-   * @param {boolean} firsttim - Whether this is the first time the loop is run.
-   * @param {string} line - The line number of the bus.
-   * @param {string} trip - The trip name of the bus.
-   * @returns {void}
-   */
+/**
+ * Main loop for fetching bus data and displaying it on the map.
+ * @param {boolean} firsttim - Whether this is the first time the loop is run.
+ * @param {string} line - The line number of the bus.
+ * @param {string} trip - The trip name of the bus.
+ * @returns {void}
+ */
 async function loop(firsttim, arrival) {
+  if(currentBus == arrival.trip_id && firsttim) {centerBus(); return}
   if (!firsttim && sheetHeight == 98) return;
-  
-  if(firsttim){
-      document.querySelector(".loader").style.display = "grid";
-      document.querySelector(".loader").style.setProperty("--_color", "RGB("+lineColorsObj[arrival.route_name.replace(/\D/g, "")]+")");
-  } 
+
+  if (firsttim) {
+    document.querySelector(".loader").style.display = "grid";
+    document
+      .querySelector(".loader")
+      .style.setProperty(
+        "--_color",
+        "RGB(" + lineColorsObj[arrival.route_name.replace(/\D/g, "")] + ")"
+      );
+  }
   // Fetch bus data
-  let response = (await (await fetch("https://cors.proxy.prometko.si/https://data.lpp.si/api/bus/buses-on-route?route-group-number="+arrival.route_name, {
-    headers: { "apiKey": "D2F0C381-6072-45F9-A05E-513F1515DD6A",  "Accept": "Travana"}
-})).json()).data;
-console.log(response, arrival);
-
-let tempBusObject = response;
-
-for (const i in tempBusObject) {
-    for (const j in busImageData) {
-        if (tempBusObject[i].bus_name.includes(busImageData[j].no)) {
-            tempBusObject[i] = {
-                ...tempBusObject[i],
-                ...busImageData[j]
-            };
+  let response = (
+    await (
+      await fetch(
+        "https://cors.proxy.prometko.si/https://data.lpp.si/api/bus/buses-on-route?route-group-number=" +
+          arrival.route_name,
+        {
+          headers: {
+            apiKey: "D2F0C381-6072-45F9-A05E-513F1515DD6A",
+            Accept: "Travana",
+          },
         }
-    }
-}
-  
+      )
+    ).json()
+  ).data;
+  console.log(response, arrival);
 
+  let tempBusObject = response;
+
+  for (const i in tempBusObject) {
+    for (const j in busImageData) {
+      if (tempBusObject[i].bus_name.includes(busImageData[j].no)) {
+        tempBusObject[i] = {
+          ...tempBusObject[i],
+          ...busImageData[j],
+        };
+      }
+    }
+  }
+currentBus = arrival.trip_id
   busObject = tempBusObject;
 
   // Create or update markers
   displayBuses(firsttim, arrival);
 }
-
 
 var vectorSource,
   vectorLayer,
@@ -205,27 +227,21 @@ var vectorSource,
 async function displayBuses(firsttim, arrival) {
   tempMarkersSource = new ol.layer.Vector({
     source: new ol.source.Vector({
-      updateWhileAnimating: true,   // Ensures updates while map is in motion
-      updateWhileInteracting: true
+      updateWhileAnimating: true, // Ensures updates while map is in motion
+      updateWhileInteracting: true,
     }),
-    updateWhileAnimating: true,   // Ensures updates while map is in motion
-    updateWhileInteracting: true
+    updateWhileAnimating: true, // Ensures updates while map is in motion
+    updateWhileInteracting: true,
   });
 
   let busid;
   for (const i in busObject) {
     const bus = busObject[i];
 
-
-    if (
-      bus.trip_id == arrival.trip_id
-    ) {
+    if (bus.trip_id == arrival.trip_id) {
       if (firsttim) {
-        
-        
         busid = bus;
         const coordinates = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
-
 
         // Create a feature for the bus
         const marker = new ol.Feature({
@@ -242,13 +258,13 @@ async function displayBuses(firsttim, arrival) {
             src: bus.model.includes("MAN Lion's City G CNG-H")
               ? "./images/busimg_lion.svg"
               : "./images/busimg.svg",
-            scale: .2,
+            scale: 0.2,
             rotation: (bus.cardinal_direction * Math.PI) / 180, // Convert degrees to radians
           }),
         });
 
-        marker.busId = bus.bus_unit_id        ;
-        marker.busNo = bus.no
+        marker.busId = bus.bus_unit_id;
+        marker.busNo = bus.no;
 
         marker.setStyle(busStyle);
 
@@ -280,31 +296,31 @@ async function displayBuses(firsttim, arrival) {
           }
         });
       }
-    
     }
   }
-  map.on('click', function (evt) {
+  map.on("click", function (evt) {
     const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
       return feature;
     });
     if (feature && feature.busNo) {
-        let holder = document.querySelector(".busImg")
-        holder.innerHTML = "";
-        holder.style.display = "flex";
-     let img = addElement("img",holder, "busImgElement");
-      img.src = "https://mestnipromet.cyou/tracker/img/avtobusi/"+feature.busNo+".jpg";
-      img.onclick = () => holder.style.display = "none";
+      let holder = document.querySelector(".busImg");
+      holder.innerHTML = "";
+      holder.style.display = "flex";
+      let img = addElement("img", holder, "busImgElement");
+      img.src =
+        "https://mestnipromet.cyou/tracker/img/avtobusi/" +
+        feature.busNo +
+        ".jpg";
+      img.onclick = () => (holder.style.display = "none");
     }
   });
 
   if (firsttim) {
-   
-
     let response = await fetch(
       "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/stations-on-route?trip-id=" +
-      arrival.trip_id
+        arrival.trip_id
     );
-    
+
     response = await response.json();
     await generateRouteVector(
       response.data,
@@ -312,14 +328,12 @@ async function displayBuses(firsttim, arrival) {
       arrival.route_name,
       arrival.route_id
     );
-  } else{
-   
-      document.querySelector(".loader").style.backgroundSize = "0% 0%";
-          setTimeout(() => {
-            document.querySelector(".loader").style.display = "none";
-            document.querySelector(".loader").style.backgroundSize = "40% 40%";
-          }, 300);
-    
+  } else {
+    document.querySelector(".loader").style.backgroundSize = "0% 0%";
+    setTimeout(() => {
+      document.querySelector(".loader").style.display = "none";
+      document.querySelector(".loader").style.backgroundSize = "40% 40%";
+    }, 300);
   }
 }
 async function generateRouteVector(data, trip_id, lno, lid) {
@@ -328,25 +342,28 @@ async function generateRouteVector(data, trip_id, lno, lid) {
 
   // Fetch coordinates data
   var coordinates = await fetch(
-    "https://mestnipromet.cyou/api/v1/resources/buses/shape?trip_id=" +
-      trip_id
+    "https://mestnipromet.cyou/api/v1/resources/buses/shape?trip_id=" + trip_id
   );
   coordinates = await coordinates.json();
 
-
   // Ensure coordinates are in [longitude, latitude] format
 
-  coordinates = coordinates.data
+  coordinates = coordinates.data;
   if (coordinates.length == 0) {
     let coords = "";
     for (const i in data) {
-        coords += data[i].longitude + "," + data[i].latitude + ";"
+      coords += data[i].longitude + "," + data[i].latitude + ";";
     }
-    coordinates = await (await fetch("https://router.project-osrm.org/route/v1/driving/" + coords.substring(0, coords.length-2) + "?overview=full&geometries=geojson")).json();
+    coordinates = await (
+      await fetch(
+        "https://router.project-osrm.org/route/v1/driving/" +
+          coords.substring(0, coords.length - 2) +
+          "?overview=full&geometries=geojson"
+      )
+    ).json();
 
-    
     coordinates = coordinates.routes[0].geometry.coordinates;
-}
+  }
   // Create new vector sources for stations and routes
   const tempStationSource = new ol.source.Vector();
   const tempRouteSource = new ol.source.Vector();
@@ -399,7 +416,8 @@ async function generateRouteVector(data, trip_id, lno, lid) {
           true
         );
         setTimeout(() => {
-          document.querySelector(".bottomSheet").style.transform = "translate3d(-50%,98dvh, 0)";
+          document.querySelector(".bottomSheet").style.transform =
+            "translate3d(-50%,98dvh, 0)";
           sheetHeight = 98;
           document.querySelector(".sheetContents").scrollTop = 0;
         }, 50);
@@ -410,33 +428,35 @@ async function generateRouteVector(data, trip_id, lno, lid) {
 
   let lineStrings = [];
 
-
   // Check if the geojson_shape is a MultiLineString or a LineString
-  const hasLongSubarray = arr => arr.some(sub => Array.isArray(sub) && sub.length > 2);
+  const hasLongSubarray = (arr) =>
+    arr.some((sub) => Array.isArray(sub) && sub.length > 2);
   if (hasLongSubarray(coordinates)) {
-    for (const j in coordinates)  {
-        if (j[0][0] < j[0][1]) {
-            for (const i in coordinates)  {
-                coordinates[j][i].reverse();
-            }
+    for (const j in coordinates) {
+      if (j[0][0] < j[0][1]) {
+        for (const i in coordinates) {
+          coordinates[j][i].reverse();
         }
+      }
     }
-   
+
     // For MultiLineString, iterate over each array of coordinates
     lineStrings = coordinates.map((coordinatesa) => {
-      return new ol.geom.LineString(coordinatesa.map((c) => {
-        return ol.proj.fromLonLat(c);
-      }));
+      return new ol.geom.LineString(
+        coordinatesa.map((c) => {
+          return ol.proj.fromLonLat(c);
+        })
+      );
     });
-  } else{
+  } else {
     console.log(coordinates);
     if (coordinates[0][0] > coordinates[0][1]) {
-        for (const i in coordinates)  {
-            coordinates[i].reverse();
-        }
+      for (const i in coordinates) {
+        coordinates[i].reverse();
+      }
     }
     console.log(coordinates);
-    
+
     // For a single LineString, just create a single geometry
     lineStrings = [
       new ol.geom.LineString(
@@ -456,7 +476,7 @@ async function generateRouteVector(data, trip_id, lno, lid) {
     routeFeature.setStyle(
       new ol.style.Style({
         stroke: new ol.style.Stroke({
-          color:lineColorsObj[lno.replace(/\D/g, "")], 
+          color: lineColorsObj[lno.replace(/\D/g, "")],
           width: 6,
         }),
       })
@@ -468,48 +488,57 @@ async function generateRouteVector(data, trip_id, lno, lid) {
   if (busVectorLayer) {
     map.removeLayer(busVectorLayer);
   }
-  busVectorLayer = new ol.layer.Vector({ source: tempRouteSource,  updateWhileAnimating: true,   // Ensures updates while map is in motion
-    updateWhileInteracting: true });
+  busVectorLayer = new ol.layer.Vector({
+    source: tempRouteSource,
+    updateWhileAnimating: true, // Ensures updates while map is in motion
+    updateWhileInteracting: true,
+  });
   busVectorLayer.trip = trip_id;
   map.addLayer(busVectorLayer);
 
   if (busStationLayer) {
     map.removeLayer(busStationLayer);
   }
-  busStationLayer = new ol.layer.Vector({ source: tempStationSource, updateWhileAnimating: true,   // Ensures updates while map is in motion
-    updateWhileInteracting: true });
+  busStationLayer = new ol.layer.Vector({
+    source: tempStationSource,
+    updateWhileAnimating: true, // Ensures updates while map is in motion
+    updateWhileInteracting: true,
+  });
   map.addLayer(busStationLayer);
 
   if (markers) {
     map.removeLayer(markers);
   }
-  markers = new ol.layer.Vector({ source: tempMarkersSource.getSource(), updateWhileAnimating: true,   // Ensures updates while map is in motion
-    updateWhileInteracting: true });
+  markers = new ol.layer.Vector({
+    source: tempMarkersSource.getSource(),
+    updateWhileAnimating: true, // Ensures updates while map is in motion
+    updateWhileInteracting: true,
+  });
   map.addLayer(markers);
-  const myExtent = busVectorLayer.getSource().getExtent();
-
-  setTimeout(() => {
-    const view = map.getView();
-    var resolution = view.getResolutionForExtent(myExtent);
-      var zoom = view.getZoomForResolution(resolution);
-      var center = ol.extent.getCenter(myExtent);
-      var duration = 1000;
-      view.animate({
-        center: center,
-        duration: duration
-      });
-      view.animate( {
-        zoom: zoom,
-        duration: duration
-      });
-      document.querySelector(".loader").style.backgroundSize = "0% 0%";
-      setTimeout(() => {
-        document.querySelector(".loader").style.display = "none";
-        document.querySelector(".loader").style.backgroundSize = "40% 40%";
-      }, 300);
-  }, 1);
-
+ 
+  centerBus()
   
+}
+function centerBus() {
+  const myExtent = busVectorLayer.getSource().getExtent();
+  const view = map.getView();
+  var resolution = view.getResolutionForExtent(myExtent);
+  var zoom = view.getZoomForResolution(resolution);
+  var center = ol.extent.getCenter(myExtent);
+  var duration = 1000;
+  view.animate({
+    center: center,
+    duration: duration,
+  });
+  view.animate({
+    zoom: zoom,
+    duration: duration,
+  });
+  document.querySelector(".loader").style.backgroundSize = "0% 0%";
+  setTimeout(() => {
+    document.querySelector(".loader").style.display = "none";
+    document.querySelector(".loader").style.backgroundSize = "40% 40%";
+  }, 300);
 }
 const lineColors = (i) => {
   const color = lineColorsObj[i]; // Example: [201, 51, 54]
