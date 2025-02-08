@@ -130,7 +130,10 @@ body {
   .arrivalTime{
     color: #c4dfc0;
   }
-  
+  .arrivalYellow {
+    background: linear-gradient(163deg, #fce45c, #b49901) !important;
+    color: #000000d5;
+}
 }
 
 @media (prefers-color-scheme: light) {
@@ -147,6 +150,10 @@ body {
   .arrivalTime{
     color: #264720;
   }
+  .arrivalYellow {
+    background: linear-gradient(147deg, #ffe86a, #d6b400) !important;
+    color: #000000d5;
+}
 }
 #map div div a[target="_blank"] div img {
   left: unset !important;
@@ -240,6 +247,8 @@ md-list.listOfStations, md-list.favouriteStations {
     overflow-y: scroll;
     height: calc(100dvh - 180px);
     position: relative;
+    padding-bottom: 50px;
+    margin-top: 10px;
 }
 .hideStations {
   position: absolute;
@@ -266,7 +275,7 @@ md-list.listOfStations, md-list.favouriteStations {
   transition: all 0.5s;
   position: absolute;
   top: 40px;
-  z-index: 100;
+  z-index: 3;
   height: calc(100dvh - 50px);
   left: 0;
   width: 100%;
@@ -544,6 +553,7 @@ display: flex;
   transform: translateX(0) translateY(-20px);
  opacity: 0;
  transition: all 0.3s;
+ padding-bottom: 50px;
 }
 
 .hideLoad {
@@ -580,5 +590,36 @@ display: flex;
   }
   100% {
     background-size: 40% 40%;
+  }
+}
+.infoBar {
+  position: fixed;
+  bottom: 15px;
+  z-index: 4;
+  background: var(--md-sys-color-surface);
+  width: 100%;
+  height: 30px;
+  display: flex
+;
+transition: all 0.5s;
+  border-top: 1px var(--md-sys-color-outline-variant, #cac4d0) solid;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--md-sys-color-on-surface);
+  align-items: center;
+  transform: translateY(30px);
+}
+.infoText {
+  display: inline-block;
+  padding:0;
+  animation: slideText 30s linear infinite;
+}
+
+@keyframes slideText {
+  from {
+      transform: translateX(100vw);
+  }
+  to {
+      transform: translateX(-100%);
   }
 }

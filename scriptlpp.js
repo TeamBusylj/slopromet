@@ -191,7 +191,7 @@ window.addEventListener("DOMContentLoaded", async function () {
 <div class="searchContain"> <md-filled-text-field class="search" value='${bava}' placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
  <md-circular-progress indeterminate id="loader"></md-circular-progress>
  <md-tabs class=tabs id=tabsFav><md-primary-tab id="favTab" aria-controls="fav-panel">Priljubljeno</md-primary-tab><md-primary-tab id="locationTab" aria-controls="location-panel">V bližini</md-primary-tab></md-tabs>
-    <md-list role="tabpanel" aria-labelledby="locationTab" id="location-panel" class="listOfStations"></md-list>;
+    <md-list role="tabpanel" aria-labelledby="locationTab" id="location-panel" class="listOfStations"></md-list>
     <md-list role="tabpanel" aria-labelledby="favTab" id="fav-panel" class="favouriteStations"></md-list>`;
   let search = this.document.querySelector(".search");
   search.addEventListener("input", delayedSearch);
@@ -219,10 +219,10 @@ async function getLocation() {
     });
     latitude = position.coords.latitude;
     longitude = position.coords.longitude;
-  } catch {}
+  } catch(e) {console.error(e)}
 }
 
-setInterval(getLocation, 10000);
+//setInterval(() => {getLocation();createStationItems(1)}, 20000);
 async function createBuses() {
   await getLocation();
   stationList = JSON.parse(stationDetails).data;
@@ -231,13 +231,17 @@ async function createBuses() {
   currentPanel.style.transform = "translateX(0px) translateY(0px)";
   currentPanel.style.opacity = "1";
   makeMap();
- 
+ updateStations()
   
 }
-
+async function updateStations() {
+  let stations = await fetchData("https://cors.proxy.prometko.si/https://data.lpp.si/api/station/station-details?show-subroutes=1")
+  stationList = stations
+  createStationItems()
+}
 var isArrivalsOpen = false;
 var currentPanel
-function createStationItems(e, query = "") {
+function createStationItems(o) {
   var search = false;
 
   if (document.querySelector(".search").value !== "") {
@@ -248,9 +252,12 @@ function createStationItems(e, query = "") {
   list.innerHTML = "";
   var favList = document.querySelector(".favouriteStations");
   favList.innerHTML = "";
-createFavourite(favList, search, query)
-favList.style.transform = "translateX(0px) translateY(0px)";
-favList.style.opacity = "1";
+createFavourite(favList, search, document.querySelector(".search").value)
+if(!o){
+  favList.style.transform = "translateX(0px) translateY(0px)";
+  favList.style.opacity = "1";
+}
+
 
   loader.style.display = "block";
   var nearby = {};
@@ -283,22 +290,22 @@ favList.style.opacity = "1";
 
       let textHolder = addElement("div", item, "textHolder");
       textHolder.innerHTML =
-        '<span class="stationName">' + stationList[station].n + "</span>";
+        '<span class="stationName">' + stationList[station].name + "</span>";
       const distance = haversineDistance(
         latitude,
         longitude,
-        stationList[station].l,
-        stationList[station].j
+        stationList[station].latitude,
+        stationList[station].longitude
       );
       const favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
-      if(search && !normalizeText(stationList[station].n.toLowerCase()).includes(normalizeText(query.toLowerCase()))) continue;
+      if(search && !normalizeText(stationList[station].name.toLowerCase()).includes(normalizeText(query.toLowerCase()))) continue;
       if (distance < 3 || search) {
         let cornot = "";
-        if (stationList[station].id % 2 !== 0) {
+        if (stationList[station].ref_id % 2 !== 0) {
           cornot = '<md-icon class="center">adjust</md-icon>';
         }
         let fav = ""
-        if (favList.includes(stationList[station].id)) {
+        if (favList.includes(stationList[station].ref_id)) {
           fav = '<md-icon class="iconFill">favorite</md-icon>';
         }
         if (distance > 1) {
@@ -317,10 +324,10 @@ favList.style.opacity = "1";
           nearby[distance.toFixed(5)] = item2;
         }
         let buses = addElement("div", item, "buses");
-        for (const bus of stationList[station].g) {
+        for (const bus of stationList[station].route_groups_on_station) {
           buses.innerHTML +=
             "<div class=busNo style=background:" +
-            lineColors(bus.replace(/\D/g, "")) +
+            lineColors(bus) +
             " id=bus2_" +
             bus +
             ">" +
@@ -364,22 +371,22 @@ function createFavourite(parent, search, query){
 
     let textHolder = addElement("div", item, "textHolder");
     textHolder.innerHTML =
-      '<span class="stationName">' + stationList[station].n + "</span>";
+      '<span class="stationName">' + stationList[station].name + "</span>";
     const favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
-    if(search && !normalizeText(stationList[station].n.toLowerCase()).includes(normalizeText(query.toLowerCase()))) continue;
-    if (favList.includes(stationList[station].id) || search) {
+    if(search && !normalizeText(stationList[station].name.toLowerCase()).includes(normalizeText(query.toLowerCase()))) continue;
+    if (favList.includes(stationList[station].ref_id) || search) {
       const distance = haversineDistance(
         latitude,
         longitude,
-        stationList[station].l,
-        stationList[station].j
+        stationList[station].latitude,
+        stationList[station].longitude
       );
       let cornot = "";
-      if (stationList[station].id % 2 !== 0) {
+      if (stationList[station].ref_id % 2 !== 0) {
         cornot = '<md-icon class="center">adjust</md-icon>';
       }
       let fav = ""
-      if (favList.includes(stationList[station].id)) {
+      if (favList.includes(stationList[station].ref_id)) {
         fav = '<md-icon class="iconFill">favorite</md-icon>';
       }
       if (distance > 1) {
@@ -398,16 +405,18 @@ function createFavourite(parent, search, query){
         nearby[distance.toFixed(5)] = item2;
       }
       let buses = addElement("div", item, "buses");
-      for (const bus of stationList[station].g) {
+      for (const bus of stationList[station].route_groups_on_station) {
         buses.innerHTML +=
           "<div class=busNo style=background:" +
-          lineColors(bus.replace(/\D/g, "")) +
+          lineColors(bus) +
           " id=bus2_" +
           bus +
           ">" +
           bus +
           "</div>";
       }
+      console.log(stationList[station].route_groups_on_station);
+      
       item.appendChild(buses);
       item2.addEventListener("click", async () => {
         await stationClick(station);
@@ -421,10 +430,9 @@ function createFavourite(parent, search, query){
       .map((key) => parseFloat(key).toFixed(5))
       .sort((a, b) => a - b)
       .map((key) => nearby[key]);
-      console.log(sortedArray);
       
       if (sortedArray.length > 40) sortedArray.splice(40);
-      console.log(sortedArray);
+
     for (const stationDistance of sortedArray) {
       
         
@@ -455,16 +463,15 @@ async function oppositeStation(id) {
   let arS = document.querySelector(".arrivalsScroll");
   arS.style.transform = "translateX(0px) translateY(-20px)";
   arS.style.opacity = "0";
-  console.log(id);
   setTimeout(async () => {
     if (id % 2 === 0) {
       await stationClick(
-        stationList.findIndex((obj) => obj.id === String(parseInt(id) - 1)),
+        stationList.findIndex((obj) => obj.ref_id === String(parseInt(id) - 1)),
         true
       );
     } else {
       await stationClick(
-        stationList.findIndex((obj) => obj.id === String(parseInt(id) + 1)),
+        stationList.findIndex((obj) => obj.ref_id === String(parseInt(id) + 1)),
         true
       );
     }
@@ -478,7 +485,8 @@ async function stationClick(station, noAnimation) {
       document.querySelector(".searchContain").style,
       document.querySelector(".listOfStations").style,
         document.querySelector(".favouriteStations").style,
-      document.getElementById("tabsFav").style
+      document.getElementById("tabsFav").style,
+    
   ]
   setTimeout(() => {
     document.querySelector(".sheetContents").scrollTop = 0;
@@ -493,30 +501,29 @@ var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
   var mapca;
   var fav;
   if (noAnimation) {
-    let response = await fetch(
+    data = await fetchData(
       "https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
-        stationList[station].id
+        stationList[station].ref_id
     );
-    data = await response.json();
     let cornot = "";
-    if (stationList[station].id % 2 !== 0)
+    if (stationList[station].ref_id % 2 !== 0)
       cornot = '<md-icon class="center">adjust</md-icon>';
     document.querySelector(".title span").innerHTML =
-      stationList[station].n + cornot;
+      stationList[station].name + cornot;
     document.querySelector(".titleHolder").innerHTML +=
       "<div class=none></div>";
     document.querySelector(".mapca").addEventListener("click", function () {
-      oppositeStation(stationList[station].id);
+      oppositeStation(stationList[station].ref_id);
     });
     let favi = document.querySelector(".favi")
-    favi.innerHTML = favList.includes(stationList[station].id) ? "<md-icon class=iconFill>favorite</md-icon>" : "<md-icon>favorite</md-icon>";
+    favi.innerHTML = favList.includes(stationList[station].ref_id) ? "<md-icon class=iconFill>favorite</md-icon>" : "<md-icon>favorite</md-icon>";
 
     favi.addEventListener("click", function () {
-      if(favList.includes(stationList[station].id)){
-        favList = favList.filter(item => item !== stationList[station].id);
+      if(favList.includes(stationList[station].ref_id)){
+        favList = favList.filter(item => item !== stationList[station].ref_id);
         favi.innerHTML = "<md-icon>favorite</md-icon>";
       } else{
-        favList.push(stationList[station].id);
+        favList.push(stationList[station].ref_id);
 
         favi.innerHTML = "<md-icon class=iconFill>favorite</md-icon>";
       }
@@ -529,7 +536,7 @@ var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
       document.querySelector(".mainSheet"),
       "arrivalsHolder"
     );
-
+createInfoBar(document.querySelector(".mainSheet"), stationList[station].ref_id);
       stylesTransition.forEach((style) => {
         style.transform = "translateX(-100vw)";
       })
@@ -547,47 +554,45 @@ var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
     const title = addElement("h1", container, "title");
    let holder = addElement("div", title);
     let iks = addElement("md-icon-button", holder, "iks");
-    iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
+    iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
     iks.addEventListener("click", function () {
+      
       container.style.transform = "translateX(100vw)";
-      container.style.opacity = "0";
+     document.querySelector(".infoBar").style.transform = "translateY(30px)";
+      container.style.opacity  = "0";
       isArrivalsOpen = false;
-      document.querySelector(".listOfStations").style.transform =
-      document.querySelector(".searchContain").style.transform =
-        document.querySelector(".favouriteStations").style.transform =
-      document.getElementById("tabsFav").style.transform =
-        "translateX(0vw)";
-      document.querySelector(".listOfStations").style.opacity =
-      document.querySelector(".searchContain").style.opacity =
-        document.querySelector(".favouriteStations").style.opacity =
-      document.getElementById("tabsFav").style.opacity =
-        "1";
+      stylesTransition.forEach((style) => {
+        style.transform = "translateX(0vw)";
+      })
+      stylesTransition.forEach((style) => {
+        style.opacity = "1";
+      })
       clearInterval(interval);
       setTimeout(() => {
         container.remove();
         document
           .querySelector(".listOfStations")
           .classList.remove("hideStations");
+          document.querySelector(".infoBar").remove();
       }, 500);
     });
    
 
-    console.log(stationList[station]);
 
     let ttl = addElement("span", title);
     let cornot = "";
-    if (stationList[station].id % 2 !== 0)
+    if (stationList[station].ref_id % 2 !== 0)
       cornot = '<md-icon class="center">adjust</md-icon>';
-    ttl.innerHTML = stationList[station].n + cornot;
+    ttl.innerHTML = stationList[station].name + cornot;
     let hh = addElement("div", title, "titleHolder");
     fav = addElement("md-icon-button", hh, "favi");
-    fav.innerHTML = favList.includes(stationList[station].id) ? "<md-icon class=iconFill>favorite</md-icon>" : "<md-icon>favorite</md-icon>";
+    fav.innerHTML = favList.includes(stationList[station].ref_id) ? "<md-icon class=iconFill>favorite</md-icon>" : "<md-icon>favorite</md-icon>";
     fav.addEventListener("click", function () {
-      if(favList.includes(stationList[station].id)){
-        favList = favList.filter(item => item !== stationList[station].id);
+      if(favList.includes(stationList[station].ref_id)){
+        favList = favList.filter(item => item !== stationList[station].ref_id);
         fav.innerHTML = "<md-icon>favorite</md-icon>";
       } else{
-        favList.push(stationList[station].id);
+        favList.push(stationList[station].ref_id);
 
         fav.innerHTML = "<md-icon class=iconFill>favorite</md-icon>";
       }
@@ -597,9 +602,23 @@ var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
     mapca = addElement("md-icon-button", hh, "mapca");
     mapca.innerHTML = "<md-icon>swap_calls</md-icon>";
     mapca.addEventListener("click", function () {
-      oppositeStation(stationList[station].id);
+      oppositeStation(stationList[station].ref_id);
     });
-   
+    if (stationList[station].ref_id % 2 === 0) {
+      if (
+        stationList.findIndex((obj) => obj.ref_id === String(parseInt(stationList[station].ref_id) - 1)) === -1 
+      ) {
+        mapca.setAttribute("disabled", "");
+      }
+    } else {
+      if (
+      
+        stationList.findIndex((obj) => obj.ref_id === String(parseInt(stationList[station].ref_id) + 1)) === -1
+      ) {
+        mapca.setAttribute("disabled", "");
+      }
+    }
+    
     var tabs = addElement("md-tabs", container, "tabs");
     tabs.innerHTML = `<md-primary-tab id="arrivalsTab" aria-controls="arrivals-panel">Prihodi</md-primary-tab>
    <md-primary-tab id="timeTab" aria-controls="time-panel">Urnik</md-primary-tab>`;
@@ -617,7 +636,6 @@ var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
     timeTScroll.classList.add("arrivalsScroll");
     timeTScroll.style.display = "none";
     tabs.addEventListener("change", () => {
-      console.log(tabs.activeTab);
 
       if (currentPanel) {
         currentPanel.style.display = "none";
@@ -640,11 +658,11 @@ var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
         showLines(timeTScroll, stationList[station]);
       }
     });
-    let response = await fetch(
+    data = await fetchData(
       "https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
-        stationList[station].id
+        stationList[station].ref_id
     );
-    data = await response.json();
+   
     arrivalsScroll.style.transform = "translateX(0px) translateY(0px)";
     arrivalsScroll.style.opacity = "1";
   }
@@ -668,25 +686,40 @@ var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
 
 function showArrivals(arrivalsScroll, data) {
   arrivalsScroll.innerHTML = "";
-  if (data.data.arrivals.length > 0) {
+  if (data.arrivals.length > 0) {
     let busTemplate = addElement("div", arrivalsScroll, "busTemplate");
-    nextBusTemplate(data.data.arrivals, busTemplate);
+    nextBusTemplate(data.arrivals, busTemplate);
     let listOfArrivals = [];
-    for (const arrival of data.data.arrivals) {
+    for (const arrival of data.arrivals) {
+     
+      
       if (listOfArrivals.includes(arrival.trip_id)) {
-        arrivalsScroll.querySelector("#eta_" + arrival.route_name).innerHTML +=
-          "<span class=arrivalTime>" +
-          (arrival.type == 0 ? "<md-icon>near_me</md-icon>" : "") +
-          arrival.eta_min +
-          " min" +
-          "</span>";
+        const arrivalTimeSpan = addElement("span", arrivalsScroll.querySelector("#eta_" + arrival.route_name), "arrivalTime");
+        if (arrival.type == 0) {
+          arrivalTimeSpan.innerHTML =
+            "<md-icon style='animation-delay:" +
+            randomOneDecimal() +
+            "s;'>near_me</md-icon>" +
+            arrival.eta_min +
+            " min";
+          arrivalTimeSpan.classList.add("arrivalGreen");
+        } else if (arrival.type == 1) {
+          arrivalTimeSpan.innerHTML = arrival.eta_min + " min";
+        } else if (arrival.type == 2) {
+          arrivalTimeSpan.innerHTML = "PRIHOD";
+          arrivalTimeSpan.classList.add("arrivalRed");
+        }else if (arrival.type == 3) {
+          arrivalTimeSpan.innerHTML = "OBVOZ";
+          arrivalTimeSpan.classList.add("arrivalYellow");
+        }
+      
       } else {
         let arrivalItem = addElement("div", arrivalsScroll, "arrivalItem");
         arrivalItem.style.order = arrival.route_name.replace(/\D/g, "");
         const busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
         busNumberDiv.style.background = lineColors(
-          arrival.route_name.replace(/\D/g, "")
+          arrival.route_name
         );
 
         busNumberDiv.id = "bus_" + arrival.route_name;
@@ -715,6 +748,9 @@ function showArrivals(arrivalsScroll, data) {
         } else if (arrival.type == 2) {
           arrivalTimeSpan.innerHTML = "PRIHOD";
           arrivalTimeSpan.classList.add("arrivalRed");
+        }else if (arrival.type == 3) {
+          arrivalTimeSpan.innerHTML = "OBVOZ";
+          arrivalTimeSpan.classList.add("arrivalYellow");
         }
         arrivalItem.addEventListener("click", () => {
           showBusById(arrival);
@@ -727,16 +763,16 @@ function showArrivals(arrivalsScroll, data) {
   }
 }
 async function showLines(parent, station) {
-  let response = await fetch(
+  let data = await fetchData(
     "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/routes-on-station?station-code=" +
-      station.id
+      station.ref_id
   );
-  let data = await response.json();
+  
 
   parent.style.transform = "translateX(0px) translateY(0px)";
   parent.style.opacity = "1";
 
-  data.data.forEach((arrival) => {
+  data.forEach((arrival) => {
     if (!arrival.is_garage) {
       let arrivalItem = addElement("div", parent, "arrivalItem");
       arrivalItem.style.order =
@@ -746,7 +782,7 @@ async function showLines(parent, station) {
       const busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
       busNumberDiv.style.background = lineColors(
-        arrival.route_number.replace(/\D/g, "")
+        arrival.route_number
       );
 
       busNumberDiv.id = "bus_" + arrival.route_number;
@@ -761,7 +797,7 @@ async function showLines(parent, station) {
 
         showLineTime(
           arrival.route_number,
-          station.id,
+          station.ref_id,
           arrival.route_group_name,
           arrival
         );
@@ -784,7 +820,7 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
   document.querySelector(".arrivalsHolder").style.transform =
     "translateX(-100vw)";
   let iks = addElement("md-icon-button", container, "iks");
-  iks.innerHTML = "<md-icon>arrow_back_ios</md-icon>";
+  iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
     container.style.transform = "translateX(100vw)";
     document.querySelector(".arrivalsHolder").style.transform =
@@ -794,14 +830,14 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
       container.remove();
     }, 500);
   });
-  let response = await fetch(
+  let data1 = await fetchData(
     `https://cors.proxy.prometko.si/https://data.lpp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN.replace(
       /\D/g,
       ""
     )}&previous-hours=${hoursDay(0)}&next-hours=${hoursDay(1)}`
   );
-  let data1 = await response.json();
-  data1 = data1.data.route_groups[0].routes;
+  
+  data1 = data1.route_groups[0].routes;
   data1.forEach((route) => {
     console.log(route.parent_name + "," + routeName);
 
@@ -846,11 +882,25 @@ const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
  * @param {Array} arrivals - The list of arrival objects containing bus information.
  * @param {HTMLElement} parent - The parent element to which the arrival items will be appended.
  */
+async function createInfoBar(parent, station_id) {
+  
+  let info = await fetchData("https://cors.proxy.prometko.si/https://data.lpp.si/api/station/messages?station-code=" + station_id);
+console.log(station_id);
 
+  let infoBar = addElement("div", parent, "infoBar");
+  if(info.length === 0) infoBar.style.display = "none";
+  let infoText = addElement("div", infoBar, "infoText");
+  infoText.innerHTML = decodeURIComponent(info.toString());
+  setTimeout(() => {
+    infoBar.style.transform ="translateY(0)";
+  }, 10);
+
+}
 const nextBusTemplate = (arrivals, parent) => {
   var isNextbus = false;
   let i = 0;
   for (const arrival of arrivals) {
+    if(arrival.type == 3) continue;
     if (arrival.eta_min > 1) {
       if (!isNextbus) {
         isNextbus = true;
@@ -867,7 +917,7 @@ const nextBusTemplate = (arrivals, parent) => {
     const busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
     busNumberDiv.style.background = lineColors(
-      arrival.route_name.replace(/\D/g, "")
+      arrival.route_name
     );
 
     busNumberDiv.id = "next_bus_" + arrival.route_name;
