@@ -87,7 +87,6 @@ function makeBottomheet(title, height) {
       sheetHeight3 = (mainContentHeight / vh) * 100;
 
       if (sheetHeight < 40 && deltaY < 0) {
-        console.log(y);
 
         deltaY = deltaY / formatNumber(y);
       }
@@ -188,7 +187,6 @@ async function loop(firsttim, arrival) {
           arrival.route_name
       )
    
-  console.log(response, arrival);
 
   let tempBusObject = response;
 
@@ -394,7 +392,6 @@ async function generateRouteVector(data, trip_id, lno, lid) {
         return feature;
       });
       if (feature === stationFeature) {
-        console.log(station);
         stationClick(
           stationList.findIndex((obj) => obj.name === station.name),
           true
@@ -433,13 +430,11 @@ async function generateRouteVector(data, trip_id, lno, lid) {
       );
     });
   } else {
-    console.log(coordinates);
     if (coordinates[0][0] > coordinates[0][1]) {
       for (const i in coordinates) {
         coordinates[i].reverse();
       }
     }
-    console.log(coordinates);
 
     // For a single LineString, just create a single geometry
     lineStrings = [

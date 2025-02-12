@@ -222,7 +222,7 @@ async function getLocation() {
   } catch(e) {console.error(e)}
 }
 
-//setInterval(() => {getLocation();createStationItems(1)}, 20000);
+setInterval(() => {getLocation();createStationItems(1)}, 30000);
 async function createBuses() {
   await getLocation();
   stationList = JSON.parse(stationDetails).data;
@@ -243,8 +243,8 @@ var isArrivalsOpen = false;
 var currentPanel
 function createStationItems(o) {
   var search = false;
-
-  if (document.querySelector(".search").value !== "") {
+let query = document.querySelector(".search").value
+  if (query !== "") {
     search = true;
   }
   var loader = document.getElementById("loader");
@@ -252,7 +252,7 @@ function createStationItems(o) {
   list.innerHTML = "";
   var favList = document.querySelector(".favouriteStations");
   favList.innerHTML = "";
-createFavourite(favList, search, document.querySelector(".search").value)
+createFavourite(favList, search, query)
 if(!o){
   favList.style.transform = "translateX(0px) translateY(0px)";
   favList.style.opacity = "1";
@@ -415,7 +415,6 @@ function createFavourite(parent, search, query){
           bus +
           "</div>";
       }
-      console.log(stationList[station].route_groups_on_station);
       
       item.appendChild(buses);
       item2.addEventListener("click", async () => {
@@ -793,7 +792,6 @@ async function showLines(parent, station) {
       const tripNameSpan = addElement("span", arrivalDataDiv);
       tripNameSpan.textContent = arrival.route_group_name;
       arrivalItem.addEventListener("click", () => {
-        console.log(arrival);
 
         showLineTime(
           arrival.route_number,
@@ -839,7 +837,6 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
   
   data1 = data1.route_groups[0].routes;
   data1.forEach((route) => {
-    console.log(route.parent_name + "," + routeName);
 
     if (route.parent_name !== routeName) return;
     if (route.group_name + route.route_number_suffix == routeN) {
@@ -885,7 +882,6 @@ const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
 async function createInfoBar(parent, station_id) {
   
   let info = await fetchData("https://cors.proxy.prometko.si/https://data.lpp.si/api/station/messages?station-code=" + station_id);
-console.log(station_id);
 
   let infoBar = addElement("div", parent, "infoBar");
   if(info.length === 0) infoBar.style.display = "none";
