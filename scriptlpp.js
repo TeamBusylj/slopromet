@@ -687,7 +687,7 @@ function showArrivals(arrivalsScroll, data) {
   arrivalsScroll.innerHTML = "";
   if (data.arrivals.length > 0) {
     let busTemplate = addElement("div", arrivalsScroll, "busTemplate");
-    nextBusTemplate(data.arrivals, busTemplate);
+    nextBusTemplate(data, busTemplate);
     let listOfArrivals = [];
     for (const arrival of data.arrivals) {
      
@@ -752,7 +752,7 @@ function showArrivals(arrivalsScroll, data) {
           arrivalTimeSpan.classList.add("arrivalYellow");
         }
         arrivalItem.addEventListener("click", () => {
-          showBusById(arrival);
+          showBusById(arrival, arrivalsScroll, data.station.code_id);
         });
       }
     }
@@ -892,7 +892,8 @@ async function createInfoBar(parent, station_id) {
   }, 10);
 
 }
-const nextBusTemplate = (arrivals, parent) => {
+const nextBusTemplate = (data, parent) => {
+  let arrivals = data.arrivals
   var isNextbus = false;
   let i = 0;
   for (const arrival of arrivals) {
@@ -944,18 +945,30 @@ const nextBusTemplate = (arrivals, parent) => {
       arrivalTimeSpan.classList.add("arrivalRed");
     }
     arrivalItem.addEventListener("click", () => {
-      showBusById(arrival);
+      showBusById(arrival, arrivalsScroll, data.station.code_id);
     });
     i++;
   }
 };
 var busUpdateInterval;
-function showBusById(arrival) {
+function showBusById(arrival, parent, station_id) {
+  
   clearInterval(busUpdateInterval);
-  setTimeout(() => {
     document.querySelector(".bottomSheet").style.transform = "translate3d(-50%,60dvh, 0px)";
     sheetHeight = 40;
-  }, 50);
+    if(parent){
+      let container = addElement(
+        "div",
+        document.querySelector(".mainSheet"),
+        "arrivalsOnStation"
+      );
+      container.style.transform = "translateX(0px) translateY(0px)";
+      container.style.opacity = "1";
+      container.classList.add("arrivalsScroll");
+      document.querySelector(".arrivalsHolder").style.transform =
+        "translateX(-100vw)";
+        arrivalsOnStation(container, arrival, station_id)
+    }
   try {
     loop(1, arrival);
     busUpdateInterval = setInterval(() => {
@@ -969,6 +982,81 @@ function showBusById(arrival) {
       document.querySelector(".loader").style.backgroundSize = "40% 40%";
     }, 300);
   }
+}
+async function arrivalsOnStation(container, arrival, station_id) {
+  let info = await fetchData("https://cors.proxy.prometko.si/https://data.lpp.si/api/route/arrivals-on-route?trip-id=" + arrival.trip_id);
+  console.log(info);
+  let iks = addElement("md-icon-button", container, "iks");
+  iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
+  iks.addEventListener("click", function () {
+    container.style.transform = "translateX(100vw)";
+    document.querySelector(".arrivalsHolder").style.transform =
+      "translateX(0vw)";
+
+    setTimeout(() => {
+      container.remove();
+    }, 500);
+  });
+  let arHolder = addElement("div", container, "arOnRoute")
+  var listArrivals = {}
+  let sortIndex
+  let arrivalsColumns = addElement("div", container, "arrivalsColumns")
+  info.forEach((arrivalRoute, index) => {//vsaka postaja
+    let arDiv = addElement("div", arHolder, "arrDiv")
+    let lineStation = addElement("div", arDiv, "lineStation")
+    
+    lineStation.style.backgroundColor = "RGB("+lineColorsObj[arrival.route_name].join(",")+")"
+    let lnimg = addElement("div", lineStation, "lineStationImg")
+    
+    if(index==0 || index == info.length-1){
+      lineStation.classList.add("firstLast")
+      lnimg.style.backgroundColor = "RGB("+lineColorsObj[arrival.route_name].join(",")+")"
+    }else{
+      lnimg.style.backgroundColor = "RGB("+darkenColor(lineColorsObj[arrival.route_name], 50).join(",")+")"
+    }
+    lnimg.style.borderColor =  "RGB("+lineColorsObj[arrival.route_name].join(",")+")"
+    
+    let nameStation = addElement("div", arDiv, "nameStation")
+    nameStation.classList.add("nameStation_"+ arrivalRoute.station_code)
+    nameStation.innerHTML = arrivalRoute.name
+    if(arrivalRoute.station_code == station_id) sortIndex = index
+  
+   
+      
+ 
+    arrivalRoute.arrivals.forEach((ar, i) => {
+    if(!listArrivals[ar["vehicle_id"]]) listArrivals[ar["vehicle_id"]]= []
+    Object.values(listArrivals).forEach(arr => arr.push(""));
+    listArrivals[ar["vehicle_id"]][index] = ar["eta_min"]
+      
+    });
+    
+   
+  });
+console.log(listArrivals);
+
+let sortedArrivals = Object.entries(listArrivals).sort((a, b) => {
+  let aValue = (a[1][sortIndex] === undefined || a[1][sortIndex] === "") ? 61 : a[1][sortIndex];
+  let bValue = (b[1][sortIndex] === undefined || b[1][sortIndex] === "") ? 61 : b[1][sortIndex];
+
+  return aValue - bValue;
+});
+
+  sortedArrivals = sortedArrivals.slice(0,3)
+  
+
+  for (let [key, element] of sortedArrivals) {
+   
+    
+      let etaHolder = addElement("div", arrivalsColumns, "etaHoder")
+       
+      etaHolder.innerHTML = "<div class=etaStation>" + 
+      element.map(item => item !== "" && item !== undefined ? item + "<sub>min</sub>" : item).join("</div><div class=etaStation>") + 
+      "</div>";  }
+  console.log(arrival);
+
+  
+  document.querySelector(".nameStation_"+ info[info.findIndex(item => item.station_code === station_id) - 1]?.station_code).scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function addElement(tag, parent, className) {

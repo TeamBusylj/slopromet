@@ -52,7 +52,9 @@ function makeBottomheet(title, height) {
   }
 
   const onDragMove = (event) => {
-    const scrollList = document.querySelector(".lineTimes")
+    const scrollList = document.querySelector(".arrivalsOnStation")
+      ? document.querySelector(".arrivalsOnStation")
+    :document.querySelector(".lineTimes")
       ? document.querySelector(".lineTimes")
       : document.querySelector(".arrivalsHolder")
       ? document.querySelector(".arrivalsHolder")
@@ -98,14 +100,15 @@ function makeBottomheet(title, height) {
     }
   };
   const onDragEnd = () => {
-    (document.querySelector(".lineTimes")
-      ? document.querySelector(".lineTimes")
-      : document.querySelector(".arrivalsHolder")
-      ? document.querySelector(".arrivalsHolder")
-      : document.querySelector(".listOfStations").style.display !== "none"
-      ? document.querySelector(".listOfStations")
-      : document.querySelector(".favouriteStations")
-    ).style.overflow = "scroll";
+    (document.querySelector(".arrivalsOnStation")
+    ? document.querySelector(".arrivalsOnStation")
+  :document.querySelector(".lineTimes")
+    ? document.querySelector(".lineTimes")
+    : document.querySelector(".arrivalsHolder")
+    ? document.querySelector(".arrivalsHolder")
+    : document.querySelector(".listOfStations").style.display !== "none"
+    ? document.querySelector(".listOfStations")
+    : document.querySelector(".favouriteStations")).style.overflow = "scroll";
     dragPosition = undefined;
     sheetContents.classList.remove("not-selectable");
 
@@ -518,14 +521,15 @@ function centerBus() {
     document.querySelector(".loader").style.display = "none";
     document.querySelector(".loader").style.backgroundSize = "40% 40%";
   }, 300);
-}
+}  
+const darkenColor = (rgbArray, amount) =>
+  rgbArray.map((channel) => Math.max(0, channel - amount));
+
+
 const lineColors = (i) => {
   let color = lineColorsObj[i.replace(/\D/g, "")]; // Example: [201, 51, 54]
 
   if (!color) color = [201, 51, 54]; // Return empty string if the index is not found
-
-  const darkenColor = (rgbArray, amount) =>
-    rgbArray.map((channel) => Math.max(0, channel - amount));
   if (/[a-zA-Z]/.test(i)) color = darkenColor(color, 40);
 
 let darkerColor = i.includes("N") ? darkenColor(color, 100):darkenColor(color, 70);
