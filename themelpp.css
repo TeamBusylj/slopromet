@@ -73,7 +73,7 @@ body{
     display: flex;
     transition: all calc(var(--transDur) - 0.1s);
     padding: 40px 0 30px 0;
-    position: relative;
+
     flex-wrap: wrap;
     justify-content: center;
     overscroll-behavior: none;

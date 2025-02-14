@@ -1051,12 +1051,13 @@ let sortedArrivals = Object.entries(listArrivals).sort((a, b) => {
       let etaHolder = addElement("div", arrivalsColumns, "etaHoder")
        
       etaHolder.innerHTML = "<div class=etaStation>" + 
-      element.map(item => item !== "" && item !== undefined ? item + "<sub>min</sub>" : item).join("</div><div class=etaStation>") + 
-      "</div>";  }
+      element.map(item => (item === "" || item === null) ? "/" : item + "<sub>min</sub>").join("</div><div class=etaStation>") + 
+      "</div>";
+  }
   console.log(arrival);
 
   
-  document.querySelector(".nameStation_"+ info[info.findIndex(item => item.station_code === station_id) - 1]?.station_code).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelector(".nameStation_"+ station_id).scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function addElement(tag, parent, className) {
