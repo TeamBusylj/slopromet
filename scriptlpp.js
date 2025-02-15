@@ -171,22 +171,22 @@ async function makeMap() {
 }
 function centerMap() {
   const view = map.getView();
-      var center = ol.proj.fromLonLat([longitude,latitude]);
-      var duration = 1000;
-      view.animate({
-        center: center,
-        duration: duration
-      });
-      view.animate( {
-        zoom: 16,
-        duration: duration
-      });
+  var center = ol.proj.fromLonLat([longitude, latitude]);
+  var duration = 1000;
+  view.animate({
+    center: center,
+    duration: duration,
+  });
+  view.animate({
+    zoom: 16,
+    duration: duration,
+  });
 }
 const delayedSearch = debounce(searchRefresh, 300);
 window.addEventListener("DOMContentLoaded", async function () {
   createBuses();
   let sht = makeBottomheet(null, 98);
-  let bava = ""
+  let bava = "";
   sht.innerHTML = `
 <div class="searchContain"> <md-filled-text-field class="search" value='${bava}' placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
  <md-circular-progress indeterminate id="loader"></md-circular-progress>
@@ -201,7 +201,6 @@ window.addEventListener("DOMContentLoaded", async function () {
   );
   busImageData = await busImageData.json();
 });
-
 
 var arrivalsMain = {};
 var tripIds = [];
@@ -219,31 +218,37 @@ async function getLocation() {
     });
     latitude = position.coords.latitude;
     longitude = position.coords.longitude;
-  } catch(e) {console.error(e)}
+  } catch (e) {
+    console.error(e);
+  }
 }
 
-setInterval(() => {getLocation();createStationItems(1)}, 30000);
+setInterval(() => {
+  getLocation();
+  createStationItems(1);
+}, 30000);
 async function createBuses() {
   await getLocation();
   stationList = JSON.parse(stationDetails).data;
-  currentPanel=document.querySelector(".favouriteStations");
+  currentPanel = document.querySelector(".favouriteStations");
   createStationItems();
   currentPanel.style.transform = "translateX(0px) translateY(0px)";
   currentPanel.style.opacity = "1";
   makeMap();
- updateStations()
-  
+  updateStations();
 }
 async function updateStations() {
-  let stations = await fetchData("https://cors.proxy.prometko.si/https://data.lpp.si/api/station/station-details?show-subroutes=1")
-  stationList = stations
-  createStationItems()
+  let stations = await fetchData(
+    "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/station-details?show-subroutes=1"
+  );
+  stationList = stations;
+  createStationItems();
 }
 var isArrivalsOpen = false;
-var currentPanel
+var currentPanel;
 function createStationItems(o) {
   var search = false;
-let query = document.querySelector(".search").value
+  let query = document.querySelector(".search").value;
   if (query !== "") {
     search = true;
   }
@@ -252,17 +257,20 @@ let query = document.querySelector(".search").value
   list.innerHTML = "";
   var favList = document.querySelector(".favouriteStations");
   favList.innerHTML = "";
-createFavourite(favList, search, query)
-if(!o){
-  favList.style.transform = "translateX(0px) translateY(0px)";
-  favList.style.opacity = "1";
-}
-
+  createFavourite(favList, search, query);
+  if (!o) {
+    favList.style.transform = "translateX(0px) translateY(0px)";
+    favList.style.opacity = "1";
+  }
 
   loader.style.display = "block";
   var nearby = {};
   var tabs = document.getElementById("tabsFav");
- if(currentPanel==favList){list.style.display = "none"}else{favList.style.display = "none"}
+  if (currentPanel == favList) {
+    list.style.display = "none";
+  } else {
+    favList.style.display = "none";
+  }
   tabs.addEventListener("change", () => {
     if (currentPanel) {
       currentPanel.style.display = "none";
@@ -297,28 +305,38 @@ if(!o){
         stationList[station].latitude,
         stationList[station].longitude
       );
-      const favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
-      if(search && !normalizeText(stationList[station].name.toLowerCase()).includes(normalizeText(query.toLowerCase()))) continue;
+      const favList = JSON.parse(
+        localStorage.getItem("favouriteStations") || "[]"
+      );
+      if (
+        search &&
+        !normalizeText(stationList[station].name.toLowerCase()).includes(
+          normalizeText(query.toLowerCase())
+        )
+      )
+        continue;
       if (distance < 3 || search) {
         let cornot = "";
         if (stationList[station].ref_id % 2 !== 0) {
           cornot = '<md-icon class="center">adjust</md-icon>';
         }
-        let fav = ""
+        let fav = "";
         if (favList.includes(stationList[station].ref_id)) {
           fav = '<md-icon class="iconFill">favorite</md-icon>';
         }
         if (distance > 1) {
           textHolder.innerHTML +=
             cornot +
-            "<span class=stationDistance>" +fav+
+            "<span class=stationDistance>" +
+            fav +
             distance.toFixed(1) +
             " km</span>";
           nearby[distance.toFixed(5)] = item2;
         } else {
           textHolder.innerHTML +=
             cornot +
-            "<span class=stationDistance>" +fav+
+            "<span class=stationDistance>" +
+            fav +
             Math.round(distance * 1000) +
             " m</span>";
           nearby[distance.toFixed(5)] = item2;
@@ -348,12 +366,10 @@ if(!o){
       .map((key) => parseFloat(key).toFixed(5))
       .sort((a, b) => a - b)
       .map((key) => nearby[key]);
-      if (sortedArray.length > 40) sortedArray.splice(40);
+    if (sortedArray.length > 40) sortedArray.splice(40);
 
     for (const stationDistance of sortedArray) {
-     
-        list.appendChild(stationDistance);
-      
+      list.appendChild(stationDistance);
     }
     loader.style.display = "none";
   }
@@ -361,7 +377,7 @@ if(!o){
 function normalizeText(text) {
   return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
-function createFavourite(parent, search, query){
+function createFavourite(parent, search, query) {
   var nearby = {};
   for (const station in stationList) {
     let item2 = addElement("md-list-item", null, "stationItem");
@@ -372,8 +388,16 @@ function createFavourite(parent, search, query){
     let textHolder = addElement("div", item, "textHolder");
     textHolder.innerHTML =
       '<span class="stationName">' + stationList[station].name + "</span>";
-    const favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
-    if(search && !normalizeText(stationList[station].name.toLowerCase()).includes(normalizeText(query.toLowerCase()))) continue;
+    const favList = JSON.parse(
+      localStorage.getItem("favouriteStations") || "[]"
+    );
+    if (
+      search &&
+      !normalizeText(stationList[station].name.toLowerCase()).includes(
+        normalizeText(query.toLowerCase())
+      )
+    )
+      continue;
     if (favList.includes(stationList[station].ref_id) || search) {
       const distance = haversineDistance(
         latitude,
@@ -385,21 +409,23 @@ function createFavourite(parent, search, query){
       if (stationList[station].ref_id % 2 !== 0) {
         cornot = '<md-icon class="center">adjust</md-icon>';
       }
-      let fav = ""
+      let fav = "";
       if (favList.includes(stationList[station].ref_id)) {
         fav = '<md-icon class="iconFill">favorite</md-icon>';
       }
       if (distance > 1) {
         textHolder.innerHTML +=
-          cornot + 
-          "<span class=stationDistance>" +fav+
+          cornot +
+          "<span class=stationDistance>" +
+          fav +
           distance.toFixed(1) +
           " km</span>";
         nearby[distance.toFixed(5)] = item2;
       } else {
         textHolder.innerHTML +=
           cornot +
-          "<span class=stationDistance>" +fav+
+          "<span class=stationDistance>" +
+          fav +
           Math.round(distance * 1000) +
           " m</span>";
         nearby[distance.toFixed(5)] = item2;
@@ -415,7 +441,7 @@ function createFavourite(parent, search, query){
           bus +
           "</div>";
       }
-      
+
       item.appendChild(buses);
       item2.addEventListener("click", async () => {
         await stationClick(station);
@@ -426,18 +452,15 @@ function createFavourite(parent, search, query){
     }
   }
   const sortedArray = Object.keys(nearby)
-      .map((key) => parseFloat(key).toFixed(5))
-      .sort((a, b) => a - b)
-      .map((key) => nearby[key]);
-      
-      if (sortedArray.length > 40) sortedArray.splice(40);
+    .map((key) => parseFloat(key).toFixed(5))
+    .sort((a, b) => a - b)
+    .map((key) => nearby[key]);
 
-    for (const stationDistance of sortedArray) {
-      
-        
-        parent.appendChild(stationDistance);
-      
-    }
+  if (sortedArray.length > 40) sortedArray.splice(40);
+
+  for (const stationDistance of sortedArray) {
+    parent.appendChild(stationDistance);
+  }
 }
 function searchRefresh() {
   let query = document.querySelector(".search").value;
@@ -481,22 +504,19 @@ async function oppositeStation(id) {
 var arrivalsScroll;
 async function stationClick(station, noAnimation) {
   var stylesTransition = [
-      document.querySelector(".searchContain").style,
-      document.querySelector(".listOfStations").style,
-        document.querySelector(".favouriteStations").style,
-      document.getElementById("tabsFav").style,
-    
-  ]
+    document.querySelector(".searchContain").style,
+    document.querySelector(".listOfStations").style,
+    document.querySelector(".favouriteStations").style,
+    document.getElementById("tabsFav").style,
+  ];
   setTimeout(() => {
     document.querySelector(".sheetContents").scrollTop = 0;
-
   }, 250);
   var notYet = false;
   var container;
 
-
   var data;
-var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
+  var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
   var mapca;
   var fav;
   if (noAnimation) {
@@ -514,19 +534,23 @@ var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
     document.querySelector(".mapca").addEventListener("click", function () {
       oppositeStation(stationList[station].ref_id);
     });
-    let favi = document.querySelector(".favi")
-    favi.innerHTML = favList.includes(stationList[station].ref_id) ? "<md-icon class=iconFill>favorite</md-icon>" : "<md-icon>favorite</md-icon>";
+    let favi = document.querySelector(".favi");
+    favi.innerHTML = favList.includes(stationList[station].ref_id)
+      ? "<md-icon class=iconFill>favorite</md-icon>"
+      : "<md-icon>favorite</md-icon>";
 
     favi.addEventListener("click", function () {
-      if(favList.includes(stationList[station].ref_id)){
-        favList = favList.filter(item => item !== stationList[station].ref_id);
+      if (favList.includes(stationList[station].ref_id)) {
+        favList = favList.filter(
+          (item) => item !== stationList[station].ref_id
+        );
         favi.innerHTML = "<md-icon>favorite</md-icon>";
-      } else{
+      } else {
         favList.push(stationList[station].ref_id);
 
         favi.innerHTML = "<md-icon class=iconFill>favorite</md-icon>";
       }
-    
+
       localStorage.setItem("favouriteStations", JSON.stringify(favList));
     });
   } else {
@@ -535,48 +559,47 @@ var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
       document.querySelector(".mainSheet"),
       "arrivalsHolder"
     );
-createInfoBar(document.querySelector(".mainSheet"), stationList[station].ref_id);
-      stylesTransition.forEach((style) => {
-        style.transform = "translateX(-100vw)";
-      })
-      stylesTransition.forEach((style) => {
-        style.opacity = "0";
-      })
-      setTimeout(() => {
-        container.style.transform = "translateX(0)";
-      }, 1);
-      setTimeout(() => {
-       
-        container.style.opacity = "1";
-      }, 100);
-    
+    createInfoBar(
+      document.querySelector(".mainSheet"),
+      stationList[station].ref_id
+    );
+    stylesTransition.forEach((style) => {
+      style.transform = "translateX(-100vw)";
+    });
+    stylesTransition.forEach((style) => {
+      style.opacity = "0";
+    });
+    setTimeout(() => {
+      container.style.transform = "translateX(0)";
+    }, 1);
+    setTimeout(() => {
+      container.style.opacity = "1";
+    }, 100);
+
     const title = addElement("h1", container, "title");
-   let holder = addElement("div", title);
+    let holder = addElement("div", title);
     let iks = addElement("md-icon-button", holder, "iks");
     iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
     iks.addEventListener("click", function () {
-      
       container.style.transform = "translateX(100vw)";
-     document.querySelector(".infoBar").style.transform = "translateY(30px)";
-      container.style.opacity  = "0";
+      document.querySelector(".infoBar").style.transform = "translateY(30px)";
+      container.style.opacity = "0";
       isArrivalsOpen = false;
       stylesTransition.forEach((style) => {
         style.transform = "translateX(0vw)";
-      })
+      });
       stylesTransition.forEach((style) => {
         style.opacity = "1";
-      })
+      });
       clearInterval(interval);
       setTimeout(() => {
         container.remove();
         document
           .querySelector(".listOfStations")
           .classList.remove("hideStations");
-          document.querySelector(".infoBar").remove();
+        document.querySelector(".infoBar").remove();
       }, 500);
     });
-   
-
 
     let ttl = addElement("span", title);
     let cornot = "";
@@ -585,17 +608,21 @@ createInfoBar(document.querySelector(".mainSheet"), stationList[station].ref_id)
     ttl.innerHTML = stationList[station].name + cornot;
     let hh = addElement("div", title, "titleHolder");
     fav = addElement("md-icon-button", hh, "favi");
-    fav.innerHTML = favList.includes(stationList[station].ref_id) ? "<md-icon class=iconFill>favorite</md-icon>" : "<md-icon>favorite</md-icon>";
+    fav.innerHTML = favList.includes(stationList[station].ref_id)
+      ? "<md-icon class=iconFill>favorite</md-icon>"
+      : "<md-icon>favorite</md-icon>";
     fav.addEventListener("click", function () {
-      if(favList.includes(stationList[station].ref_id)){
-        favList = favList.filter(item => item !== stationList[station].ref_id);
+      if (favList.includes(stationList[station].ref_id)) {
+        favList = favList.filter(
+          (item) => item !== stationList[station].ref_id
+        );
         fav.innerHTML = "<md-icon>favorite</md-icon>";
-      } else{
+      } else {
         favList.push(stationList[station].ref_id);
 
         fav.innerHTML = "<md-icon class=iconFill>favorite</md-icon>";
       }
-    
+
       localStorage.setItem("favouriteStations", JSON.stringify(favList));
     });
     mapca = addElement("md-icon-button", hh, "mapca");
@@ -605,19 +632,24 @@ createInfoBar(document.querySelector(".mainSheet"), stationList[station].ref_id)
     });
     if (stationList[station].ref_id % 2 === 0) {
       if (
-        stationList.findIndex((obj) => obj.ref_id === String(parseInt(stationList[station].ref_id) - 1)) === -1 
+        stationList.findIndex(
+          (obj) =>
+            obj.ref_id === String(parseInt(stationList[station].ref_id) - 1)
+        ) === -1
       ) {
         mapca.setAttribute("disabled", "");
       }
     } else {
       if (
-      
-        stationList.findIndex((obj) => obj.ref_id === String(parseInt(stationList[station].ref_id) + 1)) === -1
+        stationList.findIndex(
+          (obj) =>
+            obj.ref_id === String(parseInt(stationList[station].ref_id) + 1)
+        ) === -1
       ) {
         mapca.setAttribute("disabled", "");
       }
     }
-    
+
     var tabs = addElement("md-tabs", container, "tabs");
     tabs.innerHTML = `<md-primary-tab id="arrivalsTab" aria-controls="arrivals-panel">Prihodi</md-primary-tab>
    <md-primary-tab id="timeTab" aria-controls="time-panel">Urnik</md-primary-tab>`;
@@ -635,7 +667,6 @@ createInfoBar(document.querySelector(".mainSheet"), stationList[station].ref_id)
     timeTScroll.classList.add("arrivalsScroll");
     timeTScroll.style.display = "none";
     tabs.addEventListener("change", () => {
-
       if (currentPanel) {
         currentPanel.style.display = "none";
         currentPanel.style.transform = "translateX(0px) translateY(-20px)";
@@ -661,7 +692,7 @@ createInfoBar(document.querySelector(".mainSheet"), stationList[station].ref_id)
       "https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
         stationList[station].ref_id
     );
-   
+
     arrivalsScroll.style.transform = "translateX(0px) translateY(0px)";
     arrivalsScroll.style.opacity = "1";
   }
@@ -690,10 +721,12 @@ function showArrivals(arrivalsScroll, data) {
     nextBusTemplate(data, busTemplate);
     let listOfArrivals = [];
     for (const arrival of data.arrivals) {
-     
-      
       if (listOfArrivals.includes(arrival.trip_id)) {
-        const arrivalTimeSpan = addElement("span", arrivalsScroll.querySelector("#eta_" + arrival.route_name), "arrivalTime");
+        const arrivalTimeSpan = addElement(
+          "span",
+          arrivalsScroll.querySelector("#eta_" + arrival.route_name),
+          "arrivalTime"
+        );
         if (arrival.type == 0) {
           arrivalTimeSpan.innerHTML =
             "<md-icon style='animation-delay:" +
@@ -707,19 +740,16 @@ function showArrivals(arrivalsScroll, data) {
         } else if (arrival.type == 2) {
           arrivalTimeSpan.innerHTML = "PRIHOD";
           arrivalTimeSpan.classList.add("arrivalRed");
-        }else if (arrival.type == 3) {
+        } else if (arrival.type == 3) {
           arrivalTimeSpan.innerHTML = "OBVOZ";
           arrivalTimeSpan.classList.add("arrivalYellow");
         }
-      
       } else {
         let arrivalItem = addElement("div", arrivalsScroll, "arrivalItem");
         arrivalItem.style.order = arrival.route_name.replace(/\D/g, "");
         const busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
-        busNumberDiv.style.background = lineColors(
-          arrival.route_name
-        );
+        busNumberDiv.style.background = lineColors(arrival.route_name);
 
         busNumberDiv.id = "bus_" + arrival.route_name;
         busNumberDiv.textContent = arrival.route_name;
@@ -747,7 +777,7 @@ function showArrivals(arrivalsScroll, data) {
         } else if (arrival.type == 2) {
           arrivalTimeSpan.innerHTML = "PRIHOD";
           arrivalTimeSpan.classList.add("arrivalRed");
-        }else if (arrival.type == 3) {
+        } else if (arrival.type == 3) {
           arrivalTimeSpan.innerHTML = "OBVOZ";
           arrivalTimeSpan.classList.add("arrivalYellow");
         }
@@ -766,7 +796,6 @@ async function showLines(parent, station) {
     "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/routes-on-station?station-code=" +
       station.ref_id
   );
-  
 
   parent.style.transform = "translateX(0px) translateY(0px)";
   parent.style.opacity = "1";
@@ -780,9 +809,7 @@ async function showLines(parent, station) {
           : arrival.route_number.replace(/\D/g, "");
       const busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
-      busNumberDiv.style.background = lineColors(
-        arrival.route_number
-      );
+      busNumberDiv.style.background = lineColors(arrival.route_number);
 
       busNumberDiv.id = "bus_" + arrival.route_number;
       busNumberDiv.textContent = arrival.route_number;
@@ -792,7 +819,6 @@ async function showLines(parent, station) {
       const tripNameSpan = addElement("span", arrivalDataDiv);
       tripNameSpan.textContent = arrival.route_group_name;
       arrivalItem.addEventListener("click", () => {
-
         showLineTime(
           arrival.route_number,
           station.ref_id,
@@ -834,10 +860,9 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
       ""
     )}&previous-hours=${hoursDay(0)}&next-hours=${hoursDay(1)}`
   );
-  
+
   data1 = data1.route_groups[0].routes;
   data1.forEach((route) => {
-
     if (route.parent_name !== routeName) return;
     if (route.group_name + route.route_number_suffix == routeN) {
       route.timetable.forEach((time) => {
@@ -880,24 +905,25 @@ const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
  * @param {HTMLElement} parent - The parent element to which the arrival items will be appended.
  */
 async function createInfoBar(parent, station_id) {
-  
-  let info = await fetchData("https://cors.proxy.prometko.si/https://data.lpp.si/api/station/messages?station-code=" + station_id);
+  let info = await fetchData(
+    "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/messages?station-code=" +
+      station_id
+  );
 
   let infoBar = addElement("div", parent, "infoBar");
-  if(info.length === 0) infoBar.style.display = "none";
+  if (info.length === 0) infoBar.style.display = "none";
   let infoText = addElement("div", infoBar, "infoText");
   infoText.innerHTML = decodeURIComponent(info.toString());
   setTimeout(() => {
-    infoBar.style.transform ="translateY(0)";
+    infoBar.style.transform = "translateY(0)";
   }, 10);
-
 }
 const nextBusTemplate = (data, parent) => {
-  let arrivals = data.arrivals
+  let arrivals = data.arrivals;
   var isNextbus = false;
   let i = 0;
   for (const arrival of arrivals) {
-    if(arrival.type == 3) continue;
+    if (arrival.type == 3) continue;
     if (arrival.eta_min > 1) {
       if (!isNextbus) {
         isNextbus = true;
@@ -913,9 +939,7 @@ const nextBusTemplate = (data, parent) => {
     arrivalItem.style.order = arrival.type === 2 ? 0 : arrival.eta_min;
     const busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
-    busNumberDiv.style.background = lineColors(
-      arrival.route_name
-    );
+    busNumberDiv.style.background = lineColors(arrival.route_name);
 
     busNumberDiv.id = "next_bus_" + arrival.route_name;
     busNumberDiv.textContent = arrival.route_name;
@@ -952,23 +976,26 @@ const nextBusTemplate = (data, parent) => {
 };
 var busUpdateInterval;
 function showBusById(arrival, parent, station_id) {
-  
   clearInterval(busUpdateInterval);
-    document.querySelector(".bottomSheet").style.transform = "translate3d(-50%,60dvh, 0px)";
-    sheetHeight = 40;
-    if(parent){
-      let container = addElement(
-        "div",
-        document.querySelector(".mainSheet"),
-        "arrivalsOnStation"
-      );
+  document.querySelector(".bottomSheet").style.transform =
+    "translate3d(-50%,60dvh, 0px)";
+  sheetHeight = 40;
+  if (parent) {
+    let container = addElement(
+      "div",
+      document.querySelector(".mainSheet"),
+      "arrivalsOnStation"
+    );
+
+    container.classList.add("arrivalsScroll");
+    document.querySelector(".arrivalsHolder").style.transform =
+      "translateX(-100vw)";
+    arrivalsOnStation(container, arrival, station_id);
+    setTimeout(() => {
       container.style.transform = "translateX(0px) translateY(0px)";
       container.style.opacity = "1";
-      container.classList.add("arrivalsScroll");
-      document.querySelector(".arrivalsHolder").style.transform =
-        "translateX(-100vw)";
-        arrivalsOnStation(container, arrival, station_id)
-    }
+    }, 100);
+  }
   try {
     loop(1, arrival);
     busUpdateInterval = setInterval(() => {
@@ -984,7 +1011,10 @@ function showBusById(arrival, parent, station_id) {
   }
 }
 async function arrivalsOnStation(container, arrival, station_id) {
-  let info = await fetchData("https://cors.proxy.prometko.si/https://data.lpp.si/api/route/arrivals-on-route?trip-id=" + arrival.trip_id);
+  let info = await fetchData(
+    "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/arrivals-on-route?trip-id=" +
+      arrival.trip_id
+  );
   console.log(info);
   let iks = addElement("md-icon-button", container, "iks");
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
@@ -997,67 +1027,82 @@ async function arrivalsOnStation(container, arrival, station_id) {
       container.remove();
     }, 500);
   });
-  let arHolder = addElement("div", container, "arOnRoute")
-  var listArrivals = {}
-  let sortIndex
-  let arrivalsColumns = addElement("div", container, "arrivalsColumns")
-  info.forEach((arrivalRoute, index) => {//vsaka postaja
-    let arDiv = addElement("div", arHolder, "arrDiv")
-    let lineStation = addElement("div", arDiv, "lineStation")
-    
-    lineStation.style.backgroundColor = "RGB("+lineColorsObj[arrival.route_name].join(",")+")"
-    let lnimg = addElement("div", lineStation, "lineStationImg")
-    
-    if(index==0 || index == info.length-1){
-      lineStation.classList.add("firstLast")
-      lnimg.style.backgroundColor = "RGB("+lineColorsObj[arrival.route_name].join(",")+")"
-    }else{
-      lnimg.style.backgroundColor = "RGB("+darkenColor(lineColorsObj[arrival.route_name], 50).join(",")+")"
+  let arHolder = addElement("div", container, "arOnRoute");
+  var listArrivals = {};
+  let sortIndex;
+  let arrivalsColumns = addElement("div", container, "arrivalsColumns");
+  info.forEach((arrivalRoute, index) => {
+    //vsaka postaja
+    let arDiv = addElement("div", arHolder, "arrDiv");
+    let lineStation = addElement("div", arDiv, "lineStation");
+
+    lineStation.style.backgroundColor =
+      "RGB(" + lineColorsObj[arrival.route_name].join(",") + ")";
+    let lnimg = addElement("div", lineStation, "lineStationImg");
+
+    if (index == 0 || index == info.length - 1) {
+      lineStation.classList.add("firstLast");
+      lnimg.style.backgroundColor =
+        "RGB(" + lineColorsObj[arrival.route_name].join(",") + ")";
+    } else {
+      lnimg.style.backgroundColor =
+        "RGB(" +
+        darkenColor(lineColorsObj[arrival.route_name], 50).join(",") +
+        ")";
     }
-    lnimg.style.borderColor =  "RGB("+lineColorsObj[arrival.route_name].join(",")+")"
-    
-    let nameStation = addElement("div", arDiv, "nameStation")
-    nameStation.classList.add("nameStation_"+ arrivalRoute.station_code)
-    nameStation.innerHTML = arrivalRoute.name
-    if(arrivalRoute.station_code == station_id) sortIndex = index
-  
-   
-      
- 
+    lnimg.style.borderColor =
+      "RGB(" + lineColorsObj[arrival.route_name].join(",") + ")";
+
+    let nameStation = addElement("div", arDiv, "nameStation");
+    nameStation.classList.add("nameStation_" + arrivalRoute.station_code);
+    nameStation.innerHTML = arrivalRoute.name;
+    if (arrivalRoute.station_code == station_id) sortIndex = index;
+
     arrivalRoute.arrivals.forEach((ar, i) => {
-    if(!listArrivals[ar["vehicle_id"]]) listArrivals[ar["vehicle_id"]]= []
-    Object.values(listArrivals).forEach(arr => arr.push(""));
-    listArrivals[ar["vehicle_id"]][index] = ar["eta_min"]
-      
+      if (!listArrivals[ar["vehicle_id"]]) listArrivals[ar["vehicle_id"]] = [];
+      listArrivals[ar["vehicle_id"]][index] = ar["eta_min"];
     });
-    
-   
   });
-console.log(listArrivals);
+  console.log(listArrivals);
 
-let sortedArrivals = Object.entries(listArrivals).sort((a, b) => {
-  let aValue = (a[1][sortIndex] === undefined || a[1][sortIndex] === "") ? 61 : a[1][sortIndex];
-  let bValue = (b[1][sortIndex] === undefined || b[1][sortIndex] === "") ? 61 : b[1][sortIndex];
+  let sortedArrivals = Object.entries(listArrivals).sort((a, b) => {
+    let aValue =
+      a[1][sortIndex] === undefined || a[1][sortIndex] === ""
+        ? 61
+        : a[1][sortIndex];
+    let bValue =
+      b[1][sortIndex] === undefined || b[1][sortIndex] === ""
+        ? 61
+        : b[1][sortIndex];
 
-  return aValue - bValue;
-});
+    return aValue - bValue;
+  });
 
-  sortedArrivals = sortedArrivals.slice(0,3)
-  
+  sortedArrivals = sortedArrivals.slice(0, 3);
 
   for (let [key, element] of sortedArrivals) {
-   
-    
-      let etaHolder = addElement("div", arrivalsColumns, "etaHoder")
-       
-      etaHolder.innerHTML = "<div class=etaStation>" + 
-      element.map(item => (item === "" || item === null) ? "/" : item + "<sub>min</sub>").join("</div><div class=etaStation>") + 
+    let etaHolder = addElement("div", arrivalsColumns, "etaHoder");
+
+    etaHolder.innerHTML =
+      "<div class=etaStation>" +
+      element
+        .map((item) =>
+          item === null ? "/" : item + "<sub>min</sub>"
+        )
+        .join("</div><div class=etaStation>") +
       "</div>";
   }
   console.log(arrival);
 
-  
-  document.querySelector(".nameStation_"+ station_id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const childRect = document
+    .querySelector(".nameStation_" + station_id)
+    .parentNode.getBoundingClientRect();
+  const grandparentRect = container.getBoundingClientRect();
+
+  // Calculate how much we need to scroll
+  const offsetTop = childRect.top - grandparentRect.top + container.scrollTop;
+  container.scrollTo({ top: offsetTop, behavior: "smooth" });
+  //document.querySelector(".nameStation_"+ station_id).scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function addElement(tag, parent, className) {

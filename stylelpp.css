@@ -624,14 +624,18 @@ transition: all 0.5s;
   }
 }
 .arrivalsOnStation.arrivalsScroll {
-  position: absolute;
+  padding-top: 50px;
   display: flex
 ;
   flex-direction: row;
-  top: 40px;
   overflow: scroll;
-  height: calc(100dvh - 50px);
   align-items: normal;
+  position: absolute !important;
+  top: 40px !important;
+  height: calc(100dvh - 55px);
+  animation: showIn 0.5s;
+  transition: transform 0.5s !important;
+  transform: translateX(0);
 }
 .arOnRoute {
   display: flex
@@ -674,8 +678,20 @@ border: 5px red solid ;
   align-items: center;
   height: 50px;
 }
+
 .etaStation sub{
   margin-top: .5rem;
+}
+.firstLast{
+  height: 20px;
+    padding-top: 10px;
+}
+
+.etaHoder {
+  height: fit-content;
+  background: var(--md-sys-color-surface-container-low);
+  padding: 0 10px;
+  border-radius: 25px;
 }
 .nameStation {
   margin-left: 30px;
@@ -698,7 +714,9 @@ gap: 40px;
 .arrivalsColumns {
   display: flex
 ;
-margin-left: auto;
+  margin-left: auto;
   flex-direction: row;
-  gap: 30px;
+  gap: 10px;
+  padding-bottom: 100dvh;
+  height: fit-content;
 }
