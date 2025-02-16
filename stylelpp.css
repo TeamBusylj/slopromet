@@ -4,6 +4,9 @@ body {
   font-family: sans-serif !important;
   user-select: none;
 }
+md-primary-tab{
+  font-family: sans-serif;
+}
 .gmnoprint {
   display: none;
 }
@@ -651,14 +654,15 @@ transition: all 0.5s;
 }
 .lineStation {
   width: 5px;
-  height: 50px;
+  height: 60px;
   background: var(--md-sys-color-primary);
   /* background-image: url(./images/bus.svg); */
   position: relative;
 }
-.lineStation.firstLast .lineStationImg {
-  width: 15px;
-  height: 15px;
+.arrDiv.half-hidden-first div .lineStationImg, .arrDiv.half-hidden div .lineStationImg {
+  width: 25px;
+  height: 25px;
+  border-width: 0;
 }
 .lineStationImg {
   width: 10px;
@@ -671,21 +675,45 @@ border: 5px red solid ;
   transform: translate(-50%, -50%);
   border-radius: 50%;
 }
+.busOnStation{
+  width: 30px;
+    height: 30px;
+    border-width: 2px;
+    display: flex
+;
+    align-items: center;
+    justify-content: center;
+    color: rgb(140, 136, 65);
+}
+.busBetween{
+  display: flex
+;
+    align-items: center;
+    justify-content: center;
+}
+.busBetween md-icon {
+  color: rgb(140, 136, 65);
+  transform: translateY(-30px);
+  font-size: 1.2rem;
+  border-radius: 50%;
+}
 .etaStation {
   font-size: 1.2rem;
   display: flex
 ;
   align-items: center;
-  height: 50px;
+  height: 60px;
+  position: relative;
+  max-width: min-content;
 }
-
+.etaStation md-icon {
+  font-size: 15px;
+  animation: rotatingIcon 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
 .etaStation sub{
   margin-top: .5rem;
 }
-.firstLast{
-  height: 20px;
-    padding-top: 10px;
-}
+
 
 .etaHoder {
   height: fit-content;
@@ -695,7 +723,7 @@ border: 5px red solid ;
 }
 .nameStation {
   margin-left: 30px;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   align-items: center;
   display: flex
 ;
@@ -719,4 +747,43 @@ gap: 40px;
   gap: 10px;
   padding-bottom: 100dvh;
   height: fit-content;
+}
+ p {
+  color: var(--md-sys-color-on-surface);
+  align-items: center;
+  margin: 10px 0;
+  display: flex
+;
+  justify-content: center;
+  gap: 10px;
+}
+p md-icon {
+  font-size: 1.4rem;
+}
+.arrivalsScroll p{
+  margin-top: 30px;
+}
+.half-hidden, .half-hidden-first {
+  position: relative;
+}
+
+.half-hidden::after {
+  content: '';
+  position: absolute;
+  bottom: -12.5px;
+    left: -6px;
+  height: 50%;
+  width: 100%;
+  background: var(--md-sys-color-surface);
+  pointer-events: none;
+}
+.half-hidden-first::after {
+  content: '';
+  position: absolute;
+  top: -12.5px;
+  left: -10px;
+  height: 50%;
+  width: 100%;
+  background: var(--md-sys-color-surface);
+  pointer-events: none;
 }

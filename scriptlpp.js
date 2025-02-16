@@ -219,16 +219,21 @@ async function getLocation() {
     latitude = position.coords.latitude;
     longitude = position.coords.longitude;
   } catch (e) {
-    console.error(e);
+    console.log(e);
+
+    latitude = 46.051467939339034;
+    longitude = 14.506053031033623;
   }
 }
 
-setInterval(() => {
-  getLocation();
+setInterval(async () => {
+  await getLocation();
   createStationItems(1);
 }, 30000);
 async function createBuses() {
   await getLocation();
+  console.log("loaded");
+
   stationList = JSON.parse(stationDetails).data;
   currentPanel = document.querySelector(".favouriteStations");
   createStationItems();
@@ -290,6 +295,9 @@ function createStationItems(o) {
     }
   });
   if (navigator.geolocation) {
+    if (latitude == 46.051467939339034)
+      list.innerHTML +=
+        "<p><md-icon>location_off</md-icon>Lokacija ni omogočena.</p>";
     for (const station in stationList) {
       let item2 = addElement("md-list-item", null, "stationItem");
       item2.setAttribute("interactive", "");
@@ -379,6 +387,9 @@ function normalizeText(text) {
 }
 function createFavourite(parent, search, query) {
   var nearby = {};
+  if (latitude == 46.051467939339034)
+    parent.innerHTML +=
+      "<p><md-icon>location_off</md-icon>Lokacija ni omogočena.</p>";
   for (const station in stationList) {
     let item2 = addElement("md-list-item", null, "stationItem");
     item2.setAttribute("interactive", "");
@@ -788,7 +799,7 @@ function showArrivals(arrivalsScroll, data) {
     }
   } else {
     arrivalsScroll.innerHTML +=
-      "<p>Trenutno ni na sporedu nobenega avtobusa</p>";
+      "<p><md-icon>no_transfer</md-icon>V naslednji uri ni predvidenih avtobusov.</p>";
   }
 }
 async function showLines(parent, station) {
@@ -1037,43 +1048,104 @@ async function arrivalsOnStation(container, arrival, station_id) {
     let lineStation = addElement("div", arDiv, "lineStation");
 
     lineStation.style.backgroundColor =
-      "RGB(" + lineColorsObj[arrival.route_name].join(",") + ")";
+      "RGB(" +
+      lineColorsObj[arrival.route_name.replace(/\D/g, "")].join(",") +
+      ")";
     let lnimg = addElement("div", lineStation, "lineStationImg");
 
     if (index == 0 || index == info.length - 1) {
-      lineStation.classList.add("firstLast");
+      index == 0
+        ? lineStation.parentNode.classList.add("half-hidden-first")
+        : lineStation.parentNode.classList.add("half-hidden");
       lnimg.style.backgroundColor =
-        "RGB(" + lineColorsObj[arrival.route_name].join(",") + ")";
+        "RGB(" +
+        lineColorsObj[arrival.route_name.replace(/\D/g, "")].join(",") +
+        ")";
     } else {
       lnimg.style.backgroundColor =
         "RGB(" +
-        darkenColor(lineColorsObj[arrival.route_name], 50).join(",") +
+        darkenColor(
+          lineColorsObj[arrival.route_name.replace(/\D/g, "")],
+          50
+        ).join(",") +
+        ")";
+
+      lnimg.style.borderColor =
+        "RGB(" +
+        lineColorsObj[arrival.route_name.replace(/\D/g, "")].join(",") +
         ")";
     }
-    lnimg.style.borderColor =
-      "RGB(" + lineColorsObj[arrival.route_name].join(",") + ")";
-
     let nameStation = addElement("div", arDiv, "nameStation");
     nameStation.classList.add("nameStation_" + arrivalRoute.station_code);
     nameStation.innerHTML = arrivalRoute.name;
     if (arrivalRoute.station_code == station_id) sortIndex = index;
 
-    arrivalRoute.arrivals.forEach((ar, i) => {
-      if (!listArrivals[ar["vehicle_id"]]) listArrivals[ar["vehicle_id"]] = [];
-      listArrivals[ar["vehicle_id"]][index] = ar["eta_min"];
-    });
+    for (let i = 0; i < arrivalRoute.arrivals.length; i++) {
+      const ar = arrivalRoute.arrivals[i];
+
+      // Handle empty array slot
+
+      if (
+        ar["type"] == 2 &&
+        !lineStation.parentNode.classList.contains("half-hidden") &&
+        !lineStation.parentNode.classList.contains("half-hidden-first")
+      ) {
+        lnimg.innerHTML =
+          "<md-icon style='color:RGB(" +
+          lineColorsObj[arrival.route_name.replace(/\D/g, "")].join(",") +
+          ")!important'>directions_bus</md-icon>";
+
+        lnimg.classList.add("busOnStation");
+      } 
+      if (!listArrivals[ar["vehicle_id"]]) {
+        listArrivals[ar["vehicle_id"]] = [];
+        if (
+          !lineStation.parentNode.classList.contains("half-hidden") &&
+          !lineStation.parentNode.classList.contains("half-hidden-first") && ar["type"] !== 2
+        ) {
+          lnimg.innerHTML =
+            "<md-icon style='color:RGB(" +
+            darkenColor(
+              lineColorsObj[arrival.route_name.replace(/\D/g, "")],
+              50
+            ).join(",") +
+            ")!important;background-color:RGB(" +
+            darkenColor(
+              lineColorsObj[arrival.route_name.replace(/\D/g, "")],
+              -20
+            ).join(",") +
+            ")'>directions_bus</md-icon>";
+          lnimg.classList.add("busBetween");
+        }
+      }
+      listArrivals[ar["vehicle_id"]][index] =
+        ar["eta_min"] + `<span style="display:none;">${ar["type"]}</span>`;
+    }
   });
   console.log(listArrivals);
 
   let sortedArrivals = Object.entries(listArrivals).sort((a, b) => {
+    const extractText = (text) => {
+      // Create a temporary DOM element to parse the HTML and get the text content
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = text;
+      // Remove any span with display:none
+      const hiddenSpans = tempDiv.querySelectorAll(
+        'span[style="display:none;"]'
+      );
+      hiddenSpans.forEach((span) => span.remove());
+      return tempDiv.textContent || tempDiv.innerText || "";
+    };
+
     let aValue =
       a[1][sortIndex] === undefined || a[1][sortIndex] === ""
         ? 61
-        : a[1][sortIndex];
+        : extractText(a[1][sortIndex]);
+
     let bValue =
       b[1][sortIndex] === undefined || b[1][sortIndex] === ""
         ? 61
-        : b[1][sortIndex];
+        : extractText(b[1][sortIndex]);
 
     return aValue - bValue;
   });
@@ -1082,13 +1154,38 @@ async function arrivalsOnStation(container, arrival, station_id) {
 
   for (let [key, element] of sortedArrivals) {
     let etaHolder = addElement("div", arrivalsColumns, "etaHoder");
+    //const isStation = await fetchData("https://cors.proxy.prometko.si/https://data.lpp.si/api/bus/bus-details?station-ids=1&trip-info=1&bus-id="+key)
+    //console.log(isStation);
 
     etaHolder.innerHTML =
       "<div class=etaStation>" +
       element
-        .map((item) =>
-          item === null ? "/" : item + "<sub>min</sub>"
-        )
+        .map((item) => {
+          if (item === null) return "/";
+
+          // Get the text content of the hidden <span>
+          const spanText = item.match(
+            /<span style="display:none;">(.*?)<\/span>/
+          );
+
+          if (spanText) {
+            const typeValue = spanText[1]; // Extracts the content inside the span
+
+            if (typeValue === "0") {
+              // If type is 0, add <md-icon>near_me</md-icon>
+              return item + "<sub>min</sub>" + "<md-icon>near_me</md-icon>";
+            } else if (typeValue === "2") {
+              // If type is 2, replace the text with "PRIHOD"
+              return item.replace(item, "PRIHOD");
+            } else if (typeValue === "3") {
+              // If type is 2, replace the text with "PRIHOD"
+              return item.replace(item, "OBVOZ");
+            }
+          }
+
+          // Default case: just add <sub>min</sub>
+          return item + "<sub>min</sub>";
+        })
         .join("</div><div class=etaStation>") +
       "</div>";
   }
