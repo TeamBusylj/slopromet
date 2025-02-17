@@ -631,7 +631,8 @@ transition: all 0.5s;
   display: flex
 ;
   flex-direction: row;
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
   align-items: normal;
   position: absolute !important;
   top: 40px !important;
@@ -639,6 +640,7 @@ transition: all 0.5s;
   animation: showIn 0.5s;
   transition: transform 0.5s !important;
   transform: translateX(0);
+  overscroll-behavior: none;
 }
 .arOnRoute {
   display: flex
@@ -675,15 +677,12 @@ border: 5px red solid ;
   transform: translate(-50%, -50%);
   border-radius: 50%;
 }
-.busOnStation{
-  width: 30px;
-    height: 30px;
-    border-width: 2px;
-    display: flex
+.busOnStation {
+  display: flex
 ;
-    align-items: center;
-    justify-content: center;
-    color: rgb(140, 136, 65);
+  align-items: center;
+  justify-content: center;
+  color: rgb(140, 136, 65);
 }
 .busBetween{
   display: flex
@@ -696,19 +695,32 @@ border: 5px red solid ;
   transform: translateY(-30px);
   font-size: 1.2rem;
   border-radius: 50%;
+
+}
+.busOnStation md-icon {
+  color: rgb(140, 136, 65);
+  font-size: 1.2rem;
+  border-radius: 50%;
+  scale: 1.1;
 }
 .etaStation {
   font-size: 1.2rem;
-  display: flex
-;
+  display: flex;
+background: var(--md-sys-color-surface-container-low);
   align-items: center;
   height: 60px;
   position: relative;
-  max-width: min-content;
+  padding: 0 10px;
+}
+.noBG{
+  background: none;
 }
 .etaStation md-icon {
   font-size: 15px;
-  animation: rotatingIcon 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: rotatingIcon 4scubic-bezier(0.4, 0, 0.6, 1) infinite;
+  position: absolute;
+  right: 0;
+  top: 8px;
 }
 .etaStation sub{
   margin-top: .5rem;
@@ -717,12 +729,12 @@ border: 5px red solid ;
 
 .etaHoder {
   height: fit-content;
-  background: var(--md-sys-color-surface-container-low);
-  padding: 0 10px;
+width: min-content;
+
   border-radius: 25px;
 }
 .nameStation {
-  margin-left: 30px;
+  margin-left: 20px;
   font-size: 1.1rem;
   align-items: center;
   display: flex

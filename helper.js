@@ -79,7 +79,7 @@ function makeBottomheet(title, height) {
           scrollList) &&
         deltaY < 0
       ) {
-        if (sheetContents.scrollTop > 1 || scrollList.scrollTop > 1) deltaY = 0;
+        if (sheetContents.scrollTop > 1 || (scrollList.scrollTop > 1 && !event.target.closest(".handleHolder"))) deltaY = 0;
       }
 
       const mainContentHeight = Math.min(

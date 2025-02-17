@@ -1091,10 +1091,17 @@ async function arrivalsOnStation(container, arrival, station_id) {
         !lineStation.parentNode.classList.contains("half-hidden-first")
       ) {
         lnimg.innerHTML =
-          "<md-icon style='color:RGB(" +
-          lineColorsObj[arrival.route_name.replace(/\D/g, "")].join(",") +
-          ")!important'>directions_bus</md-icon>";
-
+            "<md-icon style='color:RGB(" +
+            darkenColor(
+              lineColorsObj[arrival.route_name.replace(/\D/g, "")],
+              50
+            ).join(",") +
+            ")!important;background-color:RGB(" +
+            darkenColor(
+              lineColorsObj[arrival.route_name.replace(/\D/g, "")],
+              -60
+            ).join(",") +
+            ")'>directions_bus</md-icon>";
         lnimg.classList.add("busOnStation");
       } 
       if (!listArrivals[ar["vehicle_id"]]) {
@@ -1112,7 +1119,7 @@ async function arrivalsOnStation(container, arrival, station_id) {
             ")!important;background-color:RGB(" +
             darkenColor(
               lineColorsObj[arrival.route_name.replace(/\D/g, "")],
-              -20
+              -60
             ).join(",") +
             ")'>directions_bus</md-icon>";
           lnimg.classList.add("busBetween");
@@ -1124,15 +1131,86 @@ async function arrivalsOnStation(container, arrival, station_id) {
   });
   console.log(listArrivals);
 
+ let sortedArrivals =sortArrivals(listArrivals, sortIndex);
+
+  console.log(sortedArrivals);
+  
+
+  sortedArrivals = sortedArrivals.slice(0, 10);
+
+  for (let [key, element] of sortedArrivals) {
+    let etaHolder = addElement("div", arrivalsColumns, "etaHoder");
+    let previousItem = null;
+    etaHolder.innerHTML =
+      element
+        .map((item, i) => {
+          if (item === null) return "/";
+  
+          // Get the text content of the hidden <span>
+          const spanText = item.match(
+            /<span style="display:none;">(.*?)<\/span>/
+          );
+  
+          let stationHTML = item; // Default station HTML
+
+  
+         
+          let border
+          console.log(item);
+          
+         if(item.includes("z")) {
+           border = "border-radius: 20px 20px 0px 0px;";
+           item = item.replace("z", "");
+         }
+         if(item.includes("m")) {
+           border = "border-radius: 0 0 20px 20px";
+           item = item.replace("m", "");
+         }
+          border=""//!!!!!!!!!!!!!!!!!!!!!!!!!!
+          previousItem = item;
+          if (spanText) {
+            const typeValue = spanText[1]; // Extracts the content inside the span
+            if (typeValue === "1") {
+              // If spanText is empty, remove the background from etaStation
+              stationHTML = item + "<sub>min</sub>";
+            } else if (typeValue === "0") {
+              // If type is 0, add <md-icon>near_me</md-icon>
+              stationHTML = item + "<sub>min</sub>" + "<md-icon>near_me</md-icon>";
+            } else if (typeValue === "2") {
+              // If type is 2, replace the text with "P"
+              stationHTML = item.replace(item, "P");
+            } else if (typeValue === "3") {
+              // If type is 3, replace the text with "O"
+              stationHTML = item.replace(item, "O");
+            }
+          
+          }
+          // Return the formatted station HTML with the background removed if needed
+          return `<div class="etaStation" style="${spanText ? '' : 'background:none;'}${border ? border : ''}">${stationHTML}</div>`;
+        })
+        .join("") 
+  }
+  console.log(arrival);
+
+  const childRect = document
+    .querySelector(".nameStation_" + station_id)
+    .parentNode.getBoundingClientRect();
+  const grandparentRect = container.getBoundingClientRect();
+
+  // Calculate how much we need to scroll
+  const offsetTop = childRect.top - grandparentRect.top + container.scrollTop;
+  container.scrollTo({ top: offsetTop, behavior: "smooth" });
+  //document.querySelector(".nameStation_"+ station_id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function sortArrivals(listArrivals, sortIndex) {
+  let combinedArrivals = [];
+
+  // Sort the arrivals as before
   let sortedArrivals = Object.entries(listArrivals).sort((a, b) => {
     const extractText = (text) => {
-      // Create a temporary DOM element to parse the HTML and get the text content
       const tempDiv = document.createElement("div");
       tempDiv.innerHTML = text;
-      // Remove any span with display:none
-      const hiddenSpans = tempDiv.querySelectorAll(
-        'span[style="display:none;"]'
-      );
+      const hiddenSpans = tempDiv.querySelectorAll('span[style="display:none;"]');
       hiddenSpans.forEach((span) => span.remove());
       return tempDiv.textContent || tempDiv.innerText || "";
     };
@@ -1148,60 +1226,78 @@ async function arrivalsOnStation(container, arrival, station_id) {
         : extractText(b[1][sortIndex]);
 
     return aValue - bValue;
+  }).map(([busId, arrivals]) => [
+    busId,
+    arrivals.map((val) => (val === undefined || val === null ? "" : val)),
+  ]);
+
+  // Function to check if two arrays can be combined without overlap
+  function canCombine(arr1, arr2) {
+    // Ensure that the arrays don't overlap non-empty values at the same index
+    for (let i = 0; i < Math.max(arr1.length, arr2.length); i++) {
+      const arr1Val = arr1[i] || "";
+      const arr2Val = arr2[i] || "";
+      // If one has a value and the other doesn't, they can't combine
+      if (arr1Val !== "" && arr2Val !== "" && arr1Val !== arr2Val) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Combine arrivals if they don't overlap
+  for (let i = 0; i < sortedArrivals.length; i++) {
+    let [busId, current] = sortedArrivals[i];
+    let combined = false;
+
+    for (let j = 0; j < combinedArrivals.length; j++) {
+      if (canCombine(combinedArrivals[j][1], current)) {
+        // Merge the arrays, filling empty spots with the other array's values
+        let jeze = false
+        let jeze2 = false
+        for (let k = 0; k < current.length; k++) {
+          if (current[k] === undefined || current[k] === null) {
+            current[k] = "";
+          }
+          if (current[k] !== "") {
+            let content = ""
+            if(!jeze){
+              content = current[k]+"z"
+              jeze = true
+            } else if (!jeze2){
+ content = current[k]+"m"
+ jeze2 = true
+            } else{
+              content = current[k]
+            }
+            combinedArrivals[j][1][k] = content
+           
+          }
+        }
+        combined = true;
+        break;
+      }
+    }
+
+    if (!combined) {
+      // Ensure no `undefined` or `null` values are added during push
+      let updatedArray = [];
+      for (let val of current) {
+        updatedArray.push(val === undefined || val === null ? "" : val);
+      }
+      combinedArrivals.push([busId, updatedArray]);
+    }
+  }
+
+  // Sort combined arrays if needed
+  combinedArrivals.sort((a, b) => {
+    let aValue = a[1].find((val) => val !== "") || 61;
+    let bValue = b[1].find((val) => val !== "") || 61;
+    return aValue - bValue;
   });
 
-  sortedArrivals = sortedArrivals.slice(0, 3);
-
-  for (let [key, element] of sortedArrivals) {
-    let etaHolder = addElement("div", arrivalsColumns, "etaHoder");
-    //const isStation = await fetchData("https://cors.proxy.prometko.si/https://data.lpp.si/api/bus/bus-details?station-ids=1&trip-info=1&bus-id="+key)
-    //console.log(isStation);
-
-    etaHolder.innerHTML =
-      "<div class=etaStation>" +
-      element
-        .map((item) => {
-          if (item === null) return "/";
-
-          // Get the text content of the hidden <span>
-          const spanText = item.match(
-            /<span style="display:none;">(.*?)<\/span>/
-          );
-
-          if (spanText) {
-            const typeValue = spanText[1]; // Extracts the content inside the span
-
-            if (typeValue === "0") {
-              // If type is 0, add <md-icon>near_me</md-icon>
-              return item + "<sub>min</sub>" + "<md-icon>near_me</md-icon>";
-            } else if (typeValue === "2") {
-              // If type is 2, replace the text with "PRIHOD"
-              return item.replace(item, "PRIHOD");
-            } else if (typeValue === "3") {
-              // If type is 2, replace the text with "PRIHOD"
-              return item.replace(item, "OBVOZ");
-            }
-          }
-
-          // Default case: just add <sub>min</sub>
-          return item + "<sub>min</sub>";
-        })
-        .join("</div><div class=etaStation>") +
-      "</div>";
-  }
-  console.log(arrival);
-
-  const childRect = document
-    .querySelector(".nameStation_" + station_id)
-    .parentNode.getBoundingClientRect();
-  const grandparentRect = container.getBoundingClientRect();
-
-  // Calculate how much we need to scroll
-  const offsetTop = childRect.top - grandparentRect.top + container.scrollTop;
-  container.scrollTo({ top: offsetTop, behavior: "smooth" });
-  //document.querySelector(".nameStation_"+ station_id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  return combinedArrivals;
 }
-
 function addElement(tag, parent, className) {
   var element = document.createElement(tag);
   if (className) {
