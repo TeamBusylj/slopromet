@@ -717,7 +717,7 @@ background: var(--md-sys-color-surface-container-low);
 }
 .etaStation md-icon {
   font-size: 15px;
-  animation: rotatingIcon 4scubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: rotatingIcon 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   position: absolute;
   right: 0;
   top: 8px;
@@ -759,6 +759,8 @@ gap: 40px;
   gap: 10px;
   padding-bottom: 100dvh;
   height: fit-content;
+  max-width: 74vw;
+    overflow-x: scroll;
 }
  p {
   color: var(--md-sys-color-on-surface);
@@ -798,4 +800,10 @@ p md-icon {
   width: 100%;
   background: var(--md-sys-color-surface);
   pointer-events: none;
+}
+md-fab.refresh {
+  position: fixed;
+  bottom: 70px;
+  z-index: 100;
+  right: 25px;
 }

@@ -1,3 +1,5 @@
+
+
 function debounce(func, delay) {
   let timeoutId;
   return function () {
@@ -226,14 +228,9 @@ async function getLocation() {
   }
 }
 
-setInterval(async () => {
-  await getLocation();
-  createStationItems(1);
-}, 30000);
+
 async function createBuses() {
   await getLocation();
-  console.log("loaded");
-
   stationList = JSON.parse(stationDetails).data;
   currentPanel = document.querySelector(".favouriteStations");
   createStationItems();
@@ -382,6 +379,34 @@ function createStationItems(o) {
     loader.style.display = "none";
   }
 }
+async function refresh() {
+  if(checkVisible(document.querySelector(".arrivalsOnStation"))) {
+    
+  } else if(checkVisible(document.querySelector(".busTemplate"))){ 
+    let arH = document.querySelector(".arrivalsScroll");
+    arH.style.transform = "translateX(0px) translateY(-20px)";
+    arH.style.opacity = "0";
+    await stationClick(isArrivalsOpen, true);
+    arH.style.transform = "translateX(0px) translateY(0px)";
+    arH.style.opacity = "1";
+  } else if(checkVisible(currentPanel)){
+    currentPanel.style.transform = "translateX(0px) translateY(-20px)";
+    currentPanel.style.opacity = "0";
+    await getLocation();
+    await createStationItems(1);
+    currentPanel.style.transform = "translateX(0px) translateY(0px)";
+    currentPanel.style.opacity = "1";
+   
+  } else{
+
+  }
+}
+function checkVisible(elm) {
+  if(!elm) return false;
+  var rect = elm.getBoundingClientRect();
+  var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+  return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
+}
 function normalizeText(text) {
   return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
@@ -514,6 +539,7 @@ async function oppositeStation(id) {
 }
 var arrivalsScroll;
 async function stationClick(station, noAnimation) {
+  if (document.querySelector(".arrivalsOnStation")) return;
   var stylesTransition = [
     document.querySelector(".searchContain").style,
     document.querySelector(".listOfStations").style,
@@ -985,7 +1011,7 @@ const nextBusTemplate = (data, parent) => {
     i++;
   }
 };
-var busUpdateInterval;
+var busUpdateInterval, arrivalsUpdateInterval;
 function showBusById(arrival, parent, station_id) {
   clearInterval(busUpdateInterval);
   document.querySelector(".bottomSheet").style.transform =
@@ -1002,7 +1028,10 @@ function showBusById(arrival, parent, station_id) {
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(-100vw)";
     arrivalsOnStation(container, arrival, station_id);
-    setTimeout(() => {
+    arrivalsUpdateInterval= setInterval(() => {
+      arrivalsOnStation(container, arrival, station_id, container.scrollTop);
+    }, 10000);
+   setTimeout(() => {
       container.style.transform = "translateX(0px) translateY(0px)";
       container.style.opacity = "1";
     }, 100);
@@ -1021,22 +1050,24 @@ function showBusById(arrival, parent, station_id) {
     }, 300);
   }
 }
-async function arrivalsOnStation(container, arrival, station_id) {
+async function arrivalsOnStation(container, arrival, station_id, already) {
   let info = await fetchData(
     "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/arrivals-on-route?trip-id=" +
       arrival.trip_id
   );
-  console.log(info);
+  if (already) container.innerHTML = "";
   let iks = addElement("md-icon-button", container, "iks");
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
     container.style.transform = "translateX(100vw)";
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(0vw)";
-
+      clearInterval(arrivalsUpdateInterval)
+      clearInterval(busUpdateInterval)
     setTimeout(() => {
       container.remove();
     }, 500);
+    clearMap()
   });
   let arHolder = addElement("div", container, "arOnRoute");
   var listArrivals = {};
@@ -1091,24 +1122,25 @@ async function arrivalsOnStation(container, arrival, station_id) {
         !lineStation.parentNode.classList.contains("half-hidden-first")
       ) {
         lnimg.innerHTML =
-            "<md-icon style='color:RGB(" +
-            darkenColor(
-              lineColorsObj[arrival.route_name.replace(/\D/g, "")],
-              50
-            ).join(",") +
-            ")!important;background-color:RGB(" +
-            darkenColor(
-              lineColorsObj[arrival.route_name.replace(/\D/g, "")],
-              -60
-            ).join(",") +
-            ")'>directions_bus</md-icon>";
+          "<md-icon style='color:RGB(" +
+          darkenColor(
+            lineColorsObj[arrival.route_name.replace(/\D/g, "")],
+            50
+          ).join(",") +
+          ")!important;background-color:RGB(" +
+          darkenColor(
+            lineColorsObj[arrival.route_name.replace(/\D/g, "")],
+            -60
+          ).join(",") +
+          ")'>directions_bus</md-icon>";
         lnimg.classList.add("busOnStation");
-      } 
+      }
       if (!listArrivals[ar["vehicle_id"]]) {
         listArrivals[ar["vehicle_id"]] = [];
         if (
           !lineStation.parentNode.classList.contains("half-hidden") &&
-          !lineStation.parentNode.classList.contains("half-hidden-first") && ar["type"] !== 2
+          !lineStation.parentNode.classList.contains("half-hidden-first") &&
+          ar["type"] !== 2
         ) {
           lnimg.innerHTML =
             "<md-icon style='color:RGB(" +
@@ -1129,68 +1161,63 @@ async function arrivalsOnStation(container, arrival, station_id) {
         ar["eta_min"] + `<span style="display:none;">${ar["type"]}</span>`;
     }
   });
-  console.log(listArrivals);
 
- let sortedArrivals =sortArrivals(listArrivals, sortIndex);
+  let sortedArrivals = sortArrivals(listArrivals, sortIndex);
 
-  console.log(sortedArrivals);
-  
 
   sortedArrivals = sortedArrivals.slice(0, 10);
 
   for (let [key, element] of sortedArrivals) {
     let etaHolder = addElement("div", arrivalsColumns, "etaHoder");
     let previousItem = null;
-    etaHolder.innerHTML =
-      element
-        .map((item, i) => {
-          if (item === null) return "/";
-  
-          // Get the text content of the hidden <span>
-          const spanText = item.match(
-            /<span style="display:none;">(.*?)<\/span>/
-          );
-  
-          let stationHTML = item; // Default station HTML
+    etaHolder.innerHTML = element
+      .map((item, i) => {
+        if (item === null) return "/";
 
-  
-         
-          let border
-          console.log(item);
-          
-         if(item.includes("z")) {
-           border = "border-radius: 20px 20px 0px 0px;";
-           item = item.replace("z", "");
-         }
-         if(item.includes("m")) {
-           border = "border-radius: 0 0 20px 20px";
-           item = item.replace("m", "");
-         }
-          border=""//!!!!!!!!!!!!!!!!!!!!!!!!!!
-          previousItem = item;
-          if (spanText) {
-            const typeValue = spanText[1]; // Extracts the content inside the span
-            if (typeValue === "1") {
-              // If spanText is empty, remove the background from etaStation
-              stationHTML = item + "<sub>min</sub>";
-            } else if (typeValue === "0") {
-              // If type is 0, add <md-icon>near_me</md-icon>
-              stationHTML = item + "<sub>min</sub>" + "<md-icon>near_me</md-icon>";
-            } else if (typeValue === "2") {
-              // If type is 2, replace the text with "P"
-              stationHTML = item.replace(item, "P");
-            } else if (typeValue === "3") {
-              // If type is 3, replace the text with "O"
-              stationHTML = item.replace(item, "O");
-            }
-          
+        // Get the text content of the hidden <span>
+        const spanText = item.match(
+          /<span style="display:none;">(.*?)<\/span>/
+        );
+
+        let stationHTML = item; // Default station HTML
+
+        let border="";
+     
+
+        if (item.includes("z")) {
+          border = "border-top-left-radius: 20px;border-top-right-radius: 20px;";
+          item = item.replace("z", "");
+        }
+        if (item.includes("m")) {
+          border += "border-bottom-left-radius: 20px;border-bottom-right-radius: 20px;";
+          item = item.replace("m", "");
+        }
+
+        previousItem = item;
+        if (spanText) {
+          const typeValue = spanText[1]; // Extracts the content inside the span
+          if (typeValue === "1") {
+            // If spanText is empty, remove the background from etaStation
+            stationHTML = item + "<sub>min</sub>";
+          } else if (typeValue === "0") {
+            // If type is 0, add <md-icon>near_me</md-icon>
+            stationHTML =
+              item + "<sub>min</sub>" + "<md-icon>near_me</md-icon>";
+          } else if (typeValue === "2") {
+            // If type is 2, replace the text with "P"
+            stationHTML = item.replace(item, "P");
+          } else if (typeValue === "3") {
+            // If type is 3, replace the text with "O"
+            stationHTML = item.replace(item, "O");
           }
-          // Return the formatted station HTML with the background removed if needed
-          return `<div class="etaStation" style="${spanText ? '' : 'background:none;'}${border ? border : ''}">${stationHTML}</div>`;
-        })
-        .join("") 
+        }
+        // Return the formatted station HTML with the background removed if needed
+        return `<div class="etaStation" style="${
+          spanText ? "" : "background:none;"
+        }${border ? border : ""}">${stationHTML}</div>`;
+      })
+      .join("");
   }
-  console.log(arrival);
 
   const childRect = document
     .querySelector(".nameStation_" + station_id)
@@ -1199,51 +1226,61 @@ async function arrivalsOnStation(container, arrival, station_id) {
 
   // Calculate how much we need to scroll
   const offsetTop = childRect.top - grandparentRect.top + container.scrollTop;
-  container.scrollTo({ top: offsetTop, behavior: "smooth" });
-  //document.querySelector(".nameStation_"+ station_id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  container.scrollTo({
+    top: already ? already : offsetTop,
+    behavior: already ? "instant" : "smooth",
+  });
 }
 function sortArrivals(listArrivals, sortIndex) {
   let combinedArrivals = [];
 
   // Sort the arrivals as before
-  let sortedArrivals = Object.entries(listArrivals).sort((a, b) => {
-    const extractText = (text) => {
-      const tempDiv = document.createElement("div");
-      tempDiv.innerHTML = text;
-      const hiddenSpans = tempDiv.querySelectorAll('span[style="display:none;"]');
-      hiddenSpans.forEach((span) => span.remove());
-      return tempDiv.textContent || tempDiv.innerText || "";
-    };
+  let sortedArrivals = Object.entries(listArrivals)
+    .sort((a, b) => {
+      const extractText = (text) => {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = text;
+        const hiddenSpans = tempDiv.querySelectorAll(
+          'span[style="display:none;"]'
+        );
+        hiddenSpans.forEach((span) => span.remove());
+        return tempDiv.textContent || tempDiv.innerText || "";
+      };
 
-    let aValue =
-      a[1][sortIndex] === undefined || a[1][sortIndex] === ""
-        ? 61
-        : extractText(a[1][sortIndex]);
+      let aValue =
+        a[1][sortIndex] === undefined || a[1][sortIndex] === ""
+          ? 61
+          : extractText(a[1][sortIndex]);
 
-    let bValue =
-      b[1][sortIndex] === undefined || b[1][sortIndex] === ""
-        ? 61
-        : extractText(b[1][sortIndex]);
+      let bValue =
+        b[1][sortIndex] === undefined || b[1][sortIndex] === ""
+          ? 61
+          : extractText(b[1][sortIndex]);
 
-    return aValue - bValue;
-  }).map(([busId, arrivals]) => [
-    busId,
-    arrivals.map((val) => (val === undefined || val === null ? "" : val)),
-  ]);
+      return aValue - bValue;
+    })
+    .map(([busId, arrivals]) => [
+      busId,
+      arrivals.map((val) => (val === undefined || val === null ? "" : val)),
+    ]);
 
   // Function to check if two arrays can be combined without overlap
   function canCombine(arr1, arr2) {
-    // Ensure that the arrays don't overlap non-empty values at the same index
+    let hasEmpty = false;
+
     for (let i = 0; i < Math.max(arr1.length, arr2.length); i++) {
-      const arr1Val = arr1[i] || "";
-      const arr2Val = arr2[i] || "";
-      // If one has a value and the other doesn't, they can't combine
-      if (arr1Val !== "" && arr2Val !== "" && arr1Val !== arr2Val) {
-        return false;
-      }
+        const arr1Val = arr1[i] || "";
+        const arr2Val = arr2[i] || "";
+
+        if (arr1Val === "" || arr2Val === "") {
+            hasEmpty = true;
+        } else if (arr1Val !== arr2Val) {
+            return false;
+        }
     }
-    return true;
-  }
+
+    return hasEmpty;
+}
 
   // Combine arrivals if they don't overlap
   for (let i = 0; i < sortedArrivals.length; i++) {
@@ -1253,26 +1290,20 @@ function sortArrivals(listArrivals, sortIndex) {
     for (let j = 0; j < combinedArrivals.length; j++) {
       if (canCombine(combinedArrivals[j][1], current)) {
         // Merge the arrays, filling empty spots with the other array's values
-        let jeze = false
-        let jeze2 = false
+
         for (let k = 0; k < current.length; k++) {
           if (current[k] === undefined || current[k] === null) {
             current[k] = "";
           }
+          let content = "";
           if (current[k] !== "") {
-            let content = ""
-            if(!jeze){
-              content = current[k]+"z"
-              jeze = true
-            } else if (!jeze2){
- content = current[k]+"m"
- jeze2 = true
-            } else{
-              content = current[k]
-            }
-            combinedArrivals[j][1][k] = content
            
+            content = current[k];
           }
+      
+          
+         
+          combinedArrivals[j][1][k] = content;
         }
         combined = true;
         break;
@@ -1295,9 +1326,30 @@ function sortArrivals(listArrivals, sortIndex) {
     let bValue = b[1].find((val) => val !== "") || 61;
     return aValue - bValue;
   });
-
+    // Combine arrivals if they don't overlap
+    for (let i = 0; i < combinedArrivals.length; i++) {
+      let [busId, current] = combinedArrivals[i];
+     
+  
+     
+        for (let k = 0; k < current.length; k++) {
+          let content = current[k];
+          if ((current[k - 1] == "" || current[k - 1] == null) && current[k] !== "")  {
+            content = content + "z";
+          } 
+          if ((current[k + 1] == "" || current[k + 1] == null)&& current[k] !== "") {
+            content = content + "m";
+          }
+          combinedArrivals[i][1][k] = content;
+        }
+        
+      
+  
+      
+    }
   return combinedArrivals;
 }
+
 function addElement(tag, parent, className) {
   var element = document.createElement(tag);
   if (className) {

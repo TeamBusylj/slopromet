@@ -157,6 +157,7 @@ function makeBottomheet(title, height) {
       Math.min(sheetContents.offsetHeight, 50, (720 / window.innerHeight) * 100)
     );
   }
+  sheetContents.appendChild(document.querySelector(".refresh"))
   return mainContent;
 }
 var currentBus = ""
@@ -340,12 +341,22 @@ async function generateRouteVector(data, trip_id, lno, lid) {
       coords += data[i].longitude + "," + data[i].latitude + ";";
     }
     coordinates = 
-      await fetchData(
-        "https://router.project-osrm.org/route/v1/driving/" +
-          coords.substring(0, coords.length - 2) +
-          "?overview=full&geometries=geojson"
+    await (
+      await fetch(
+        "https://cors.proxy.prometko.si/https://router.project-osrm.org/route/v1/driving/" +
+        coords.substring(0, coords.length - 2) +
+        "?overview=full&geometries=geojson",
+        {
+          headers: {
+            apiKey: "D2F0C381-6072-45F9-A05E-513F1515DD6A",
+            Accept: "Travana",
+          },
+        }
       )
+    ).json()
+
   
+console.log(coordinates);
 
     coordinates = coordinates.routes[0].geometry.coordinates;
   }
@@ -551,6 +562,17 @@ async function fetchData(url) {
       )
     ).json()
   ).data;
+}
+function clearMap() {
+  busStationLayer.getSource().getFeatures().forEach((feature) => {
+    busStationLayer.getSource().removeFeature(feature);
+  });
+  busVectorLayer.getSource().getFeatures().forEach((feature) => {
+    busVectorLayer.getSource().removeFeature(feature);
+  });
+  markers.getSource().getFeatures().forEach((feature) => {
+    markers.getSource().removeFeature(feature);
+  });
 }
 const lineColorsObj = {
   1: [201, 51, 54],
