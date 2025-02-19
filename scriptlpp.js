@@ -381,6 +381,7 @@ function createStationItems(o) {
 }
 async function refresh() {
   if(checkVisible(document.querySelector(".arrivalsOnStation"))) {
+    console.log("nebi");
     
   } else if(checkVisible(document.querySelector(".busTemplate"))){ 
     let arH = document.querySelector(".arrivalsScroll");
@@ -1055,7 +1056,7 @@ async function arrivalsOnStation(container, arrival, station_id, already) {
     "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/arrivals-on-route?trip-id=" +
       arrival.trip_id
   );
-  if (already) container.innerHTML = "";
+  if (already || already !== 0) container.innerHTML = "";
   let iks = addElement("md-icon-button", container, "iks");
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
