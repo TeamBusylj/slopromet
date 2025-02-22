@@ -6,9 +6,7 @@ function makeBottomheet(title, height) {
 
   let handle = addElement("div", draggableArea, "bottomSheetHandle");
 
-  let toolbarColor = document
-    .querySelector('meta[name="theme-color"]')
-    .getAttribute("content");
+
 
   const setSheetHeight = (value) => {
     sheetHeight = Math.max(0, Math.min(100, value));
@@ -171,7 +169,7 @@ var busImageData;
  * @param {string} trip - The trip name of the bus.
  * @returns {void}
  */
-async function loop(firsttim, arrival) {
+async function loop(firsttim, arrival, station) {
   if(currentBus == arrival.trip_id && firsttim) {centerBus(); return}
   if (!firsttim && sheetHeight == 98) return;
 
@@ -208,7 +206,7 @@ currentBus = arrival.trip_id
   busObject = tempBusObject;
 
   // Create or update markers
-  displayBuses(firsttim, arrival);
+  displayBuses(firsttim, arrival, station);
 }
 
 var vectorSource,
@@ -217,23 +215,27 @@ var vectorSource,
   markers,
   iconFeature,
   iconStyle,
-  tempMarkersSource;
-async function displayBuses(firsttim, arrival) {
+  tempMarkersSource,
+  buses = [];
+async function displayBuses(firsttim, arrival, station) {
   tempMarkersSource = new ol.layer.Vector({
     source: new ol.source.Vector({
-      updateWhileAnimating: true, // Ensures updates while map is in motion
+      //updateWhileAnimating: true, // Ensures updates while map is in motion
       updateWhileInteracting: true,
     }),
-    updateWhileAnimating: true, // Ensures updates while map is in motion
+    //updateWhileAnimating: true, // Ensures updates while map is in motion
     updateWhileInteracting: true,
   });
 
+
   let busid;
+
   for (const i in busObject) {
     const bus = busObject[i];
 
     if (bus.trip_id == arrival.trip_id) {
-      if (firsttim) {
+      if (!buses.includes(bus.bus_unit_id)) {
+        buses.push(bus.bus_unit_id)
         busid = bus;
         const coordinates = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
 
@@ -265,10 +267,13 @@ async function displayBuses(firsttim, arrival) {
         // Add the marker to the layer
         tempMarkersSource.getSource().addFeature(marker);
       } else {
-        let newCoordinates = ol.proj.fromLonLat([bus.longitude, bus.latitude]);
-
+     
+         
         markers.getSource().forEachFeature(function (feature) {
+          console.log(bus.bus_unit_id, feature.busId);
+          
           if (bus.bus_unit_id === feature.busId) {
+            let newCoordinates = ol.proj.fromLonLat([bus.longitude, bus.latitude]);
             now = new Date().getTime();
 
             const animate = () => {
@@ -318,7 +323,8 @@ async function displayBuses(firsttim, arrival) {
       response,
       arrival.trip_id,
       arrival.route_name,
-      arrival.route_id
+     
+      station
     );
   } else {
     document.querySelector(".loader").style.backgroundSize = "0% 0%";
@@ -328,7 +334,7 @@ async function displayBuses(firsttim, arrival) {
     }, 300);
   }
 }
-async function generateRouteVector(data, trip_id, lno, lid) {
+async function generateRouteVector(data, trip_id, lno, stationID) {
   if (trip_id === undefined) return;
   if (busVectorLayer.trip === trip_id) return;
 
@@ -364,6 +370,7 @@ console.log(coordinates);
   const tempStationSource = new ol.source.Vector();
   const tempRouteSource = new ol.source.Vector();
 
+
   // Add station markers
   data.forEach((station, index) => {
     const stationFeature = new ol.Feature({
@@ -380,17 +387,17 @@ console.log(coordinates);
       new ol.style.Style({
         image: new ol.style.Icon({
           src:
-            index === 0 || index === data.length - 1
-              ? "./images/bus.svg"
+            index === 0 || index === data.length - 1 || station.station_code == stationID
+              ? "./images/station_full.svg"
               : "./images/bus.svg",
 
           anchor: [0.5, 24],
-          color: lineColorsObj[lno.replace(/\D/g, "")],
+          color: station.station_code == stationID ? darkenColor(lineColorsObj[lno.replace(/\D/g, "")], -50) : lineColorsObj[lno.replace(/\D/g, "")],
 
           anchorXUnits: "fraction",
           anchorYUnits: "pixels",
 
-          scale: 0.3,
+          scale: station.station_code == stationID ? 0.35:0.3,
         }),
         /* text: new ol.style.Text({
                 text: `${station.order_no}. ${station.name}`,

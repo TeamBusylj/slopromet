@@ -1038,9 +1038,9 @@ function showBusById(arrival, parent, station_id) {
     }, 100);
   }
   try {
-    loop(1, arrival);
+    loop(1, arrival, station_id);
     busUpdateInterval = setInterval(() => {
-      loop(0, arrival);
+      loop(0, arrival, station_id);
     }, 5000);
   } catch (error) {
     console.log(error);
