@@ -1572,7 +1572,7 @@ function getDirections() {
   });
   const options = {
     componentRestrictions: { country: "si" },
-    fields: ["address_components", "geometry.location", "name"],
+    fields: ["address_components", "geometry.location", "name", "icon"],
     strictBounds: false,
   };
   const autocomplete = new google.maps.places.Autocomplete(depart, options);
@@ -1632,14 +1632,32 @@ function calcRoute(start, end, panel) {
   
 }
 function displayRoute(panel, dir) {
+  if(dir.departure_time){
   let startTime = addElement("div", panel, "stepDiv");
   startTime.innerHTML = "<md-icon>alarm</md-icon>Začnite ob " + dir.departure_time.text
   startTime.setAttribute("style", "margin-top: 0px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;");
+  }
+
   let startDuration = addElement("div", panel, "stepDiv");
   startDuration.innerHTML = "<md-icon>schedule</md-icon>Potovali boste " + dir.duration.text
-  startDuration.setAttribute("style", "margin-top: 10px;padding-top: 0px;");
+  startDuration.setAttribute("style", "margin-top: 10px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;");
+   
+    console.log(dir);
+    let transfersN = 0
+   
+      dir.steps.forEach((step) => {
+        if (step.transit) {
+          // Increment for each transit step
+          transfersN++;
+        }
+      });
+      transfersN = transfersN -1
+    if(transfersN > 0){
+      let transfers = addElement("div", panel, "stepDiv");
+      transfers.innerHTML = "<md-icon>sync_alt</md-icon>Prestopili boste " + transfersN+"-krat"
+      transfers.setAttribute("style", "margin-top: 10px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;");
+    }
     let steps = addElement("div", panel, "stepsDir");
-  
   for (const step of dir.steps) {
 
     let stepDiv = addElement("div", steps, "stepDiv");
@@ -1649,18 +1667,17 @@ function displayRoute(panel, dir) {
     if(step.travel_mode == "WALKING"){
       icon.innerHTML = "<md-icon>directions_walk</md-icon>";
       txtContent.innerHTML += `<span class='stepText'>${step.instructions.replace("se do", step.instructions.includes(", Slovenija") ?"se do":"se do postaje").replace(/(postaje\s*)(.*)/, '$1<b>$2</b>')}</span><div><span class='stepText'><md-icon>schedule</md-icon>${step.duration.text}</span><span class='stepText'><md-icon>distance</md-icon>${step.distance.text}</span></div>`
-
     } else if(step.travel_mode == "TRANSIT"){
       console.log(step);
-      
       icon.innerHTML =!step.transit.line.short_name ?"<md-icon>directions_bus</md-icon>" :"<div class=busNo style=background:" +lineColors(step.transit.line.short_name.replace(/^0+/, '')) +">" +step.transit.line.short_name.replace(/^0+/, '') +"</div>";
       txtContent.innerHTML += `<span class='stepText endStation'>${step.transit.departure_stop.name}<md-icon>chevron_right</md-icon>${step.transit.arrival_stop.name }</span><span class='stepText'>${step.transit.headsign+(step.transit.line.short_name ? "": getCompany(step.transit.line.agencies[0].name))}</span><div><span class='stepText'><md-icon>schedule</md-icon>${step.transit.departure_time.text} - ${step.transit.arrival_time.text}&nbsp;<b>•</b>&nbsp;${step.duration.text}</span></div><div><span class='stepText'><md-icon>distance</md-icon>${step.distance.text}</span><span class='stepText'><md-icon>timeline</md-icon>${getPostaj(step.transit.num_stops)}</span></div>`
     }
   }
-  
+  if(dir.arrival_time){
   let endTime = addElement("div", panel, "stepDiv");
  endTime.innerHTML = "<md-icon>schedule</md-icon>Na cilju boste ob " + dir.arrival_time.text
  endTime.setAttribute("style", "margin-top: 10px;padding-top: 0px;");
+  }
  panel.style.opacity = "1";
  panel.style.transform = "translateY(0)";
 }

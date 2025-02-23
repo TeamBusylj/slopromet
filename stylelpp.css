@@ -849,27 +849,6 @@ md-filled-text-field.locationInput {
 
 
 
-.adp-warnbox {
-  display: none;
-}
-table#adp-placemark {
-  background: none;
-  border: navajowhite;
-  color: var(--md-sys-color-on-surface);
-}
-table.adp-directions {
-  width: 100%;
-  color: var(--md-sys-color-on-surface) !important;
-  background: var(--md-sys-color-surface-container-low);
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 25px;
-}
-td.adp-substep {
-  border: none;
-  padding: 15px;
-  box-sizing: border-box;
-}
 .stepDiv {
   margin: 10px 0;
   padding: 20px;
@@ -931,4 +910,26 @@ md-filled-tonal-button.goButton {
   opacity: 0;
   transform: translateY(-20px);
   transition: all 0.3s;
+}
+.pac-container {
+  background: var(--md-sys-color-surface-container-highest);
+  border: none;
+  border-radius: 25px;
+  margin-top: 5px;
+  width: 100%;
+}
+.pac-container::after {
+ display: none;
+}
+.pac-item {
+ border: none;
+  padding: 10px;
+  color: var(--md-sys-color-on-surface);
+}
+.pac-item:not(:first-child) {
+  border-top: 3px solid var(--md-sys-color-surface);
+ 
+}
+span.pac-item-query {
+  color: var(--md-sys-color-on-surface);
 }
