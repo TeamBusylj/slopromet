@@ -57,7 +57,7 @@ md-circular-progress#loader {
 }
 
 
-.search {
+md-filled-text-field {
   --_active-indicator-height: 0;
   --_hover-active-indicator-height: 0;
   --_focus-active-indicator-height: 0;
@@ -440,7 +440,7 @@ md-tabs::part(divider) {
 }*/
 .busNo {
   font-weight: 900;
-  height: 60%;
+   height: 60%; 
   border-radius: 200px;
   aspect-ratio: 1 / 1;
   background: red;
@@ -813,9 +813,122 @@ p md-icon {
   background: var(--md-sys-color-surface);
   pointer-events: none;
 }
-md-fab.refresh {
+md-fab.refresh, .directionsButton {
   position: fixed;
   bottom: 70px;
   z-index: 100;
   right: 25px;
+  transition: all .5s;
+}
+ md-fab.refresh {
+ 
+  bottom: 140px;
+ 
+}
+.directions{
+  overflow-y: scroll;
+  overflow-x: hidden;
+  align-items: normal;
+height: calc(100dvh - 55px);
+transition: transform 0.5s !important;
+overscroll-behavior: none;
+position: absolute;
+top: 40px;
+transform: translateX(100vw);
+}
+md-filled-text-field.locationInput {
+  margin: 10px auto;
+  width: 80%;
+  border: 2px solid var(--ol-subtle-foreground-color);
+  border-radius: 25px;
+  --md-filled-text-field-container-shape: 25px;
+  --md-filled-text-field-label-text-color: #898989;
+}
+
+
+
+
+
+.adp-warnbox {
+  display: none;
+}
+table#adp-placemark {
+  background: none;
+  border: navajowhite;
+  color: var(--md-sys-color-on-surface);
+}
+table.adp-directions {
+  width: 100%;
+  color: var(--md-sys-color-on-surface) !important;
+  background: var(--md-sys-color-surface-container-low);
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 25px;
+}
+td.adp-substep {
+  border: none;
+  padding: 15px;
+  box-sizing: border-box;
+}
+.stepDiv {
+  margin: 10px 0;
+  padding: 20px;
+  display: flex
+;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 5px solid var(--md-sys-color-surface);
+}
+.stepTextContent {
+  width: 100%;
+  display: flex
+;
+
+  flex-direction: column;
+  gap: 5px;
+}
+.stepTextContent div {
+ font-size: 1rem;
+ --md-icon-size: 1.1rem;
+ display: flex;
+ gap: 15px;
+ flex-wrap: wrap;
+}
+.stepTextContent div span {
+ display: flex;
+ align-items: center;
+ gap: 5px;
+}
+span.stepText.endStation {
+  align-items: center;
+  font-size: 1.1rem;
+  --md-icon-size: 1rem;
+  font-weight: bold;
+  gap: 5px;
+}
+span.stepText.endStation md-icon {
+  font-weight: bold;
+}
+.stepIcon .busNo {
+  max-width: 20px;
+  width: 20px;
+}
+b {
+  font-weight: bold !important;
+}
+.stepsDir {
+  background: var(--md-sys-color-surface-container-low);
+ 
+  box-sizing: border-box;
+  border-radius: 25px;
+  
+}
+md-filled-tonal-button.goButton {
+  width: 40%;
+  margin: 10px auto;
+}
+.panel{
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s;
 }

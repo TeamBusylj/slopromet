@@ -158,6 +158,7 @@ function makeBottomheet(title, height) {
     );
   }
   sheetContents.appendChild(document.querySelector(".refresh"));
+  sheetContents.appendChild(document.querySelector(".directionsButton"));
   return mainContent;
 }
 var currentBus = "";
