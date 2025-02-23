@@ -60,21 +60,23 @@ async function makeMap() {
     updateWhileInteracting: true,
     source: vectorSource,
   });
-
-  (rasterLayer = new ol.layer.Tile({
-    preload: Infinity,
+  rasterLayer = new ol.layer.Tile({ transition: 1000,preload: Infinity,source: new ol.source.Google({
+    styles: window.matchMedia("(prefers-color-scheme: dark)").matches ? darkMap : lightMap,
+    key:"AIzaSyCGnbK8F2HvhjqRrKo3xogo4Co7bitNwYA",
+    scale: 'scaleFactor2x',
+    highDpi: true,
     transition: 1000,
-    source: !window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? new ol.source.XYZ({
-          url: "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-          transition: 1000,
-        })
-      : new ol.source.StadiaMaps({
-          layer: "alidade_smooth_dark",
-          retina: true,
-          transition: 1000,
-        }),
-  })),
+  })})
+  class GoogleLogoControl extends ol.control.Control {
+    constructor() {
+      const element = addElement('img', null, "googleLogo");
+      element.src =
+      window.matchMedia("(prefers-color-scheme: dark)").matches? "https://developers.google.com/static/maps/documentation/images/google_on_non_white.png": 'https://developers.google.com/static/maps/documentation/images/google_on_white.png';
+      super({
+        element: element,
+      });
+    }
+  }
     (map = new ol.Map({
       interactions: ol.interaction.defaults.defaults().extend([
         new ol.interaction.DblClickDragZoom(),
@@ -84,6 +86,7 @@ async function makeMap() {
       ]),
       layers: [rasterLayer, vectorLayer],
       target: "map",
+      controls: ol.control.defaults.defaults().extend([new GoogleLogoControl()]),
       loadTilesWhileAnimating: true,
       loadTilesWhileInteracting: true,
       view: new ol.View({
@@ -93,7 +96,7 @@ async function makeMap() {
         padding: [20, 30, 70, 30],
       }),
     }));
-    
+
   const geolocation = new ol.Geolocation({
     // enableHighAccuracy must be set to true to have the heading value.
     trackingOptions: {
@@ -743,16 +746,12 @@ async function stationClick(station, noAnimation) {
     );
     stylesTransition.forEach((style) => {
       style.transform = "translateX(-100vw)";
-    });
-    stylesTransition.forEach((style) => {
       style.opacity = "0";
     });
     setTimeout(() => {
       container.style.transform = "translateX(0)";
-    }, 1);
-    setTimeout(() => {
       container.style.opacity = "1";
-    }, 100);
+    }, 0);
 
     const title = addElement("h1", container, "title");
     let holder = addElement("div", title);

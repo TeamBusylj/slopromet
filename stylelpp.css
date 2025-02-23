@@ -291,7 +291,7 @@ md-list-item.stationItem {
   background: var(--md-sys-color-surface-container);
   margin: 10px 0;
 
-  border-radius: 20px;
+  border-radius: 25px;
   cursor: pointer;
 }
 md-list .arrivalItem {
@@ -682,6 +682,12 @@ border: 5px red solid ;
   top: 50%;
   transform: translate(-50%, -50%);
   border-radius: 50%;
+}
+img.googleLogo {
+  position: absolute;
+  bottom: 9dvh;
+  left: 17px;
+  z-index: 2;
 }
 .busOnStation {
   display: flex
