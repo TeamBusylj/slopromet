@@ -1,5 +1,3 @@
-
-
 function debounce(func, delay) {
   let timeoutId;
   return function () {
@@ -95,6 +93,7 @@ async function makeMap() {
         padding: [20, 30, 70, 30],
       }),
     }));
+    
   const geolocation = new ol.Geolocation({
     // enableHighAccuracy must be set to true to have the heading value.
     trackingOptions: {
@@ -197,18 +196,24 @@ window.addEventListener("DOMContentLoaded", async function () {
     <md-list role="tabpanel" aria-labelledby="favTab" id="fav-panel" class="favouriteStations"></md-list>`;
   let search = this.document.querySelector(".search");
   search.addEventListener("input", delayedSearch);
+  search.addEventListener("click", getAllLines);
   search.addEventListener(`focus`, () => search.select());
   busImageData = await fetch(
     "https://mestnipromet.cyou/tracker/js/json/images.json"
   );
   busImageData = await busImageData.json();
 });
-
+async function getAllLines() {
+  lines = await fetchData(
+    "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/routes"
+  );
+  console.log(lines);
+}
 var arrivalsMain = {};
 var tripIds = [];
 var stationList = {};
-var latitude;
-var longitude;
+var latitude, longitude, lines;
+
 async function getLocation() {
   try {
     const position = await new Promise((resolve, reject) => {
@@ -227,7 +232,6 @@ async function getLocation() {
     longitude = 14.506053031033623;
   }
 }
-
 
 async function createBuses() {
   await getLocation();
@@ -296,6 +300,13 @@ function createStationItems(o) {
       list.innerHTML +=
         "<p><md-icon>location_off</md-icon>Lokacija ni omogočena.</p>";
     for (const station in stationList) {
+      if (
+        search &&
+        !normalizeText(stationList[station].name.toLowerCase()).includes(
+          normalizeText(query.toLowerCase())
+        )
+      )
+        continue;
       let item2 = addElement("md-list-item", null, "stationItem");
       item2.setAttribute("interactive", "");
       addElement("md-ripple", item2);
@@ -313,13 +324,7 @@ function createStationItems(o) {
       const favList = JSON.parse(
         localStorage.getItem("favouriteStations") || "[]"
       );
-      if (
-        search &&
-        !normalizeText(stationList[station].name.toLowerCase()).includes(
-          normalizeText(query.toLowerCase())
-        )
-      )
-        continue;
+
       if (distance < 3 || search) {
         let cornot = "";
         if (stationList[station].ref_id % 2 !== 0) {
@@ -378,38 +383,107 @@ function createStationItems(o) {
     }
     loader.style.display = "none";
   }
+  if (o) {
+    for (const line of lines) {
+      console.log(
+        normalizeText(line.route_name),
+        normalizeText(query.toLowerCase())
+      );
+
+      if (
+        normalizeText(line.route_name + line.route_number).includes(
+          normalizeText(query.toLowerCase())
+        )
+      ) {
+        let arrivalItem = addElement("div", list, "arrivalItem");
+        arrivalItem.style.order = line.route_number.replace(/\D/g, "");
+        const busNumberDiv = addElement("div", arrivalItem, "busNo2");
+
+        busNumberDiv.style.background = lineColors(line.route_number);
+
+        busNumberDiv.id = "bus_" + line.route_number;
+        busNumberDiv.textContent = line.route_number;
+        const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+        addElement("md-ripple", arrivalItem);
+
+        const tripNameSpan = addElement("span", arrivalDataDiv);
+        tripNameSpan.textContent = line.route_name;
+        arrivalItem.addEventListener("click", () => {
+          let container = addElement(
+            "div",
+            document.querySelector(".mainSheet"),
+            "arrivalsOnStation"
+          );
+          container.classList.add("arrivalsScroll");
+          var stylesTransition = [
+            document.querySelector(".searchContain").style,
+            document.querySelector(".listOfStations").style,
+            document.querySelector(".favouriteStations").style,
+            document.getElementById("tabsFav").style,
+          ];
+          stylesTransition.forEach((style) => {
+            style.transform = "translateX(-100vw)";
+            style.opacity = "0";
+          });
+          let line2 = line;
+          line2.route_name = line.route_number;
+          document.querySelector(".bottomSheet").style.transform =
+            "translate3d(-50%,60dvh, 0px)";
+          sheetHeight = 40;
+          arrivalsOnStation(container, line2, 0);
+          arrivalsUpdateInterval = setInterval(() => {
+            arrivalsOnStation(container, line2, 0, container.scrollTop);
+          }, 10000);
+          loop(1, line, 60);
+          busUpdateInterval = setInterval(() => {
+            loop(0, line, 60);
+          }, 5000);
+          setTimeout(() => {
+            container.style.transform = "translateX(0px) translateY(0px)";
+            container.style.opacity = "1";
+          }, 100);
+        });
+        if (line.route_number[0] == "N") {
+          arrivalItem.style.order = line.route_number.replace(/\D/g, "") + 100;
+        }
+      }
+    }
+  }
 }
 async function refresh() {
-  if(checkVisible(document.querySelector(".arrivalsOnStation"))) {
+  if (checkVisible(document.querySelector(".arrivalsOnStation"))) {
     console.log("nebi");
-    
-  } else if(checkVisible(document.querySelector(".busTemplate"))){ 
+  } else if (checkVisible(document.querySelector(".busTemplate"))) {
     let arH = document.querySelector(".arrivalsScroll");
     arH.style.transform = "translateX(0px) translateY(-20px)";
     arH.style.opacity = "0";
     await stationClick(isArrivalsOpen, true);
     arH.style.transform = "translateX(0px) translateY(0px)";
     arH.style.opacity = "1";
-  } else if(checkVisible(currentPanel)){
+  } else if (checkVisible(currentPanel)) {
     currentPanel.style.transform = "translateX(0px) translateY(-20px)";
     currentPanel.style.opacity = "0";
     await getLocation();
     await createStationItems(1);
     currentPanel.style.transform = "translateX(0px) translateY(0px)";
     currentPanel.style.opacity = "1";
-   
-  } else{
-
+  } else {
   }
 }
 function checkVisible(elm) {
-  if(!elm) return false;
+  if (!elm) return false;
   var rect = elm.getBoundingClientRect();
-  var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+  var viewHeight = Math.max(
+    document.documentElement.clientHeight,
+    window.innerHeight
+  );
   return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
 }
 function normalizeText(text) {
-  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
 function createFavourite(parent, search, query) {
   var nearby = {};
@@ -497,6 +571,72 @@ function createFavourite(parent, search, query) {
 
   for (const stationDistance of sortedArray) {
     parent.appendChild(stationDistance);
+  }
+  if (search) {
+    for (const line of lines) {
+      console.log(
+        normalizeText(line.route_name),
+        normalizeText(query.toLowerCase())
+      );
+
+      if (
+        normalizeText(line.route_name + line.route_number).includes(
+          normalizeText(query.toLowerCase())
+        )
+      ) {
+        let arrivalItem = addElement("div", parent, "arrivalItem");
+        arrivalItem.style.order = line.route_number.replace(/\D/g, "");
+        const busNumberDiv = addElement("div", arrivalItem, "busNo2");
+
+        busNumberDiv.style.background = lineColors(line.route_number);
+
+        busNumberDiv.id = "bus_" + line.route_number;
+        busNumberDiv.textContent = line.route_number;
+        const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+        addElement("md-ripple", arrivalItem);
+
+        const tripNameSpan = addElement("span", arrivalDataDiv);
+        tripNameSpan.textContent = line.route_name;
+        arrivalItem.addEventListener("click", () => {
+          let container = addElement(
+            "div",
+            document.querySelector(".mainSheet"),
+            "arrivalsOnStation"
+          );
+          container.classList.add("arrivalsScroll");
+          var stylesTransition = [
+            document.querySelector(".searchContain").style,
+            document.querySelector(".listOfStations").style,
+            document.querySelector(".favouriteStations").style,
+            document.getElementById("tabsFav").style,
+          ];
+          stylesTransition.forEach((style) => {
+            style.transform = "translateX(-100vw)";
+            style.opacity = "0";
+          });
+          let line2 = line;
+          line2.route_name = line.route_number;
+          document.querySelector(".bottomSheet").style.transform =
+            "translate3d(-50%,60dvh, 0px)";
+          sheetHeight = 40;
+          arrivalsOnStation(container, line2, 0);
+          arrivalsUpdateInterval = setInterval(() => {
+            arrivalsOnStation(container, line2, 0, container.scrollTop);
+          }, 10000);
+          loop(1, line, 60);
+          busUpdateInterval = setInterval(() => {
+            loop(0, line, 60);
+          }, 5000);
+          setTimeout(() => {
+            container.style.transform = "translateX(0px) translateY(0px)";
+            container.style.opacity = "1";
+          }, 100);
+        });
+        if (line.route_number[0] == "N") {
+          arrivalItem.style.order = line.route_number.replace(/\D/g, "") + 100;
+        }
+      }
+    }
   }
 }
 function searchRefresh() {
@@ -1029,10 +1169,10 @@ function showBusById(arrival, parent, station_id) {
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(-100vw)";
     arrivalsOnStation(container, arrival, station_id);
-    arrivalsUpdateInterval= setInterval(() => {
+    arrivalsUpdateInterval = setInterval(() => {
       arrivalsOnStation(container, arrival, station_id, container.scrollTop);
     }, 10000);
-   setTimeout(() => {
+    setTimeout(() => {
       container.style.transform = "translateX(0px) translateY(0px)";
       container.style.opacity = "1";
     }, 100);
@@ -1061,14 +1201,28 @@ async function arrivalsOnStation(container, arrival, station_id, already) {
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
     container.style.transform = "translateX(100vw)";
-    document.querySelector(".arrivalsHolder").style.transform =
-      "translateX(0vw)";
-      clearInterval(arrivalsUpdateInterval)
-      clearInterval(busUpdateInterval)
+    if (document.querySelector(".arrivalsHolder")) {
+      document.querySelector(".arrivalsHolder").style.transform =
+        "translateX(0vw)";
+    } else {
+      var stylesTransition = [
+        document.querySelector(".searchContain").style,
+        document.querySelector(".listOfStations").style,
+        document.querySelector(".favouriteStations").style,
+        document.getElementById("tabsFav").style,
+      ];
+      stylesTransition.forEach((style) => {
+        style.transform = "translateX(0vw)";
+        style.opacity = "1";
+      });
+    }
+
+    clearInterval(arrivalsUpdateInterval);
+    clearInterval(busUpdateInterval);
     setTimeout(() => {
       container.remove();
     }, 500);
-    clearMap()
+    clearMap();
   });
   let arHolder = addElement("div", container, "arOnRoute");
   var listArrivals = {};
@@ -1165,7 +1319,6 @@ async function arrivalsOnStation(container, arrival, station_id, already) {
 
   let sortedArrivals = sortArrivals(listArrivals, sortIndex);
 
-
   sortedArrivals = sortedArrivals.slice(0, 10);
 
   for (let [key, element] of sortedArrivals) {
@@ -1182,15 +1335,16 @@ async function arrivalsOnStation(container, arrival, station_id, already) {
 
         let stationHTML = item; // Default station HTML
 
-        let border="";
-     
+        let border = "";
 
         if (item.includes("z")) {
-          border = "border-top-left-radius: 20px;border-top-right-radius: 20px;";
+          border =
+            "border-top-left-radius: 20px;border-top-right-radius: 20px;";
           item = item.replace("z", "");
         }
         if (item.includes("m")) {
-          border += "border-bottom-left-radius: 20px;border-bottom-right-radius: 20px;";
+          border +=
+            "border-bottom-left-radius: 20px;border-bottom-right-radius: 20px;";
           item = item.replace("m", "");
         }
 
@@ -1219,18 +1373,19 @@ async function arrivalsOnStation(container, arrival, station_id, already) {
       })
       .join("");
   }
+  try {
+    const childRect = document
+      .querySelector(".nameStation_" + station_id)
+      .parentNode.getBoundingClientRect();
+    const grandparentRect = container.getBoundingClientRect();
 
-  const childRect = document
-    .querySelector(".nameStation_" + station_id)
-    .parentNode.getBoundingClientRect();
-  const grandparentRect = container.getBoundingClientRect();
-
-  // Calculate how much we need to scroll
-  const offsetTop = childRect.top - grandparentRect.top + container.scrollTop;
-  container.scrollTo({
-    top: already ? already : offsetTop,
-    behavior: already ? "instant" : "smooth",
-  });
+    // Calculate how much we need to scroll
+    const offsetTop = childRect.top - grandparentRect.top + container.scrollTop;
+    container.scrollTo({
+      top: already ? already : offsetTop,
+      behavior: already ? "instant" : "smooth",
+    });
+  } catch (error) {}
 }
 function sortArrivals(listArrivals, sortIndex) {
   let combinedArrivals = [];
@@ -1270,18 +1425,18 @@ function sortArrivals(listArrivals, sortIndex) {
     let hasEmpty = false;
 
     for (let i = 0; i < Math.max(arr1.length, arr2.length); i++) {
-        const arr1Val = arr1[i] || "";
-        const arr2Val = arr2[i] || "";
+      const arr1Val = arr1[i] || "";
+      const arr2Val = arr2[i] || "";
 
-        if (arr1Val === "" || arr2Val === "") {
-            hasEmpty = true;
-        } else if (arr1Val !== arr2Val) {
-            return false;
-        }
+      if (arr1Val === "" || arr2Val === "") {
+        hasEmpty = true;
+      } else if (arr1Val !== arr2Val) {
+        return false;
+      }
     }
 
     return hasEmpty;
-}
+  }
 
   // Combine arrivals if they don't overlap
   for (let i = 0; i < sortedArrivals.length; i++) {
@@ -1298,12 +1453,9 @@ function sortArrivals(listArrivals, sortIndex) {
           }
           let content = "";
           if (current[k] !== "") {
-           
             content = current[k];
           }
-      
-          
-         
+
           combinedArrivals[j][1][k] = content;
         }
         combined = true;
@@ -1327,27 +1479,27 @@ function sortArrivals(listArrivals, sortIndex) {
     let bValue = b[1].find((val) => val !== "") || 61;
     return aValue - bValue;
   });
-    // Combine arrivals if they don't overlap
-    for (let i = 0; i < combinedArrivals.length; i++) {
-      let [busId, current] = combinedArrivals[i];
-     
-  
-     
-        for (let k = 0; k < current.length; k++) {
-          let content = current[k];
-          if ((current[k - 1] == "" || current[k - 1] == null) && current[k] !== "")  {
-            content = content + "z";
-          } 
-          if ((current[k + 1] == "" || current[k + 1] == null)&& current[k] !== "") {
-            content = content + "m";
-          }
-          combinedArrivals[i][1][k] = content;
-        }
-        
-      
-  
-      
+  // Combine arrivals if they don't overlap
+  for (let i = 0; i < combinedArrivals.length; i++) {
+    let [busId, current] = combinedArrivals[i];
+
+    for (let k = 0; k < current.length; k++) {
+      let content = current[k];
+      if (
+        (current[k - 1] == "" || current[k - 1] == null) &&
+        current[k] !== ""
+      ) {
+        content = content + "z";
+      }
+      if (
+        (current[k + 1] == "" || current[k + 1] == null) &&
+        current[k] !== ""
+      ) {
+        content = content + "m";
+      }
+      combinedArrivals[i][1][k] = content;
     }
+  }
   return combinedArrivals;
 }
 
