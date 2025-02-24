@@ -846,8 +846,17 @@ md-filled-text-field.locationInput {
 }
 
 
-
-
+md-filled-text-field.timeInput {
+  width: 120px;
+  border: 2px solid var(--ol-subtle-foreground-color);
+  border-radius: 250px;
+}
+.timeHolder {
+  display: flex
+;
+  justify-content: space-evenly;
+  margin-top: 10px;
+}
 
 .stepDiv {
   margin: 10px 0;

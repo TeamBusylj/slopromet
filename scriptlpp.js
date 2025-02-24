@@ -1619,7 +1619,22 @@ function getDirections() {
       }
     });
   }
-
+  let timeHolder = addElement("div", container, "timeHolder");
+var inputLeave = addElement("md-filled-text-field", timeHolder, "timeInput");
+inputLeave.type = "datetime-local";
+inputLeave.value = new Date(Date.now()).toISOString().split("T")[0];
+inputLeave.label = "Odhod"
+inputLeave.innerHTML +='<md-icon slot="leading-icon">logout</md-icon>';
+inputLeave.addEventListener("click", () => {
+  inputLeave.shadowRoot.querySelector("span > md-filled-field > div.input-wrapper > input").showPicker();
+});
+var inputArrive = addElement("md-filled-text-field", timeHolder, "timeInput");
+inputArrive.type = "datetime-local";
+inputArrive.label = "Prihod"
+inputArrive.innerHTML +='<md-icon slot="leading-icon">login</md-icon>';
+inputArrive.addEventListener("click", () => {
+  inputArrive.shadowRoot.querySelector("span > md-filled-field > div.input-wrapper > input").showPicker();
+});
   var goButton = addElement("md-filled-button", container, "goButton");
   goButton.innerHTML = "Pokaži pot";
 
@@ -1628,7 +1643,7 @@ function getDirections() {
     panel.innerHTML = "";
     if(depart.value !== "" && arrive.value !== "") {
       //goButton.style.display = "none";
-    calcRoute(departLocation, arriveLocation, panel, agencies);
+    calcRoute(departLocation, arriveLocation, panel, agencies, new Date(inputLeave.value), new Date(inputArrive.value));
     localStorage.agencije = JSON.stringify(agencies);
     } else{
       panel.innerHTML = "Izberite obe lokaciji.";
@@ -1636,7 +1651,7 @@ function getDirections() {
     
   });
 }
-function calcRoute(start, end, panel, agencies) {
+function calcRoute(start, end, panel, agencies, leave, arrive) {
   var directionsService = new google.maps.DirectionsService();
   var directionsRenderer = new google.maps.DirectionsRenderer();
 
@@ -1647,7 +1662,8 @@ function calcRoute(start, end, panel, agencies) {
     provideRouteAlternatives: true,
     travelMode: "TRANSIT",
     transitOptions: {
-      departureTime: new Date(Date.now()),
+      departureTime: leave,
+      arrivalTime: arrive,
       routingPreference: "LESS_WALKING",
       modes: ["BUS", "TRAIN"],
     },
