@@ -921,7 +921,10 @@ b {
   width: 100%;
 }
 .pac-container::after {
- display: none;
+  background-position: center !important;
+  border-top: 3px solid var(--md-sys-color-surface);
+  padding: 10px 0;
+  height: 30px;
 }
 .pac-item {
  border: none;
