@@ -1664,7 +1664,6 @@ function calcRoute(start, end, panel, agencies, leave, arrive) {
     transitOptions: {
       departureTime: leave,
       arrivalTime: arrive,
-      routingPreference: "LESS_WALKING",
       modes: ["BUS", "TRAIN"],
     },
   };
