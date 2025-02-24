@@ -1776,8 +1776,8 @@ function displayRoute(panel, dira) {
           step.transit.line.short_name.replace(/^0+/, "") +
           "</div>" :
          step.transit.line.agencies[0].name.includes("SŽ")
-          ? "<md-icon>directions_railway</md-icon>"
-          : "<md-icon>directions_bus</md-icon>"
+          ? getLogo(step.transit.line.agencies[0].name, 1)
+          : getLogo(step.transit.line.agencies[0].name)
         
       txtContent.innerHTML += `<span class='stepText endStation'>${
         step.transit.departure_stop.name
@@ -1832,6 +1832,11 @@ function getCompany(company) {
     : company.includes("SŽ")
     ? "Slovenske železnice"
     : cmp;
+}
+function getLogo(agency, sz) {
+  let a = sz ? "directions_railway" :"directions_bus"
+  const firstWord = agency.split(' ')[0].toLowerCase();
+  return "<md-icon>"+a+"</md-icon><div class=connectingLine></div><img class=agencyLogo src='images/logos/" + firstWord + ".png'>" 
 }
 function getPostaj(number) {
   let skl =
