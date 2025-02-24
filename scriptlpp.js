@@ -1765,6 +1765,10 @@ function displayRoute(panel, dira) {
       }</span><span class='stepText'><md-icon>distance</md-icon>${
         step.distance.text
       }</span></div>`;
+      addElement("md-ripple", txtContent);
+      txtContent.addEventListener("click", () => {
+        openRouteInGoogleMapsApp(step.start_location.lat(),step.start_location.lng(),step.end_location.lat(), step.end_location.lng())
+      })
     } else if (step.travel_mode == "TRANSIT") {
       icon.innerHTML = step.transit.line.short_name ? "<div class=busNo style=background:" +
           lineColors(step.transit.line.short_name.replace(/^0+/, "")) +
@@ -1803,6 +1807,19 @@ function displayRoute(panel, dira) {
   }
   panel.style.opacity = "1";
   panel.style.transform = "translateY(0)";
+}
+function openRouteInGoogleMapsApp(originLat, originLng, destLat, destLng) {
+  // Construct the Google Maps URL scheme for the mobile app (with walking mode)
+  const googleMapsAppURL = `google.maps://?daddr=${destLat},${destLng}&saddr=${originLat},${originLng}&directionsmode=walking`;
+
+  // Try to open the route in the app
+  window.location.href = googleMapsAppURL;
+
+  // Fallback to the web version with walking mode if the app is not installed (opens in new tab)
+  setTimeout(function() {
+    const fallbackURL = `https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLng}&destination=${destLat},${destLng}&travelmode=walking`;
+    window.open(fallbackURL, '_blank');  // Open in a new tab
+  }, 25);
 }
 function getCompany(company) {
   let cmp = company.replace(" d.o.o.", "");

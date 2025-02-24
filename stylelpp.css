@@ -856,13 +856,14 @@ md-filled-text-field.locationInput {
 ;
   align-items: center;
   gap: 10px;
+  overflow: hidden;
   border-bottom: 5px solid var(--md-sys-color-surface);
 }
 .stepTextContent {
   width: 100%;
   display: flex
 ;
-
+overflow: hidden;
   flex-direction: column;
   gap: 5px;
 }
