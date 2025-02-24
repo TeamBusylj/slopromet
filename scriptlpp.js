@@ -1564,12 +1564,12 @@ function getDirections() {
   depart.innerHTML = "<md-icon slot='trailing-icon'>adjust</md-icon>";
   var departLocation = new google.maps.LatLng(latitude, longitude);
   geocodeLatLng(latitude, longitude)
-  .then((address) => {
-    depart.value = address;
-  })
-  .catch((error) => {
-    console.error(error);
-  });
+    .then((address) => {
+      depart.value = address;
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   const options = {
     componentRestrictions: { country: "si" },
     fields: ["address_components", "geometry.location", "name", "icon"],
@@ -1590,103 +1590,242 @@ function getDirections() {
   autocomplete2.addListener("place_changed", () => {
     arriveLocation = autocomplete2.getPlace().geometry.location;
   });
-  var goButton = addElement("md-filled-tonal-button", container, "goButton");
+
+  var agencies =
+    localStorage.agencije ||
+    '{"Ljubljanski":true,"SŽ":true,"Arriva":true,"Nomago":true,"Marprom":true,"Murska Sobota":true}';
+
+  agencies = JSON.parse(agencies);
+  if (Object.keys(agencies).length < 6) {
+    agencies = {
+      Ljubljanski: true,
+      SŽ: true,
+      Arriva: true,
+      Nomago: true,
+      Marprom: true,
+      "Murska Sobota": true,
+    };
+  }
+  let chipsHolder = addElement("div", container, "chipsHolder");
+  for (const key in agencies) {
+    let lppChip = addElement("md-filter-chip", chipsHolder, "chip");
+    lppChip.innerHTML = key;
+    lppChip.selected = agencies[key];
+    lppChip.addEventListener("click", () => {
+      if (lppChip.selected == true) {
+        agencies[key] = true;
+      } else {
+        agencies[key] = false;
+      }
+    });
+  }
+
+  var goButton = addElement("md-filled-button", container, "goButton");
   goButton.innerHTML = "Pokaži pot";
+
   let panel = addElement("div", container, "panel");
   goButton.addEventListener("click", () => {
-   
-   panel.innerHTML = "";
-    console.log(departLocation, arriveLocation);
+    panel.innerHTML = "";
+    if(depart.value !== "" && arrive.value !== "") {
+      //goButton.style.display = "none";
+    calcRoute(departLocation, arriveLocation, panel, agencies);
+    localStorage.agencije = JSON.stringify(agencies);
+    } else{
+      panel.innerHTML = "Izberite obe lokaciji.";
+    }
     
-    calcRoute(departLocation, arriveLocation, panel);
   });
- 
 }
-function calcRoute(start, end, panel) {
+function calcRoute(start, end, panel, agencies) {
   var directionsService = new google.maps.DirectionsService();
   var directionsRenderer = new google.maps.DirectionsRenderer();
-  
-  var directions
+
+  var directions;
   var request = {
     origin: start,
     destination: end,
+    provideRouteAlternatives: true,
     travelMode: "TRANSIT",
     transitOptions: {
       departureTime: new Date(Date.now()),
       routingPreference: "LESS_WALKING",
-      modes: ['BUS']
+      modes: ["BUS", "TRAIN"],
     },
   };
   directionsService.route(request, function (result, status) {
     if (status == "OK") {
       directionsRenderer.setDirections(result);
-     directions = directionsRenderer.getDirections().routes[0].legs[0]
-      console.log(directions);
+
+      directions = directionsRenderer.getDirections().routes;
+
+      directionsRenderer.setDirections(result);
+      directions = directionsRenderer.getDirections().routes;
+
+      // Generate allowedAgencies dynamically based on the agencies object
+      const allowedAgencies = Object.keys(agencies).filter(
+        (key) => agencies[key]
+      ); // Keep only those that are true
+
+      const validRoutes = directions.filter((route) => {
+        const routeAgencies = route.legs[0].steps
+          .filter((step) => step.transit)
+          .map((step) => step.transit.line.agencies[0].name);
+
+        console.log(routeAgencies);
+        return routeAgencies.every(
+          (agency) =>
+            allowedAgencies.some((allowed) => agency.includes(allowed)) // Partial match check or skip if no allowed agencies
+        );
+      });
+
+      // Now, find the route with the least duration among valid ones
+      let leastDuration = Infinity;
+      let validRouteWithLeastDuration;
+      for (const currentRoute of validRoutes) {
+        let dur = currentRoute.legs[0].duration.value;
+        if (dur < leastDuration) {
+          leastDuration = dur;
+          validRouteWithLeastDuration = currentRoute;
+        }
+      }
+
+      console.log(validRoutes);
+
+      directions = validRouteWithLeastDuration;
     }
     setTimeout(() => {
       displayRoute(panel, directions);
-
     }, 100);
   });
-
-  
 }
-function displayRoute(panel, dir) {
-  if(dir.departure_time){
-  let startTime = addElement("div", panel, "stepDiv");
-  startTime.innerHTML = "<md-icon>alarm</md-icon>Začnite ob " + dir.departure_time.text
-  startTime.setAttribute("style", "margin-top: 0px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;");
+function displayRoute(panel, dira) {
+  var dir = dira
+    ? dira.legs[0]
+    : "<b>Pot ni bila najdena.</b><br><br>Verjetno ste izključili ponudnika, brez katerega ni mogoče priti do končne lokacije.";
+  if (!dira) {
+    panel.innerHTML = dir;
+    panel.style.opacity = "1";
+    panel.style.transform = "translateY(0)";
+    return false;
+  }
+  if (dir.departure_time) {
+    let startTime = addElement("div", panel, "stepDiv");
+    startTime.innerHTML =
+      "<md-icon>alarm</md-icon>Začnite ob " + dir.departure_time.text;
+    startTime.setAttribute(
+      "style",
+      "margin-top: 0px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;"
+    );
   }
 
   let startDuration = addElement("div", panel, "stepDiv");
-  startDuration.innerHTML = "<md-icon>schedule</md-icon>Potovali boste " + dir.duration.text
-  startDuration.setAttribute("style", "margin-top: 10px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;");
-   
-    console.log(dir);
-    let transfersN = 0
-   
-      dir.steps.forEach((step) => {
-        if (step.transit) {
-          // Increment for each transit step
-          transfersN++;
-        }
-      });
-      transfersN = transfersN -1
-    if(transfersN > 0){
-      let transfers = addElement("div", panel, "stepDiv");
-      transfers.innerHTML = "<md-icon>sync_alt</md-icon>Prestopili boste " + transfersN+"-krat"
-      transfers.setAttribute("style", "margin-top: 10px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;");
-    }
-    let steps = addElement("div", panel, "stepsDir");
-  for (const step of dir.steps) {
+  startDuration.innerHTML =
+    "<md-icon>schedule</md-icon>Potovali boste " + dir.duration.text;
+  startDuration.setAttribute(
+    "style",
+    "margin-top: 10px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;"
+  );
 
+  let transfersN = 0;
+
+  dir.steps.forEach((step) => {
+    if (step.transit) {
+      // Increment for each transit step
+      transfersN++;
+    }
+  });
+  transfersN = transfersN - 1;
+  if (transfersN > 0) {
+    let transfers = addElement("div", panel, "stepDiv");
+    transfers.innerHTML =
+      "<md-icon>sync_alt</md-icon>Prestopili boste " + transfersN + "-krat";
+    transfers.setAttribute(
+      "style",
+      "margin-top: 10px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;"
+    );
+  }
+  let steps = addElement("div", panel, "stepsDir");
+  for (const step of dir.steps) {
     let stepDiv = addElement("div", steps, "stepDiv");
-    
+
     let icon = addElement("div", stepDiv, "stepIcon");
     let txtContent = addElement("div", stepDiv, "stepTextContent");
-    if(step.travel_mode == "WALKING"){
+    if (step.travel_mode == "WALKING") {
       icon.innerHTML = "<md-icon>directions_walk</md-icon>";
-      txtContent.innerHTML += `<span class='stepText'>${step.instructions.replace("se do", step.instructions.includes(", Slovenija") ?"se do":"se do postaje").replace(/(postaje\s*)(.*)/, '$1<b>$2</b>')}</span><div><span class='stepText'><md-icon>schedule</md-icon>${step.duration.text}</span><span class='stepText'><md-icon>distance</md-icon>${step.distance.text}</span></div>`
-    } else if(step.travel_mode == "TRANSIT"){
-      console.log(step);
-      icon.innerHTML =!step.transit.line.short_name ?"<md-icon>directions_bus</md-icon>" :"<div class=busNo style=background:" +lineColors(step.transit.line.short_name.replace(/^0+/, '')) +">" +step.transit.line.short_name.replace(/^0+/, '') +"</div>";
-      txtContent.innerHTML += `<span class='stepText endStation'>${step.transit.departure_stop.name}<md-icon>chevron_right</md-icon>${step.transit.arrival_stop.name }</span><span class='stepText'>${step.transit.headsign+(step.transit.line.short_name ? "": getCompany(step.transit.line.agencies[0].name))}</span><div><span class='stepText'><md-icon>schedule</md-icon>${step.transit.departure_time.text} - ${step.transit.arrival_time.text}&nbsp;<b>•</b>&nbsp;${step.duration.text}</span></div><div><span class='stepText'><md-icon>distance</md-icon>${step.distance.text}</span><span class='stepText'><md-icon>timeline</md-icon>${getPostaj(step.transit.num_stops)}</span></div>`
+      txtContent.innerHTML += `<span class='stepText'>${step.instructions
+        .replace(
+          "se do",
+          step.instructions.includes(", Slovenija") ? "se do" : "se do postaje"
+        )
+        .replace(
+          /(postaje\s*)(.*)/,
+          "$1<b>$2</b>"
+        )}</span><div><span class='stepText'><md-icon>schedule</md-icon>${
+        step.duration.text
+      }</span><span class='stepText'><md-icon>distance</md-icon>${
+        step.distance.text
+      }</span></div>`;
+    } else if (step.travel_mode == "TRANSIT") {
+      icon.innerHTML = step.transit.line.short_name ? "<div class=busNo style=background:" +
+          lineColors(step.transit.line.short_name.replace(/^0+/, "")) +
+          ">" +
+          step.transit.line.short_name.replace(/^0+/, "") +
+          "</div>" :
+         step.transit.line.agencies[0].name.includes("SŽ")
+          ? "<md-icon>directions_railway</md-icon>"
+          : "<md-icon>directions_bus</md-icon>"
+        
+      txtContent.innerHTML += `<span class='stepText endStation'>${
+        step.transit.departure_stop.name
+      }<md-icon>chevron_right</md-icon>${
+        step.transit.arrival_stop.name
+      }</span><span class='stepText'>${
+        step.transit.headsign +
+        (step.transit.line.short_name
+          ? ""
+          : " (" + getCompany(step.transit.line.agencies[0].name) + ")")
+      }</span><div><span class='stepText'><md-icon>schedule</md-icon>${
+        step.transit.departure_time.text
+      } - ${step.transit.arrival_time.text}&nbsp;<b>•</b>&nbsp;${
+        step.duration.text
+      }</span></div><div><span class='stepText'><md-icon>distance</md-icon>${
+        step.distance.text
+      }</span><span class='stepText'><md-icon>timeline</md-icon>${getPostaj(
+        step.transit.num_stops
+      )}</span></div>`;
     }
   }
-  if(dir.arrival_time){
-  let endTime = addElement("div", panel, "stepDiv");
- endTime.innerHTML = "<md-icon>schedule</md-icon>Na cilju boste ob " + dir.arrival_time.text
- endTime.setAttribute("style", "margin-top: 10px;padding-top: 0px;");
+  if (dir.arrival_time) {
+    let endTime = addElement("div", panel, "stepDiv");
+    endTime.innerHTML =
+      "<md-icon>schedule</md-icon>Na cilju boste ob " + dir.arrival_time.text;
+    endTime.setAttribute("style", "margin-top: 10px;padding-top: 0px;");
   }
- panel.style.opacity = "1";
- panel.style.transform = "translateY(0)";
+  panel.style.opacity = "1";
+  panel.style.transform = "translateY(0)";
 }
 function getCompany(company) {
-  return company == "Ljubljanski potniški promet" ? "" : company.includes("Javno") ? " (IJPP)" : " (Arriva)"
+  let cmp = company.replace(" d.o.o.", "");
+  return cmp == "Ljubljanski potniški promet"
+    ? ""
+    : company.includes("Javno")
+    ? "IJPP"
+    : company.includes("Murska")
+    ? "Murska Sobota"
+    : company.includes("SŽ")
+    ? "Slovenske železnice"
+    : cmp;
 }
 function getPostaj(number) {
-  let skl = number == 1 ? " postaja" : number == 2 ? " postaji":number == 3 || number == 4 ? " postaje" : " postaj"
-  return number + skl
+  let skl =
+    number == 1
+      ? " postaja"
+      : number == 2
+      ? " postaji"
+      : number == 3 || number == 4
+      ? " postaje"
+      : " postaj";
+  return number + skl;
 }
 function geocodeLatLng(latitude, longitude) {
   return new Promise((resolve, reject) => {

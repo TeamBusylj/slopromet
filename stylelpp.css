@@ -902,9 +902,10 @@ b {
   border-radius: 25px;
   
 }
-md-filled-tonal-button.goButton {
+.goButton {
   width: 40%;
   margin: 10px auto;
+
 }
 .panel{
   opacity: 0;
@@ -932,4 +933,14 @@ md-filled-tonal-button.goButton {
 }
 span.pac-item-query {
   color: var(--md-sys-color-on-surface);
+}
+.chipsHolder {
+  display: flex
+;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.chip{
+  flex-grow: 1; /* Items will expand to fill available space */
+  flex-basis: 100px;
 }
