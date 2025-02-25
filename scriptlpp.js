@@ -1693,24 +1693,42 @@ function calcRoute(start, end, panel, agencies, leave, arrive) {
         );
       });
 
-      // Now, find the route with the least duration among valid ones
-      let leastDuration = Infinity;
-      let validRouteWithLeastDuration;
-      for (const currentRoute of validRoutes) {
-        let dur = currentRoute.legs[0].duration.value;
-        if (dur < leastDuration) {
-          leastDuration = dur;
-          validRouteWithLeastDuration = currentRoute;
+      let routesHolder = document.querySelector(".stepDiv") ? document.querySelector(".stepDiv") : addElement("div", panel, "stepDiv");
+      routesHolder.innerHTML = "";
+      routesHolder.style.flexDirection = "column";
+      routesHolder.style.overflow = "visible";
+      panel.parentNode.insertBefore(routesHolder,panel )
+      for (const route of validRoutes) {
+        let routeDiv = addElement("div", routesHolder, "routeDiv");
+       
+        console.log(route);
+        
+        for (const step of route.legs[0].steps) {
+          console.log(step);
+          if (step.travel_mode == "WALKING") {
+            routeDiv.innerHTML += "<div class=busHolder><md-icon>directions_walk</md-icon><span class=textMin>"+step.duration.text.replace(" min", "")+"</span></div><md-icon>chevron_right</md-icon>";
+          } else if (step.travel_mode == "TRANSIT") {
+            routeDiv.innerHTML += "<div class=busHolder>" +(step.transit.line.short_name ? "<div class=busNo style=background:" +
+                lineColors(step.transit.line.short_name.replace(/^0+/, "")) +
+                ">" +
+                step.transit.line.short_name.replace(/^0+/, "") +
+                "</div>" :
+               step.transit.line.agencies[0].name.includes("SŽ")
+                ? getLogo(step.transit.line.agencies[0].name, 1)
+                : getLogo(step.transit.line.agencies[0].name))+"</div><md-icon>chevron_right</md-icon>";
+              }
         }
+        routeDiv.innerHTML += "<span style='margin-left:auto;'>"+route.legs[0].duration.text+"</span>";
+        routeDiv.addEventListener("click", () => {
+          panel.innerHTML = "";
+          displayRoute(panel, route);
+        })
       }
-
-      console.log(validRoutes);
-
-      directions = validRouteWithLeastDuration;
+      panel.style.opacity = "1";
+      panel.style.transform = "translateY(0)";
+      
     }
-    setTimeout(() => {
-      displayRoute(panel, directions);
-    }, 100);
+    
   });
 }
 function displayRoute(panel, dira) {
@@ -1719,8 +1737,7 @@ function displayRoute(panel, dira) {
     : "<b>Pot ni bila najdena.</b><br><br>Verjetno ste izključili ponudnika, brez katerega ni mogoče priti do končne lokacije.";
   if (!dira) {
     panel.innerHTML = dir;
-    panel.style.opacity = "1";
-    panel.style.transform = "translateY(0)";
+   
     return false;
   }
   if (dir.departure_time) {

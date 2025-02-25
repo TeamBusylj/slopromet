@@ -492,7 +492,7 @@ md-tabs::part(divider) {
 .lineTimes {
     position: absolute !important;
     top: 40px !important;
-    /* padding-top: 30px; */
+    overscroll-behavior: none;
     height: calc(100dvh - 55px);
     animation: showIn 0.5s;
     transition: transform 0.5s !important;
@@ -501,9 +501,7 @@ md-tabs::part(divider) {
 .lineTimes .busNo2 {
   background: var(--md-sys-color-surface-container-high);
 }
-.lineTimes .busNo2 {
-  background: var(--md-sys-color-surface-container-high);
-}
+
 .lineTimes .arrivalItem {
   background: none;
   border-bottom: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
@@ -972,4 +970,43 @@ span.pac-item-query {
   height: 15px;
   width: 1px;
   border-left: 3px dotted var(--md-sys-color-on-surface);
+}
+.routeDiv {
+  background: var(--md-sys-color-surface-container);
+  width: 100%;
+  height: 40px;
+  z-index: 55;
+}
+.routeDiv {
+  background: var(--md-sys-color-surface-container);
+  width: 100%;
+  height: 40px;
+  z-index: 55;
+  padding: 10px;
+  box-sizing: border-box;
+  border-radius: 25px;
+  display: flex
+;
+    gap: 5px;
+}
+.routeDiv .connectingLine {
+  display: none;
+}
+.routeDiv .agencyLogo {
+  position: absolute;
+  left: 9px;
+  bottom: -10px;
+  scale: .8;
+  border: 1px solid var(--md-sys-color-on-surface);
+}
+.busHolder {
+  position: relative;
+}
+.textMin {
+  position: absolute;
+  top: 12px;
+  font-size: .8rem;
+  right: -5px;
+  opacity: .8;
+  text-align: right;
 }
