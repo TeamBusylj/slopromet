@@ -220,17 +220,14 @@ var vectorSource,
 async function displayBuses(firsttim, arrival, station) {
   tempMarkersSource = new ol.layer.Vector({
     source: new ol.source.Vector({
-      //updateWhileAnimating: true, // Ensures updates while map is in motion
-      updateWhileInteracting: true,
     }),
-    //updateWhileAnimating: true, // Ensures updates while map is in motion
-    updateWhileInteracting: true,
   });
 
   let busid;
 
   for (const i in busObject) {
     const bus = busObject[i];
+
 
     if (bus.trip_id == arrival.trip_id) {
       if (!buses.includes(bus.bus_unit_id)) {
@@ -335,9 +332,11 @@ async function displayBuses(firsttim, arrival, station) {
   }
 }
 async function generateRouteVector(data, trip_id, lno, stationID) {
-  if (trip_id === undefined) return;
-  if (busVectorLayer.trip === trip_id) return;
 
+  
+  if (trip_id === undefined) return;
+
+  console.log("kkd");
   var coordinates = await fetchData(
     "https://mestnipromet.cyou/api/v1/resources/buses/shape?trip_id=" + trip_id
   );
@@ -492,7 +491,6 @@ async function generateRouteVector(data, trip_id, lno, stationID) {
   }
   busVectorLayer = new ol.layer.Vector({
     source: tempRouteSource,
-    updateWhileAnimating: true, // Ensures updates while map is in motion
     updateWhileInteracting: true,
   });
   busVectorLayer.trip = trip_id;
@@ -503,22 +501,18 @@ async function generateRouteVector(data, trip_id, lno, stationID) {
   }
   busStationLayer = new ol.layer.Vector({
     source: tempStationSource,
-    updateWhileAnimating: true, // Ensures updates while map is in motion
     updateWhileInteracting: true,
   });
   map.addLayer(busStationLayer);
-
-  if (markers) {
-    map.removeLayer(markers);
-  }
   markers = new ol.layer.Vector({
     source: tempMarkersSource.getSource(),
-    updateWhileAnimating: true, // Ensures updates while map is in motion
     updateWhileInteracting: true,
   });
   map.addLayer(markers);
-
+setTimeout(() => {
   centerBus();
+}, 100);
+
 }
 function centerBus() {
   const myExtent = busVectorLayer.getSource().getExtent();
@@ -594,6 +588,7 @@ function clearMap() {
     .forEach((feature) => {
       markers.getSource().removeFeature(feature);
     });
+    buses = [];
 }
 const lineColorsObj = {
   1: [201, 51, 54],

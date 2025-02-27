@@ -261,7 +261,7 @@ async function updateStations() {
     "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/station-details?show-subroutes=1"
   );
   stationList = stations;
-  createStationItems();
+  createStationItems(1);
 }
 var isArrivalsOpen = false;
 var currentPanel;
@@ -1036,7 +1036,7 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
     container.style.transform = "translateX(100vw)";
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(0vw)";
-
+clearMap()
     setTimeout(() => {
       container.remove();
     }, 500);
@@ -1179,7 +1179,7 @@ function showBusById(arrival, parent, station_id) {
       "translateX(-100vw)";
     arrivalsOnStation(container, arrival, station_id);
     arrivalsUpdateInterval = setInterval(() => {
-      arrivalsOnStation(container, arrival, station_id, container.scrollTop);
+      arrivalsOnStation(container, arrival, station_id, container.scrollTop+1);
     }, 10000);
     setTimeout(() => {
       container.style.transform = "translateX(0px) translateY(0px)";
@@ -1205,7 +1205,7 @@ async function arrivalsOnStation(container, arrival, station_id, already) {
     "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/arrivals-on-route?trip-id=" +
       arrival.trip_id
   );
-  if (already || already !== 0) container.innerHTML = "";
+  if (already) container.innerHTML = "";
   let iks = addElement("md-icon-button", container, "iks");
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
@@ -1233,10 +1233,13 @@ async function arrivalsOnStation(container, arrival, station_id, already) {
     }, 500);
     clearMap();
   });
-  let arHolder = addElement("div", container, "arOnRoute");
+  let holder = addElement("div", container, "arFlex");
+  holder.style.display = "flex";
+  holder.style.paddingTop = "40px";
+  let arHolder = addElement("div", holder, "arOnRoute");
   var listArrivals = {};
   let sortIndex;
-  let arrivalsColumns = addElement("div", container, "arrivalsColumns");
+  let arrivalsColumns = addElement("div", holder, "arrivalsColumns");
   info.forEach((arrivalRoute, index) => {
     //vsaka postaja
     let arDiv = addElement("div", arHolder, "arrDiv");
@@ -1383,17 +1386,17 @@ async function arrivalsOnStation(container, arrival, station_id, already) {
       .join("");
   }
   try {
+    if(!already){
     const childRect = document
       .querySelector(".nameStation_" + station_id)
       .parentNode.getBoundingClientRect();
     const grandparentRect = container.getBoundingClientRect();
-
-    // Calculate how much we need to scroll
     const offsetTop = childRect.top - grandparentRect.top + container.scrollTop;
     container.scrollTo({
-      top: already ? already : offsetTop,
+      top: already ? already-1 : offsetTop-15,
       behavior: already ? "instant" : "smooth",
     });
+  }
   } catch (error) {}
 }
 function sortArrivals(listArrivals, sortIndex) {

@@ -27,7 +27,7 @@ md-primary-tab{
   color: var(--md-sys-color-on-surface);
   text-align: center;
   position: sticky;
-    top: 0px;
+    top: -1px;
 }
 
 @media only screen and (max-width: 500px) {
@@ -208,6 +208,14 @@ md-fab.centerMap {
 
 .search md-icon {
   margin-left: 10px;
+}
+.search:focus {
+  border: 2px solid var(--md-sys-color-on-surface);
+}
+.search {
+  border: 2px solid var(--md-sys-color-surface);
+  border-radius: 100px;
+  transition: all 0.5s;
 }
 .stationDistance {
   margin-left: auto;
@@ -428,7 +436,7 @@ md-tabs.tabs {
   /* --md-primary-tab-active-indicator-color: transparent;*/
   border: none;
   position: sticky;
-  top: 40px;
+  top: 38px;
 
   transition: all 0.5s;
 }
@@ -554,7 +562,6 @@ display: flex;
   margin: 0 20px;
   position: relative;
   color: var(--md-sys-color-on-surface);
-  overflow-x: hidden;
   flex-direction: column;
   align-items: center;
   transform: translateX(0) translateY(-20px);
@@ -630,8 +637,19 @@ transition: all 0.5s;
       transform: translateX(-100%);
   }
 }
+.arrivalsOnStation{
+flex-direction: column !important;
+}
+.arrivalsOnStation .iks {
+  position: sticky;
+  top: -1px;
+  z-index: 90;
+  width: 100%;
+  background: var(--md-sys-color-surface);
+  padding: 8px 0;
+}
 .arrivalsOnStation.arrivalsScroll {
-  padding-top: 50px;
+  
   display: flex
 ;
   flex-direction: row;
@@ -659,8 +677,8 @@ transition: all 0.5s;
   justify-content: left;
 }
 .lineStation {
-  width: 5px;
-  height: 60px;
+  width: 8px;
+  height: 50px;
   background: var(--md-sys-color-primary);
   /* background-image: url(./images/bus.svg); */
   position: relative;
@@ -702,10 +720,11 @@ img.googleLogo {
 }
 .busBetween md-icon {
   color: rgb(140, 136, 65);
-  transform: translateY(-30px);
-  font-size: 1.2rem;
+  transform: translateY(-25px);
+  font-size: 1rem;
   border-radius: 50%;
-
+  width: 20px;
+    height: 20px;
 }
 .busOnStation md-icon {
   color: rgb(140, 136, 65);
@@ -714,11 +733,11 @@ img.googleLogo {
   scale: 1.1;
 }
 .etaStation {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   display: flex;
 background: var(--md-sys-color-surface-container-low);
   align-items: center;
-  height: 60px;
+  height: 50px;
   position: relative;
   padding: 0 10px;
 }
@@ -745,15 +764,16 @@ width: min-content;
 }
 .nameStation {
   margin-left: 20px;
-  font-size: 1.1rem;
+  font-size: .9rem;
   align-items: center;
   display: flex
 ;
 }
 .arrivalsOnStation .iks {
-  position: absolute;
+  position: sticky;
   top: 0;
   z-index: 90;
+  width: 100%;
 }
 .etaHolder {
   display: flex
@@ -794,20 +814,20 @@ p md-icon {
 .half-hidden::after {
   content: '';
   position: absolute;
-  bottom: -12.5px;
-    left: -6px;
+  bottom: -12.3px;
+  left: -10px;
   height: 50%;
-  width: 100%;
+  width: 25px;
   background: var(--md-sys-color-surface);
   pointer-events: none;
 }
 .half-hidden-first::after {
   content: '';
   position: absolute;
-  top: -12.5px;
+  top: -12.3px;
   left: -10px;
   height: 50%;
-  width: 100%;
+  width: 25px;
   background: var(--md-sys-color-surface);
   pointer-events: none;
 }
