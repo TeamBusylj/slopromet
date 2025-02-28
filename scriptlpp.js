@@ -51,12 +51,10 @@ const parser = new DOMParser();
 
 async function makeMap() {
   vectorSource = new ol.source.Vector({
-    updateWhileAnimating: true, // Ensures updates while map is in motion
     updateWhileInteracting: true,
   });
 
   vectorLayer = new ol.layer.Vector({
-    updateWhileAnimating: true, // Ensures updates while map is in motion
     updateWhileInteracting: true,
     source: vectorSource,
   });
@@ -94,7 +92,6 @@ async function makeMap() {
     layers: [rasterLayer, vectorLayer],
     target: "map",
     controls: ol.control.defaults.defaults().extend([new GoogleLogoControl()]),
-    loadTilesWhileAnimating: true,
     loadTilesWhileInteracting: true,
     view: new ol.View({
       center: ol.proj.fromLonLat([14.5058, 46.0569]), // Default center (longitude, latitude)
@@ -146,10 +143,10 @@ async function makeMap() {
     map: map,
     source: new ol.source.Vector({
       features: [accuracyFeature, positionFeature],
-      updateWhileAnimating: true, // Ensures updates while map is in motion
+
       updateWhileInteracting: true,
     }),
-    updateWhileAnimating: true, // Ensures updates while map is in motion
+
     updateWhileInteracting: true,
   });
   const busSource = new ol.source.Vector(); // Contains bus markers
@@ -159,22 +156,105 @@ async function makeMap() {
   // Create vector layers for each source
   busLayer = new ol.layer.Vector({
     source: busSource,
-    updateWhileAnimating: true, // Ensures updates while map is in motion
     updateWhileInteracting: true,
   });
 
   busStationLayer = new ol.layer.Vector({
     source: busStationSource,
-    updateWhileAnimating: true, // Ensures updates while map is in motion
     updateWhileInteracting: true,
   });
 
   busVectorLayer = new ol.layer.Vector({
     source: busVectorSource,
-    updateWhileAnimating: true, // Ensures updates while map is in motion
     updateWhileInteracting: true,
   });
+  var container = document.getElementById("popup");
+  const content = document.getElementById("popup-content");
+  var popup = new ol.Overlay({
+    element: container,
+    autoPan: true,
+    autoPanAnimation: {
+      duration: 250,
+    },
+  });
+  map.addOverlay(popup);
 
+  /* Add a pointermove handler to the map to render the popup.*/
+  map.on("click", function (evt) {
+    /*
+    
+        
+        */
+  });
+  map.on("singleclick", function (evt) {
+    var feature = map.forEachFeatureAtPixel(evt.pixel, function (feat, layer) {
+      return feat;
+    });
+
+    if (feature && feature.get("name")) {
+      var coordinate = evt.coordinate; //default projection is EPSG:3857 you may want to use ol.proj.transform
+
+      container.style.background = "RGB(" + feature.get("color") + ")";
+      container.style.display = "none";
+
+      content.innerHTML =
+        "<md-icon>directions_bus</md-icon>" + feature.get("name");
+      popup.setPosition(coordinate);
+      setTimeout(() => {
+        container.style.display = "block";
+        map.getView().animate({
+          center: coordinate,
+          duration: 500,
+        });
+      }, 1);
+      container.onclick = function () {
+        clearInterval(interval);
+        if(document.querySelector(".arrivalsHolder"))document.querySelector(".arrivalsHolder").remove();
+        let aos = document.querySelector(".arrivalsOnStation");
+        let lnt = document.querySelector(".lineTimes");
+        if (aos) {
+          aos.style.transform = "translateX(-100vw)";
+        }
+        if (lnt) {
+          lnt.style.transform = "translateX(-100vw)";
+        }
+
+        setTimeout(() => {
+          if (aos) {
+            aos.remove();
+          }
+          if (lnt) {
+            lnt.remove();
+          }
+        }, 500);
+        clearInterval(arrivalsUpdateInterval);
+        clearInterval(busUpdateInterval);
+        clearInterval(interval);
+        stationClick(
+          stationList.findIndex((obj) => obj.name === feature.get("name")), 0, 1
+        );
+        interval = setInterval(async () => {
+          await stationClick(isArrivalsOpen, true);
+        }, 10000);
+        
+        setTimeout(() => {
+          let bottomSheet = document.querySelector(".bottomSheet");
+          bottomSheet.style.transition =
+            "all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1)";
+          setSheetHeight(98);
+          setTimeout(() => {
+            bottomSheet.style.transition = "";
+            bottomSheet.style.willChange = "";
+          }, 400);
+
+          document.querySelector(".sheetContents").scrollTop = 0;
+        }, 50);
+        clearMap();
+      };
+    }
+
+    popup.setPosition(coordinate);
+  });
   // Add the layers to the map
   map.addLayer(busLayer);
   map.addLayer(busStationLayer);
@@ -220,7 +300,6 @@ async function getAllLines() {
   lines = await fetchData(
     "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/routes"
   );
-  console.log(lines);
 }
 var arrivalsMain = {};
 var tripIds = [];
@@ -692,8 +771,7 @@ async function oppositeStation(id) {
   }, 300);
 }
 var arrivalsScroll;
-async function stationClick(station, noAnimation) {
-  if (document.querySelector(".arrivalsOnStation")) return;
+async function stationClick(station, noAnimation, ia) {
   var stylesTransition = [
     document.querySelector(".searchContain").style,
     document.querySelector(".listOfStations").style,
@@ -703,6 +781,8 @@ async function stationClick(station, noAnimation) {
   setTimeout(() => {
     document.querySelector(".sheetContents").scrollTop = 0;
   }, 250);
+  document.querySelector(".directionsButton").style.opacity = "0";
+  document.querySelector(".refresh").style.opacity = "0";
   var notYet = false;
   var container;
 
@@ -715,6 +795,11 @@ async function stationClick(station, noAnimation) {
       "https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
         stationList[station].ref_id
     );
+    if (ia) {
+      document.querySelector(".arrivalsHolder").style.transform =
+        "translateX(0)";
+      document.querySelector(".arrivalsHolder").style.opacity = "1";
+    }
     let cornot = "";
     if (stationList[station].ref_id % 2 !== 0)
       cornot = '<md-icon class="center">adjust</md-icon>';
@@ -845,8 +930,9 @@ async function stationClick(station, noAnimation) {
     arrivalsScroll.setAttribute("role", "tabpanel");
     arrivalsScroll.setAttribute("aria-labelledby", "arrivalsTab");
     arrivalsScroll.setAttribute("id", "arrivals-panel");
-    let currentPanel = document.querySelector(".arrivalsScroll");
-
+    let currentPanel2 = document.querySelector(".arrivalsScroll");
+    if (document.querySelector(".timeTScroll"))
+      document.querySelector(".timeTScroll").remove();
     var timeTScroll = addElement("div", container, "timeTScroll");
     timeTScroll.setAttribute("role", "tabpanel");
     timeTScroll.setAttribute("aria-labelledby", "timeTab");
@@ -854,23 +940,23 @@ async function stationClick(station, noAnimation) {
     timeTScroll.classList.add("arrivalsScroll");
     timeTScroll.style.display = "none";
     tabs.addEventListener("change", () => {
-      if (currentPanel) {
-        currentPanel.style.display = "none";
-        currentPanel.style.transform = "translateX(0px) translateY(-20px)";
-        currentPanel.style.opacity = "0";
+      if (currentPanel2) {
+        currentPanel2.style.display = "none";
+        currentPanel2.style.transform = "translateX(0px) translateY(-20px)";
+        currentPanel2.style.opacity = "0";
       }
 
       const panelId = tabs.activeTab?.getAttribute("aria-controls");
       const root = tabs.getRootNode();
-      currentPanel = root.querySelector(`#${panelId}`);
-      if (currentPanel) {
-        currentPanel.style.display = "flex";
+      currentPanel2 = root.querySelector(`#${panelId}`);
+      if (currentPanel2) {
+        currentPanel2.style.display = "flex";
         setTimeout(() => {
-          currentPanel.style.transform = "translateX(0px) translateY(0px)";
-          currentPanel.style.opacity = "1";
+          currentPanel2.style.transform = "translateX(0px) translateY(0px)";
+          currentPanel2.style.opacity = "1";
         }, 1);
       }
-      if (currentPanel == timeTScroll && !notYet) {
+      if (currentPanel2 == timeTScroll && !notYet) {
         notYet = true;
         showLines(timeTScroll, stationList[station]);
       }
@@ -931,6 +1017,7 @@ function showArrivals(arrivalsScroll, data) {
           arrivalTimeSpan.innerHTML = "OBVOZ";
           arrivalTimeSpan.classList.add("arrivalYellow");
         }
+        if(arrival.depot) arrivalTimeSpan.innerHTML = "G";
       } else {
         let arrivalItem = addElement("div", arrivalsScroll, "arrivalItem");
         arrivalItem.style.order = arrival.route_name.replace(/\D/g, "");
@@ -968,6 +1055,7 @@ function showArrivals(arrivalsScroll, data) {
           arrivalTimeSpan.innerHTML = "OBVOZ";
           arrivalTimeSpan.classList.add("arrivalYellow");
         }
+        if(arrival.depot) arrivalTimeSpan.innerHTML = "G";
         arrivalItem.addEventListener("click", () => {
           showBusById(arrival, arrivalsScroll, data.station.code_id);
         });
@@ -1036,7 +1124,7 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
     container.style.transform = "translateX(100vw)";
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(0vw)";
-clearMap()
+    clearMap();
     setTimeout(() => {
       container.remove();
     }, 500);
@@ -1155,6 +1243,7 @@ const nextBusTemplate = (data, parent) => {
       arrivalTimeSpan.innerHTML = "PRIHOD";
       arrivalTimeSpan.classList.add("arrivalRed");
     }
+    if(arrival.depot) arrivalTimeSpan.innerHTML = "G";
     arrivalItem.addEventListener("click", () => {
       showBusById(arrival, arrivalsScroll, data.station.code_id);
     });
@@ -1179,7 +1268,12 @@ function showBusById(arrival, parent, station_id) {
       "translateX(-100vw)";
     arrivalsOnStation(container, arrival, station_id);
     arrivalsUpdateInterval = setInterval(() => {
-      arrivalsOnStation(container, arrival, station_id, container.scrollTop+1);
+      arrivalsOnStation(
+        container,
+        arrival,
+        station_id,
+        container.scrollTop + 1
+      );
     }, 10000);
     setTimeout(() => {
       container.style.transform = "translateX(0px) translateY(0px)";
@@ -1193,7 +1287,7 @@ function showBusById(arrival, parent, station_id) {
     }, 5000);
   } catch (error) {
     console.log(error);
-    document.querySelector(".loader").style.backgroundSize = "0% 0%";
+    document.querySelector(".loader").style.setProperty("--_color", "red");
     setTimeout(() => {
       document.querySelector(".loader").style.display = "none";
       document.querySelector(".loader").style.backgroundSize = "40% 40%";
@@ -1332,7 +1426,7 @@ async function arrivalsOnStation(container, arrival, station_id, already) {
   let sortedArrivals = sortArrivals(listArrivals, sortIndex);
 
   sortedArrivals = sortedArrivals.slice(0, 10);
-
+let long = sortedArrivals.length > 3 ? "" : "min";
   for (let [key, element] of sortedArrivals) {
     let etaHolder = addElement("div", arrivalsColumns, "etaHoder");
     let previousItem = null;
@@ -1365,11 +1459,11 @@ async function arrivalsOnStation(container, arrival, station_id, already) {
           const typeValue = spanText[1]; // Extracts the content inside the span
           if (typeValue === "1") {
             // If spanText is empty, remove the background from etaStation
-            stationHTML = item + "<sub>min</sub>";
+            stationHTML = item + `<sub>${long}</sub>`;
           } else if (typeValue === "0") {
             // If type is 0, add <md-icon>near_me</md-icon>
             stationHTML =
-              item + "<sub>min</sub>" + "<md-icon>near_me</md-icon>";
+              item + `<sub>${long}</sub>` + "<md-icon>near_me</md-icon>";
           } else if (typeValue === "2") {
             // If type is 2, replace the text with "P"
             stationHTML = item.replace(item, "P");
@@ -1386,17 +1480,18 @@ async function arrivalsOnStation(container, arrival, station_id, already) {
       .join("");
   }
   try {
-    if(!already){
-    const childRect = document
-      .querySelector(".nameStation_" + station_id)
-      .parentNode.getBoundingClientRect();
-    const grandparentRect = container.getBoundingClientRect();
-    const offsetTop = childRect.top - grandparentRect.top + container.scrollTop;
-    container.scrollTo({
-      top: already ? already-1 : offsetTop-15,
-      behavior: already ? "instant" : "smooth",
-    });
-  }
+    if (!already) {
+      const childRect = document
+        .querySelector(".nameStation_" + station_id)
+        .parentNode.getBoundingClientRect();
+      const grandparentRect = container.getBoundingClientRect();
+      const offsetTop =
+        childRect.top - grandparentRect.top + container.scrollTop;
+      container.scrollTo({
+        top: already ? already - 1 : offsetTop - 15,
+        behavior: already ? "instant" : "smooth",
+      });
+    }
   } catch (error) {}
 }
 function sortArrivals(listArrivals, sortIndex) {
@@ -1623,35 +1718,45 @@ function getDirections() {
     });
   }
   let timeHolder = addElement("div", container, "timeHolder");
-var inputLeave = addElement("md-filled-text-field", timeHolder, "timeInput");
-inputLeave.type = "datetime-local";
-inputLeave.value = new Date(Date.now()).toISOString().split("T")[0];
-inputLeave.label = "Odhod"
-inputLeave.innerHTML +='<md-icon slot="leading-icon">logout</md-icon>';
-inputLeave.addEventListener("click", () => {
-  inputLeave.shadowRoot.querySelector("span > md-filled-field > div.input-wrapper > input").showPicker();
-});
-var inputArrive = addElement("md-filled-text-field", timeHolder, "timeInput");
-inputArrive.type = "datetime-local";
-inputArrive.label = "Prihod"
-inputArrive.innerHTML +='<md-icon slot="leading-icon">login</md-icon>';
-inputArrive.addEventListener("click", () => {
-  inputArrive.shadowRoot.querySelector("span > md-filled-field > div.input-wrapper > input").showPicker();
-});
+  var inputLeave = addElement("md-filled-text-field", timeHolder, "timeInput");
+  inputLeave.type = "datetime-local";
+  inputLeave.value = new Date(Date.now()).toISOString().split("T")[0];
+  inputLeave.label = "Odhod";
+  inputLeave.innerHTML += '<md-icon slot="leading-icon">logout</md-icon>';
+  inputLeave.addEventListener("click", () => {
+    inputLeave.shadowRoot
+      .querySelector("span > md-filled-field > div.input-wrapper > input")
+      .showPicker();
+  });
+  var inputArrive = addElement("md-filled-text-field", timeHolder, "timeInput");
+  inputArrive.type = "datetime-local";
+  inputArrive.label = "Prihod";
+  inputArrive.innerHTML += '<md-icon slot="leading-icon">login</md-icon>';
+  inputArrive.addEventListener("click", () => {
+    inputArrive.shadowRoot
+      .querySelector("span > md-filled-field > div.input-wrapper > input")
+      .showPicker();
+  });
   var goButton = addElement("md-filled-button", container, "goButton");
   goButton.innerHTML = "Pokaži pot";
 
   let panel = addElement("div", container, "panel");
   goButton.addEventListener("click", () => {
     panel.innerHTML = "";
-    if(depart.value !== "" && arrive.value !== "") {
+    if (depart.value !== "" && arrive.value !== "") {
       //goButton.style.display = "none";
-    calcRoute(departLocation, arriveLocation, panel, agencies, new Date(inputLeave.value), new Date(inputArrive.value));
-    localStorage.agencije = JSON.stringify(agencies);
-    } else{
+      calcRoute(
+        departLocation,
+        arriveLocation,
+        panel,
+        agencies,
+        new Date(inputLeave.value),
+        new Date(inputArrive.value)
+      );
+      localStorage.agencije = JSON.stringify(agencies);
+    } else {
       panel.innerHTML = "Izberite obe lokaciji.";
     }
-    
   });
 }
 function calcRoute(start, end, panel, agencies, leave, arrive) {
@@ -1696,42 +1801,52 @@ function calcRoute(start, end, panel, agencies, leave, arrive) {
         );
       });
 
-      let routesHolder = document.querySelector(".stepDiv") ? document.querySelector(".stepDiv") : addElement("div", panel, "stepDiv");
+      let routesHolder = document.querySelector(".stepDiv")
+        ? document.querySelector(".stepDiv")
+        : addElement("div", panel, "stepDiv");
       routesHolder.innerHTML = "";
       routesHolder.style.flexDirection = "column";
       routesHolder.style.overflow = "visible";
-      panel.parentNode.insertBefore(routesHolder,panel )
+      panel.parentNode.insertBefore(routesHolder, panel);
       for (const route of validRoutes) {
         let routeDiv = addElement("div", routesHolder, "routeDiv");
-       
+
         console.log(route);
-        
+
         for (const step of route.legs[0].steps) {
           console.log(step);
           if (step.travel_mode == "WALKING") {
-            routeDiv.innerHTML += "<div class=busHolder><md-icon>directions_walk</md-icon><span class=textMin>"+step.duration.text.replace(" min", "")+"</span></div><md-icon>chevron_right</md-icon>";
+            routeDiv.innerHTML +=
+              "<div class=busHolder><md-icon>directions_walk</md-icon><span class=textMin>" +
+              step.duration.text.replace(" min", "") +
+              "</span></div><md-icon>chevron_right</md-icon>";
           } else if (step.travel_mode == "TRANSIT") {
-            routeDiv.innerHTML += "<div class=busHolder>" +(step.transit.line.short_name ? "<div class=busNo style=background:" +
-                lineColors(step.transit.line.short_name.replace(/^0+/, "")) +
-                ">" +
-                step.transit.line.short_name.replace(/^0+/, "") +
-                "</div>" :
-               step.transit.line.agencies[0].name.includes("SŽ")
+            routeDiv.innerHTML +=
+              "<div class=busHolder>" +
+              (step.transit.line.short_name
+                ? "<div class=busNo style=background:" +
+                  lineColors(step.transit.line.short_name.replace(/^0+/, "")) +
+                  ">" +
+                  step.transit.line.short_name.replace(/^0+/, "") +
+                  "</div>"
+                : step.transit.line.agencies[0].name.includes("SŽ")
                 ? getLogo(step.transit.line.agencies[0].name, 1)
-                : getLogo(step.transit.line.agencies[0].name))+"</div><md-icon>chevron_right</md-icon>";
-              }
+                : getLogo(step.transit.line.agencies[0].name)) +
+              "</div><md-icon>chevron_right</md-icon>";
+          }
         }
-        routeDiv.innerHTML += "<span style='margin-left:auto;'>"+route.legs[0].duration.text+"</span>";
+        routeDiv.innerHTML +=
+          "<span style='margin-left:auto;'>" +
+          route.legs[0].duration.text +
+          "</span>";
         routeDiv.addEventListener("click", () => {
           panel.innerHTML = "";
           displayRoute(panel, route);
-        })
+        });
       }
       panel.style.opacity = "1";
       panel.style.transform = "translateY(0)";
-      
     }
-    
   });
 }
 function displayRoute(panel, dira) {
@@ -1740,7 +1855,7 @@ function displayRoute(panel, dira) {
     : "<b>Pot ni bila najdena.</b><br><br>Verjetno ste izključili ponudnika, brez katerega ni mogoče priti do končne lokacije.";
   if (!dira) {
     panel.innerHTML = dir;
-   
+
     return false;
   }
   if (dir.departure_time) {
@@ -1802,18 +1917,24 @@ function displayRoute(panel, dira) {
       }</span></div>`;
       addElement("md-ripple", txtContent);
       txtContent.addEventListener("click", () => {
-        openRouteInGoogleMapsApp(step.start_location.lat(),step.start_location.lng(),step.end_location.lat(), step.end_location.lng())
-      })
+        openRouteInGoogleMapsApp(
+          step.start_location.lat(),
+          step.start_location.lng(),
+          step.end_location.lat(),
+          step.end_location.lng()
+        );
+      });
     } else if (step.travel_mode == "TRANSIT") {
-      icon.innerHTML = step.transit.line.short_name ? "<div class=busNo style=background:" +
+      icon.innerHTML = step.transit.line.short_name
+        ? "<div class=busNo style=background:" +
           lineColors(step.transit.line.short_name.replace(/^0+/, "")) +
           ">" +
           step.transit.line.short_name.replace(/^0+/, "") +
-          "</div>" :
-         step.transit.line.agencies[0].name.includes("SŽ")
-          ? getLogo(step.transit.line.agencies[0].name, 1)
-          : getLogo(step.transit.line.agencies[0].name)
-        
+          "</div>"
+        : step.transit.line.agencies[0].name.includes("SŽ")
+        ? getLogo(step.transit.line.agencies[0].name, 1)
+        : getLogo(step.transit.line.agencies[0].name);
+
       txtContent.innerHTML += `<span class='stepText endStation'>${
         step.transit.departure_stop.name
       }<md-icon>chevron_right</md-icon>${
@@ -1851,9 +1972,9 @@ function openRouteInGoogleMapsApp(originLat, originLng, destLat, destLng) {
   window.location.href = googleMapsAppURL;
 
   // Fallback to the web version with walking mode if the app is not installed (opens in new tab)
-  setTimeout(function() {
+  setTimeout(function () {
     const fallbackURL = `https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLng}&destination=${destLat},${destLng}&travelmode=walking`;
-    window.open(fallbackURL, '_blank');  // Open in a new tab
+    window.open(fallbackURL, "_blank"); // Open in a new tab
   }, 25);
 }
 function getCompany(company) {
@@ -1869,9 +1990,15 @@ function getCompany(company) {
     : cmp;
 }
 function getLogo(agency, sz) {
-  let a = sz ? "directions_railway" :"directions_bus"
-  const firstWord = agency.split(' ')[0].toLowerCase();
-  return "<md-icon>"+a+"</md-icon><div class=connectingLine></div><img class=agencyLogo src='images/logos/" + firstWord + ".png'>" 
+  let a = sz ? "directions_railway" : "directions_bus";
+  const firstWord = agency.split(" ")[0].toLowerCase();
+  return (
+    "<md-icon>" +
+    a +
+    "</md-icon><div class=connectingLine></div><img class=agencyLogo src='images/logos/" +
+    firstWord +
+    ".png'>"
+  );
 }
 function getPostaj(number) {
   let skl =

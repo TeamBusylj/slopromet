@@ -1,4 +1,5 @@
 var sheetHeight;
+var setSheetHeight
 function makeBottomheet(title, height) {
   let bottomSheet = addElement("div", document.body, "bottomSheet");
   let sheetContents = addElement("div", bottomSheet, "sheetContents");
@@ -6,7 +7,7 @@ function makeBottomheet(title, height) {
 
   let handle = addElement("div", draggableArea, "bottomSheetHandle");
 
-  const setSheetHeight = (value) => {
+setSheetHeight = (value) => {
     sheetHeight = Math.max(0, Math.min(100, value));
 
     bottomSheet.style.transform = `translate3d(-50%,${
@@ -128,6 +129,7 @@ function makeBottomheet(title, height) {
     if (sheetHeight > sheetHeight3 + (100 - sheetHeight3) / 2) {
       setSheetHeight(98);
     }
+    bottomSheet.style.willChange = "transform";
     bottomSheet.style.transition =
       "all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1)";
     setTimeout(() => {
@@ -230,6 +232,8 @@ async function displayBuses(firsttim, arrival, station) {
 
 
     if (bus.trip_id == arrival.trip_id) {
+      
+      
       if (!buses.includes(bus.bus_unit_id)) {
         buses.push(bus.bus_unit_id);
         busid = bus;
@@ -263,34 +267,40 @@ async function displayBuses(firsttim, arrival, station) {
         // Add the marker to the layer
         tempMarkersSource.getSource().addFeature(marker);
       } else {
-        markers.getSource().forEachFeature(function (feature) {
-          console.log(bus.bus_unit_id, feature.busId);
+        try {
+          markers.getSource().forEachFeature(function (feature) {
+        
 
-          if (bus.bus_unit_id === feature.busId) {
-            let newCoordinates = ol.proj.fromLonLat([
-              bus.longitude,
-              bus.latitude,
-            ]);
-            now = new Date().getTime();
-
-            const animate = () => {
-              const shouldContinue = moveFeature(
-                feature,
-                newCoordinates,
-                (bus.cardinal_direction * Math.PI) / 180
-              );
-
-              // Re-render map for smooth animation
-              map.render();
-
-              if (shouldContinue) {
-                requestAnimationFrame(animate); // Continue animation
-              }
-            };
-
-            animate(); // Start animation loop
-          }
-        });
+            if (bus.bus_unit_id === feature.busId) {
+              let newCoordinates = ol.proj.fromLonLat([
+                bus.longitude,
+                bus.latitude,
+              ]);
+              now = new Date().getTime();
+  
+              const animate = () => {
+                const shouldContinue = moveFeature(
+                  feature,
+                  newCoordinates,
+                  (bus.cardinal_direction * Math.PI) / 180
+                );
+  
+                // Re-render map for smooth animation
+                map.render();
+  
+                if (shouldContinue) {
+                  requestAnimationFrame(animate); // Continue animation
+                }
+              };
+  
+              animate(); // Start animation loop
+            }
+          });
+        } catch (error) {
+          console.log(error);
+          
+        }
+      
       }
     }
   }
@@ -340,7 +350,9 @@ async function generateRouteVector(data, trip_id, lno, stationID) {
   var coordinates = await fetchData(
     "https://mestnipromet.cyou/api/v1/resources/buses/shape?trip_id=" + trip_id
   );
-  if (coordinates.length == 0) {
+  console.log(coordinates);
+  
+  if (!coordinates || coordinates.length == 0) {
     let coords = "";
     for (const i in data) {
       coords += data[i].longitude + "," + data[i].latitude + ";";
@@ -359,7 +371,7 @@ async function generateRouteVector(data, trip_id, lno, stationID) {
       )
     ).json();
 
-    console.log(coordinates);
+  
 
     coordinates = coordinates.routes[0].geometry.coordinates;
   }
@@ -376,6 +388,7 @@ async function generateRouteVector(data, trip_id, lno, stationID) {
       name: station.name,
       order: station.order_no,
       code: station.station_code,
+      color: lineColorsObj[lno.replace(/\D/g, "")],
     });
 
     // Set styles for stations
@@ -409,23 +422,7 @@ async function generateRouteVector(data, trip_id, lno, stationID) {
             }),*/
       })
     );
-    map.on("click", function (evt) {
-      var feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
-        return feature;
-      });
-      if (feature === stationFeature) {
-        stationClick(
-          stationList.findIndex((obj) => obj.name === station.name),
-          true
-        );
-        setTimeout(() => {
-          document.querySelector(".bottomSheet").style.transform =
-            "translate3d(-50%,2dvh, 0)";
-          sheetHeight = 98;
-          document.querySelector(".sheetContents").scrollTop = 0;
-        }, 50);
-      }
-    });
+    
     tempStationSource.addFeature(stationFeature);
   });
 
@@ -529,7 +526,7 @@ function centerBus() {
     zoom: zoom,
     duration: duration,
   });*/
-  view.fit(myExtent, {duration: 1000});
+  view.fit(myExtent, {duration: 750});
   document.querySelector(".loader").style.backgroundSize = "0% 0%";
   setTimeout(() => {
     document.querySelector(".loader").style.display = "none";
@@ -589,6 +586,7 @@ function clearMap() {
       markers.getSource().removeFeature(feature);
     });
     buses = [];
+    document.getElementById("popup").style.display = "none";
 }
 const lineColorsObj = {
   1: [201, 51, 54],

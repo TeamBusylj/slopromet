@@ -35,6 +35,9 @@
   <div class="busImg"></div>
   <md-fab class="refresh" onclick="refresh()" variant="surface"><md-icon slot="icon" aria-hidden="true">refresh</md-icon></md-fab> 
   <md-fab class="directionsButton" onclick="getDirections()" label="Načrtuj" variant="primary"><md-icon slot="icon" aria-hidden="true">directions</md-icon></md-fab> 
+  <div id="popup" class="ol-popup">
+    <div id="popup-content"></div>
+  </div>
 
   <script src="OpenLayers-2.13.1/OpenLayers.js"></script>
 <script src="./bundle.js"></script>
