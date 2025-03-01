@@ -1,6 +1,6 @@
 var sheetHeight;
 var setSheetHeight
-function makeBottomheet(title, height) {
+function makeBottomSheet(title, height) {
   let bottomSheet = addElement("div", document.body, "bottomSheet");
   let sheetContents = addElement("div", bottomSheet, "sheetContents");
   let draggableArea = addElement("div", bottomSheet, "handleHolder");
@@ -19,16 +19,7 @@ setSheetHeight = (value) => {
 
   let dragPosition;
 
-  const onDragStart = (event) => {
-    if (!event.target.closest(".bottomSheet")) return;
-    dragPosition = touchPosition(event).pageY;
-
-    sheetContents.classList.add("not-selectable");
-    vh = Math.max(
-      document.documentElement.clientHeight || 0,
-      window.innerHeight || 0
-    );
-  };
+  
   var vh = Math.max(
     document.documentElement.clientHeight || 0,
     window.innerHeight || 0
@@ -47,72 +38,63 @@ setSheetHeight = (value) => {
 
     return `${firstTwo[0]}.${firstTwo[1]}`;
   }
-
-  const onDragMove = (event) => {
-    const scrollList = document.querySelector(".arrivalsOnStation")
-      ? document.querySelector(".arrivalsOnStation")
-      : document.querySelector(".lineTimes")
-      ? document.querySelector(".lineTimes")
-      : document.querySelector(".arrivalsHolder")
-      ? document.querySelector(".arrivalsHolder")
-      : document.querySelector(".listOfStations").style.display !== "none"
-      ? document.querySelector(".listOfStations")
-      : document.querySelector(".favouriteStations");
+var canGo = true
+  const onDragStart = (event) => {
     if (!event.target.closest(".bottomSheet")) return;
-    if (scrollList.scrollTop > 1 && sheetHeight !== 98)
-      scrollList.style.overflow = "hidden";
-    else scrollList.style.overflow = "scroll";
-    if (
-      (mouseDown || event.type == "touchmove") &&
-      event.target.closest(".bottomSheet")
-    ) {
+    dragPosition = touchPosition(event).pageY;
+
+    sheetContents.classList.add("not-selectable");
+    vh = Math.max(
+      document.documentElement.clientHeight || 0,
+      window.innerHeight || 0
+    );
+    const scrollList = document.querySelector(".arrivalsOnStation")
+    ? document.querySelector(".arrivalsOnStation")
+    : document.querySelector(".lineTimes")
+    ? document.querySelector(".lineTimes")
+    : document.querySelector(".arrivalsHolder")
+    ? document.querySelector(".arrivalsHolder")
+    : document.querySelector(".favouriteStations").style.display == "flex"
+    ? document.querySelector(".favouriteStations")
+    : document.querySelector(".listOfStations");
+  
+  if ( sheetHeight !== 98)scrollList.style.overflow = "hidden";
+  if((scrollList.scrollTop>1 && sheetHeight == 98) && !event.target.closest(".handleHolder") )canGo=undefined;
+  if( !event.target.closest(".bottomSheet"))canGo=undefined;
+  bottomSheet.style.willChange = "transform";
+  }
+  const onDragMove = (event) => {
+    if (!dragPosition) return;
+    if (!canGo) return;
       const y = touchPosition(event).pageY;
       var deltaY = dragPosition - y;
-
-      if (deltaY > 0 && sheetHeight == 98) return;
-
-      if (
-        (sheetContents.scrollHeight > sheetContents.clientHeight ||
-          scrollList) &&
-        deltaY < 0
-      ) {
-        if (
-          sheetContents.scrollTop > 1 ||
-          (scrollList.scrollTop > 1 && !event.target.closest(".handleHolder"))
-        )
-          deltaY = 0;
-      }
-
-      const mainContentHeight = Math.min(
-        mainContent.clientHeight,
-        mainContent.scrollHeight
-      );
-      sheetHeight3 = (mainContentHeight / vh) * 100;
-
+      if(sheetHeight == 98 && deltaY > 0) return;
       if (sheetHeight < 40 && deltaY < 0) {
         deltaY = deltaY / formatNumber(y);
       }
       const deltaHeight = (deltaY / window.innerHeight) * 100;
 
-      setSheetHeight(sheetHeight + deltaHeight);
+      
 
       dragPosition = y;
-    }
+     
+        setSheetHeight(sheetHeight + deltaHeight)
   };
   const onDragEnd = () => {
+    
     (document.querySelector(".arrivalsOnStation")
-      ? document.querySelector(".arrivalsOnStation")
-      : document.querySelector(".lineTimes")
-      ? document.querySelector(".lineTimes")
-      : document.querySelector(".arrivalsHolder")
-      ? document.querySelector(".arrivalsHolder")
-      : document.querySelector(".listOfStations").style.display !== "none"
-      ? document.querySelector(".listOfStations")
-      : document.querySelector(".favouriteStations")
+    ? document.querySelector(".arrivalsOnStation")
+    : document.querySelector(".lineTimes")
+    ? document.querySelector(".lineTimes")
+    : document.querySelector(".arrivalsHolder")
+    ? document.querySelector(".arrivalsHolder")
+    : document.querySelector(".favouriteStations").style.display == "flex"
+    ? document.querySelector(".favouriteStations")
+    : document.querySelector(".listOfStations")
     ).style.overflow = "scroll";
     dragPosition = undefined;
     sheetContents.classList.remove("not-selectable");
-
+canGo = true
     var sheetHeight3;
 
     const mainContentHeight = Math.min(
@@ -129,7 +111,7 @@ setSheetHeight = (value) => {
     if (sheetHeight > sheetHeight3 + (100 - sheetHeight3) / 2) {
       setSheetHeight(98);
     }
-    bottomSheet.style.willChange = "transform";
+    
     bottomSheet.style.transition =
       "all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1)";
     setTimeout(() => {
@@ -137,12 +119,17 @@ setSheetHeight = (value) => {
       bottomSheet.style.willChange = "";
     }, 400);
   };
-
+  let lastMoveTime = 0;
+  const throttleDragMove = (event) => {
+   window.requestAnimationFrame(() => {
+     onDragMove(event);
+   })
+  };
   window.addEventListener("mousedown", onDragStart);
   window.addEventListener("touchstart", onDragStart);
 
-  window.addEventListener("mousemove", onDragMove);
-  window.addEventListener("touchmove", onDragMove);
+  window.addEventListener("mousemove", throttleDragMove);
+  window.addEventListener("touchmove", throttleDragMove);
 
   window.addEventListener("mouseup", onDragEnd);
   window.addEventListener("touchend", onDragEnd);
@@ -565,6 +552,21 @@ async function fetchData(url) {
       })
     ).json()
   ).data;
+}
+function clearElementContent(element) {
+  if (!(element instanceof Element)) {
+      console.error("Provided argument is not a valid DOM element.");
+      return;
+  }
+  
+element.innerHTML += "k"
+  const clonedElement = element.cloneNode(false);
+  element.replaceWith(clonedElement);
+  
+  // Clear innerHTML (after removing event listeners)
+  clonedElement.innerHTML = "";
+  
+  return clonedElement; // Return the cleaned element
 }
 function clearMap() {
   busStationLayer

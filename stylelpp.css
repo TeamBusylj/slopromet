@@ -260,6 +260,7 @@ md-list.listOfStations, md-list.favouriteStations {
     position: relative;
     padding-bottom: 50px;
     margin-top: 10px;
+    display: none;
 }
 .hideStations {
   position: absolute;
@@ -322,6 +323,9 @@ md-list .arrivalItem {
   align-items: center;
   justify-content: center;
 
+}
+span.hidden{
+  display: none;
 }
 img.busImgElement {
   object-fit: fill;
@@ -659,7 +663,7 @@ flex-direction: column !important;
   position: absolute !important;
   top: 40px !important;
   height: calc(100dvh - 55px);
-  animation: showIn 0.5s;
+
   transition: transform 0.5s !important;
   transform: translateX(0);
   overscroll-behavior: none;
