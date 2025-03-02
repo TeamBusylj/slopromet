@@ -515,9 +515,8 @@ async function createStationItems(o) {
           });
           let line2 = line;
           line2.route_name = line.route_number;
-          document.querySelector(".bottomSheet").style.transform =
-            "translate3d(-50%,60dvh, 0px)";
-          sheetHeight = 40;
+          
+          minimizeSheet();
           arrivalsOnStation(container, line2, 0);
           arrivalsUpdateInterval = setInterval(() => {
             arrivalsOnStation(container, line2, 0, container.scrollTop);
@@ -538,6 +537,16 @@ async function createStationItems(o) {
       }
     }
   }
+}
+function minimizeSheet() {
+  let bottomSheet = document.querySelector(".bottomSheet");
+          bottomSheet.style.transition =
+            "all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1)";
+          setSheetHeight(40);
+          setTimeout(() => {
+            bottomSheet.style.transition = "";
+            bottomSheet.style.willChange = "";
+          }, 400);
 }
 async function refresh() {
   if (checkVisible(document.querySelector(".arrivalsOnStation"))) {
@@ -708,9 +717,7 @@ function createFavourite(parent, search, query) {
           });
           let line2 = line;
           line2.route_name = line.route_number;
-          document.querySelector(".bottomSheet").style.transform =
-            "translate3d(-50%,60dvh, 0px)";
-          sheetHeight = 40;
+          minimizeSheet();
           arrivalsOnStation(container, line2, 0);
           arrivalsUpdateInterval = setInterval(() => {
             arrivalsOnStation(container, line2, 0, container.scrollTop);
@@ -1237,22 +1244,22 @@ const nextBusTemplate = (data, parent) => {
 
     //arrivalItem.innerHTML = `<md-icon>${icon}</md-icon>`;
     arrivalItem.style.order = arrival.type === 2 ? 0 : arrival.eta_min;
-    const busNumberDiv = addElement("div", arrivalItem, "busNo2");
+    let busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
     busNumberDiv.style.background = lineColors(arrival.route_name);
 
     busNumberDiv.id = "next_bus_" + arrival.route_name;
     busNumberDiv.textContent = arrival.route_name;
     addElement("md-ripple", busNumberDiv);
-    const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+    let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
 
-    const tripNameSpan = addElement("span", arrivalDataDiv);
+    let tripNameSpan = addElement("span", arrivalDataDiv);
     tripNameSpan.textContent = arrival.stations.arrival;
 
-    const etaDiv = addElement("div", arrivalDataDiv, "eta");
+    let etaDiv = addElement("div", arrivalDataDiv, "eta");
     etaDiv.id = "next_eta_" + arrival.route_name;
 
-    const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
+    let arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
 
     if (arrival.type == 0) {
       arrivalTimeSpan.innerHTML =
@@ -1273,6 +1280,13 @@ const nextBusTemplate = (data, parent) => {
       showBusById(arrival, arrivalsScroll, data.station.code_id);
     });
     i++;
+    arrivalTimeSpan ,
+    arrivalItem ,
+    busNumberDiv,
+    arrivalDataDiv ,
+    tripNameSpan ,
+    etaDiv ,
+    arrivalTimeSpan  = null
   }
 };
 var busUpdateInterval, arrivalsUpdateInterval;
@@ -1280,7 +1294,7 @@ function showBusById(arrival, parent, station_id) {
   clearInterval(busUpdateInterval);
   document.querySelector(".bottomSheet").style.transform =
     "translate3d(-50%,60dvh, 0px)";
-  sheetHeight = 40;
+minimizeSheet();
   if (parent) {
     let container = addElement(
       "div",
@@ -1326,8 +1340,10 @@ async function arrivalsOnStation( arrival, station_id, already) {
   );
   let container = document.querySelector(".arrivalsOnStation");
   if (already){
-    container=  clearElementContent(container)
+   clearElementContent(container)
+   container = document.querySelector(".arrivalsOnStation");
   }
+  
   let iks = addElement("md-icon-button", container, "iks");
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
@@ -1449,6 +1465,10 @@ async function arrivalsOnStation( arrival, station_id, already) {
       listArrivals[ar["vehicle_id"]][index] =
         ar["eta_min"] + `<span style="display:none;">${ar["type"]}</span>`;
     }
+    arDiv ,
+    lineStation ,
+    lnimg ,
+    nameStation = null;
   });
 
   let sortedArrivals = sortArrivals(listArrivals, sortIndex);
@@ -1506,7 +1526,9 @@ let long = sortedArrivals.length > 3 ? "" : "min";
         }${border ? border : ""}">${stationHTML}</div>`;
       })
       .join("");
+      etaHolder = null
   }
+
   try {
     
       const childRect = document

@@ -164,7 +164,7 @@ var busImageData;
  */
 async function loop(firsttim, arrival, station) {
   
-  if (!firsttim && sheetHeight == 98) return;
+  
 
   if (firsttim) {
     document.querySelector(".loader").style.display = "grid";
