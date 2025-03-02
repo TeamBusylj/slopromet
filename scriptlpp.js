@@ -275,7 +275,7 @@ function centerMap() {
   });
 }
 const delayedSearch = debounce(searchRefresh, 300);
-window.addEventListener("DOMContentLoaded", async function () {
+window.addEventListener("load", async function () {
   createBuses();
 
   let sht = makeBottomSheet(null, 98);
@@ -338,7 +338,7 @@ async function createBuses() {
  e.style.display = "flex";
         e.style.transform = "translateX(0px) translateY(0px)";
         e.style.opacity = "1"
-  makeMap();
+  await makeMap();
   
 }
 const changeTabs =  (event) => {
@@ -517,9 +517,9 @@ async function createStationItems(o) {
           line2.route_name = line.route_number;
           
           minimizeSheet();
-          arrivalsOnStation(container, line2, 0);
+          arrivalsOnStation( line2, 0);
           arrivalsUpdateInterval = setInterval(() => {
-            arrivalsOnStation(container, line2, 0, container.scrollTop);
+            arrivalsOnStation(line2, 0, container.scrollTop);
           }, 10000);
           loop(1, line, 60);
           busUpdateInterval = setInterval(() => {
@@ -718,9 +718,9 @@ function createFavourite(parent, search, query) {
           let line2 = line;
           line2.route_name = line.route_number;
           minimizeSheet();
-          arrivalsOnStation(container, line2, 0);
+          arrivalsOnStation(line2, 0);
           arrivalsUpdateInterval = setInterval(() => {
-            arrivalsOnStation(container, line2, 0, container.scrollTop);
+            arrivalsOnStation(line2, 0, container.scrollTop);
           }, 10000);
           loop(1, line, 60);
           busUpdateInterval = setInterval(() => {
@@ -1334,6 +1334,7 @@ minimizeSheet();
 }
 async function arrivalsOnStation( arrival, station_id, already) {
 
+
   let info = await fetchData(
     "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/arrivals-on-route?trip-id=" +
       arrival.trip_id
@@ -1474,6 +1475,8 @@ async function arrivalsOnStation( arrival, station_id, already) {
   let sortedArrivals = sortArrivals(listArrivals, sortIndex);
 
   sortedArrivals = sortedArrivals.slice(0, 10);
+  console.log(listArrivals);
+  
 let long = sortedArrivals.length > 3 ? "" : "min";
   for (let [key, element] of sortedArrivals) {
     let etaHolder = addElement("div", arrivalsColumns, "etaHoder");
