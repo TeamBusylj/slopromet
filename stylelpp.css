@@ -79,7 +79,12 @@ body {
   overflow: hidden;
 }
 .station {
-  padding: 3px;
+  padding: 15px;
+  background: var(--md-sys-color-surface-container);
+  border-radius: 25px;
+  margin: 10px 0;
+  color: var(--md-sys-color-on-surface);
+  position: relative;
 }
 .center {
   margin-left: 10px;

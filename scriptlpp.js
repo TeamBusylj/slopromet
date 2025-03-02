@@ -1,3 +1,4 @@
+'use strict';
 function debounce(func, delay) {
   let timeoutId;
   return function () {
@@ -328,38 +329,30 @@ async function getLocation() {
 
 async function createBuses() {
   await getLocation();
-  stationList = JSON.parse(stationDetails).data;
   currentPanel = document.querySelector(".favouriteStations");
-  await createStationItems();
+  await updateStations()
   var tabs = document.getElementById("tabsFav");
 
-  tabs.addEventListener("change", () => {
-let o = currentPanel.id == "location-panel" ?   document.querySelector(".listOfStations") : document.querySelector(".favouriteStations");
-    console.log(o);
-    o.style.display = "none";
-    o.style.transform = "translateX(0px) translateY(-20px)";
-    o.style.opacity = "0";    
-    const panelId = tabs.activeTab?.getAttribute('aria-controls') 
-    console.log(tabs.activeTab);
-    const root = tabs.getRootNode()
-    currentPanel = root.querySelector(`#${panelId}`);
-
-      currentPanel.style.display = "flex";
-      setTimeout(() => {
-        currentPanel.style.transform = "translateX(0px) translateY(0px)";
-        currentPanel.style.opacity = "1"
-        console.log("\n");
-      }, 1);
-    
-  });
+  tabs.addEventListener("change", changeTabs);
   let e = document.querySelector(".favouriteStations")
  e.style.display = "flex";
-      setTimeout(() => {
         e.style.transform = "translateX(0px) translateY(0px)";
         e.style.opacity = "1"
-      }, 1);
   makeMap();
-  updateStations();
+  
+}
+const changeTabs =  (event) => {
+    let o = currentPanel.id == "location-panel" ?   document.querySelector(".listOfStations") : document.querySelector(".favouriteStations");
+        console.log(o);
+        o.style.display = "none";
+        o.style.transform = "translateX(0px) translateY(-20px)";
+        o.style.opacity = "0";    
+        const panelId = event.target.activeTab?.getAttribute('aria-controls') 
+        const root = event.target.getRootNode()
+        currentPanel = root.querySelector(`#${panelId}`);
+          currentPanel.style.display = "flex";
+            currentPanel.style.transform = "translateX(0px) translateY(0px)";
+            currentPanel.style.opacity = "1"
 }
 async function updateStations() {
   let stations = await fetchData(
@@ -370,7 +363,7 @@ async function updateStations() {
 }
 var isArrivalsOpen = false;
 var currentPanel;
-function createStationItems(o) {
+async function createStationItems(o) {
   var search = false;
   let query = document.querySelector(".search").value;
   if (query !== "") {
@@ -378,9 +371,11 @@ function createStationItems(o) {
   }
   var loader = document.getElementById("loader");
   var list = document.querySelector(".listOfStations");
-  list = clearElementContent(list)
+  await clearElementContent(list)
+  list = document.querySelector(".listOfStations");
   var favList = document.querySelector(".favouriteStations");
-  favList = clearElementContent(favList)
+  await clearElementContent(favList)
+  favList = document.querySelector(".favouriteStations");
   createFavourite(favList, search, query);
   
   loader.style.display = "block";
@@ -397,12 +392,9 @@ function createStationItems(o) {
           normalizeText(query.toLowerCase())
         )
       )
-        continue;
-      let item2 = addElement("md-list-item", null, "stationItem");
-      item2.setAttribute("interactive", "");
-      addElement("md-ripple", item2);
-      let item = addElement("div", item2, "station");
-
+        continue
+      let item = addElement("div", null, "station");
+      addElement("md-ripple", item);
       let textHolder = addElement("div", item, "textHolder");
       textHolder.innerHTML =
         '<span class="stationName">' + stationList[station].name + "</span>";
@@ -432,7 +424,7 @@ function createStationItems(o) {
             fav +
             distance.toFixed(1) +
             " km</span>";
-          nearby[distance.toFixed(5)] = item2;
+          nearby[distance.toFixed(5)] = item;
         } else {
           textHolder.innerHTML +=
             cornot +
@@ -440,7 +432,7 @@ function createStationItems(o) {
             fav +
             Math.round(distance * 1000) +
             " m</span>";
-          nearby[distance.toFixed(5)] = item2;
+          nearby[distance.toFixed(5)] = item;
         }
         let buses = addElement("div", item, "buses");
         for (const bus of stationList[station].route_groups_on_station) {
@@ -454,12 +446,16 @@ function createStationItems(o) {
             "</div>";
         }
         item.appendChild(buses);
-        item2.addEventListener("click", async () => {
+        const openStation = async () => {
           await stationClick(station);
           interval = setInterval(async () => {
-            await stationClick(isArrivalsOpen, true);
+            await stationClick(null, true);
           }, 10000);
-        });
+        }
+        item.addEventListener("click", openStation);
+        item = null
+        buses = null
+        textHolder = null
       }
     }
 
@@ -473,6 +469,7 @@ function createStationItems(o) {
       list.appendChild(stationDistance);
     }
     loader.style.display = "none";
+    nearby = null
   }
   if (search) {
     for (const line of lines) {
@@ -488,16 +485,16 @@ function createStationItems(o) {
       ) {
         let arrivalItem = addElement("div", list, "arrivalItem");
         arrivalItem.style.order = line.route_number.replace(/\D/g, "");
-        const busNumberDiv = addElement("div", arrivalItem, "busNo2");
+        let busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
         busNumberDiv.style.background = lineColors(line.route_number);
 
         busNumberDiv.id = "bus_" + line.route_number;
         busNumberDiv.textContent = line.route_number;
-        const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+        let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
         addElement("md-ripple", arrivalItem);
 
-        const tripNameSpan = addElement("span", arrivalDataDiv);
+        let tripNameSpan = addElement("span", arrivalDataDiv);
         tripNameSpan.textContent = line.route_name;
         arrivalItem.addEventListener("click", () => {
           let container = addElement(
@@ -537,6 +534,7 @@ function createStationItems(o) {
         if (line.route_number[0] == "N") {
           arrivalItem.style.order = line.route_number.replace(/\D/g, "") + 100;
         }
+        arrivalItem,busNumberDiv,arrivalDataDiv,tripNameSpan = null
       }
     }
   }
@@ -582,11 +580,10 @@ function createFavourite(parent, search, query) {
     parent.innerHTML +=
       "<p><md-icon>location_off</md-icon>Lokacija ni omogočena.</p>";
   for (const station in stationList) {
-    let item2 = addElement("md-list-item", null, "stationItem");
-    item2.setAttribute("interactive", "");
-    addElement("md-ripple", item2);
-    let item = addElement("div", item2, "station");
+    
 
+    let item = addElement("div", null, "station");
+    addElement("md-ripple", item);
     let textHolder = addElement("div", item, "textHolder");
     textHolder.innerHTML =
       '<span class="stationName">' + stationList[station].name + "</span>";
@@ -622,7 +619,7 @@ function createFavourite(parent, search, query) {
           fav +
           distance.toFixed(1) +
           " km</span>";
-        nearby[distance.toFixed(5)] = item2;
+        nearby[distance.toFixed(5)] = item;
       } else {
         textHolder.innerHTML +=
           cornot +
@@ -630,7 +627,7 @@ function createFavourite(parent, search, query) {
           fav +
           Math.round(distance * 1000) +
           " m</span>";
-        nearby[distance.toFixed(5)] = item2;
+        nearby[distance.toFixed(5)] = item;
       }
       let buses = addElement("div", item, "buses");
       for (const bus of stationList[station].route_groups_on_station) {
@@ -645,12 +642,16 @@ function createFavourite(parent, search, query) {
       }
 
       item.appendChild(buses);
-      item2.addEventListener("click", async () => {
+      const openStation = async () => {
         await stationClick(station);
         interval = setInterval(async () => {
-          await stationClick(isArrivalsOpen, true);
+          await stationClick(null, true);
         }, 10000);
-      });
+      }
+      item.addEventListener("click", openStation);
+      item = null
+      buses = null
+      textHolder = null
     }
   }
   const sortedArray = Object.keys(nearby)
@@ -677,16 +678,16 @@ function createFavourite(parent, search, query) {
       ) {
         let arrivalItem = addElement("div", parent, "arrivalItem");
         arrivalItem.style.order = line.route_number.replace(/\D/g, "");
-        const busNumberDiv = addElement("div", arrivalItem, "busNo2");
+        let busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
         busNumberDiv.style.background = lineColors(line.route_number);
 
         busNumberDiv.id = "bus_" + line.route_number;
         busNumberDiv.textContent = line.route_number;
-        const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+        let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
         addElement("md-ripple", arrivalItem);
 
-        const tripNameSpan = addElement("span", arrivalDataDiv);
+        let tripNameSpan = addElement("span", arrivalDataDiv);
         tripNameSpan.textContent = line.route_name;
         arrivalItem.addEventListener("click", () => {
           let container = addElement(
@@ -726,6 +727,7 @@ function createFavourite(parent, search, query) {
         if (line.route_number[0] == "N") {
           arrivalItem.style.order = line.route_number.replace(/\D/g, "") + 100;
         }
+        arrivalItem,busNumberDiv,arrivalDataDiv,tripNameSpan = null
       }
     }
   }
@@ -776,8 +778,8 @@ async function oppositeStation(id) {
   }, 300);
 }
 var arrivalsScroll;
-async function stationClick(station, noAnimation, ia) {
-  console.log(station);
+async function stationClick(stationa, noAnimation, ia) {
+let station = stationa ? stationa : isArrivalsOpen;
   
   var stylesTransition = [
     document.querySelector(".searchContain").style,
@@ -998,15 +1000,16 @@ async function stationClick(station, noAnimation, ia) {
 
 function showArrivals(arrivalsScroll2, data) {
   let arrivalsScroll =document.getElementById("arrivals-panel")  
-  arrivalsScroll = clearElementContent(arrivalsScroll)
-
+  clearElementContent(arrivalsScroll)
+  arrivalsScroll =null
+  arrivalsScroll =document.getElementById("arrivals-panel") 
   if (data.arrivals.length > 0) {
     let busTemplate = addElement("div", arrivalsScroll, "busTemplate");
     nextBusTemplate(data, busTemplate);
     let listOfArrivals = [];
     for (const arrival of data.arrivals) {
       if (listOfArrivals.includes(arrival.trip_id)) {
-        const arrivalTimeSpan = addElement(
+        let arrivalTimeSpan = addElement(
           "span",
           arrivalsScroll.querySelector("#eta_" + arrival.route_name),
           "arrivalTime"
@@ -1029,26 +1032,29 @@ function showArrivals(arrivalsScroll2, data) {
           arrivalTimeSpan.classList.add("arrivalYellow");
         }
         if(arrival.depot) arrivalTimeSpan.innerHTML = "G";
+       
+          arrivalTimeSpan = null
+         
       } else {
         let arrivalItem = addElement("div", arrivalsScroll, "arrivalItem");
         arrivalItem.style.order = arrival.route_name.replace(/\D/g, "");
-        const busNumberDiv = addElement("div", arrivalItem, "busNo2");
+        let busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
         busNumberDiv.style.background = lineColors(arrival.route_name);
 
         busNumberDiv.id = "bus_" + arrival.route_name;
         busNumberDiv.textContent = arrival.route_name;
         listOfArrivals.push(arrival.trip_id);
-        const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+        let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
         addElement("md-ripple", arrivalItem);
 
-        const tripNameSpan = addElement("span", arrivalDataDiv);
+        let tripNameSpan = addElement("span", arrivalDataDiv);
         tripNameSpan.textContent = arrival.stations.arrival;
 
-        const etaDiv = addElement("div", arrivalDataDiv, "eta");
+        let etaDiv = addElement("div", arrivalDataDiv, "eta");
         etaDiv.id = "eta_" + arrival.route_name;
 
-        const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
+        let arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
         if (arrival.type == 0) {
           arrivalTimeSpan.innerHTML =
             "<md-icon style='animation-delay:" +
@@ -1070,6 +1076,14 @@ function showArrivals(arrivalsScroll2, data) {
         arrivalItem.addEventListener("click", () => {
           showBusById(arrival, arrivalsScroll, data.station.code_id);
         });
+       
+          arrivalTimeSpan ,
+          arrivalItem ,
+          busNumberDiv,
+          arrivalDataDiv ,
+          tripNameSpan ,
+          etaDiv ,
+          arrivalTimeSpan  = null
       }
     }
   } else {
