@@ -47,20 +47,12 @@ function moveFeature(feature, newCoordinates, dir) {
   return false;
 }
 
-var map, busVectorLayer, busLayer, busStationLayer, animating, speed, now;
+var map, busVectorLayer,  busStationLayer, animating, speed, now;
 const parser = new DOMParser();
 
 async function makeMap() {
-  vectorSource = new ol.source.Vector({
-    updateWhileInteracting: true,
-  });
-
-  vectorLayer = new ol.layer.Vector({
-    updateWhileInteracting: true,
-    source: vectorSource,
-  });
+ 
   rasterLayer = new ol.layer.Tile({
-    transition: 1000,
     preload: Infinity,
     source: new ol.source.Google({
       styles: window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -70,6 +62,14 @@ async function makeMap() {
       scale: "scaleFactor2x",
       highDpi: true,
       transition: 1000,
+      tileLoadFunction: function (imageTile, src) {
+        const img = imageTile.getImage();
+       
+        
+        img.src = src;
+    
+       
+    }
     }),
   });
   class GoogleLogoControl extends ol.control.Control {
@@ -84,13 +84,14 @@ async function makeMap() {
     }
   }
   map = new ol.Map({
+    style: {},
     interactions: ol.interaction.defaults.defaults().extend([
       new ol.interaction.DblClickDragZoom(),
       new ol.interaction.PinchZoom({
         constrainResolution: true,
       }),
     ]),
-    layers: [rasterLayer, vectorLayer],
+    layers: [rasterLayer],
     target: "map",
     controls: ol.control.defaults.defaults().extend([new GoogleLogoControl()]),
     loadTilesWhileInteracting: true,
@@ -150,25 +151,9 @@ async function makeMap() {
 
     updateWhileInteracting: true,
   });
-  const busSource = new ol.source.Vector(); // Contains bus markers
-  const busStationSource = new ol.source.Vector(); // Contains station locations
-  const busVectorSource = new ol.source.Vector(); // Contains vector graphics or routes
+  
 
-  // Create vector layers for each source
-  busLayer = new ol.layer.Vector({
-    source: busSource,
-    updateWhileInteracting: true,
-  });
 
-  busStationLayer = new ol.layer.Vector({
-    source: busStationSource,
-    updateWhileInteracting: true,
-  });
-
-  busVectorLayer = new ol.layer.Vector({
-    source: busVectorSource,
-    updateWhileInteracting: true,
-  });
   var container = document.getElementById("popup");
   const content = document.getElementById("popup-content");
   var popup = new ol.Overlay({
@@ -256,10 +241,7 @@ async function makeMap() {
 
     popup.setPosition(coordinate);
   });
-  // Add the layers to the map
-  map.addLayer(busLayer);
-  map.addLayer(busStationLayer);
-  map.addLayer(busVectorLayer);
+
 }
 function centerMap() {
   const view = map.getView();
@@ -338,7 +320,10 @@ async function createBuses() {
  e.style.display = "flex";
         e.style.transform = "translateX(0px) translateY(0px)";
         e.style.opacity = "1"
-  await makeMap();
+        setTimeout(async () => {
+          await makeMap();
+        }, 0);
+
   
 }
 const changeTabs =  (event) => {
@@ -1038,7 +1023,7 @@ function showArrivals(arrivalsScroll2, data) {
           arrivalTimeSpan.innerHTML = "OBVOZ";
           arrivalTimeSpan.classList.add("arrivalYellow");
         }
-        if(arrival.depot) arrivalTimeSpan.innerHTML = "G";
+        if(arrival.depot) arrivalTimeSpan.innerHTML += "G";
        
           arrivalTimeSpan = null
          
@@ -1079,7 +1064,7 @@ function showArrivals(arrivalsScroll2, data) {
           arrivalTimeSpan.innerHTML = "OBVOZ";
           arrivalTimeSpan.classList.add("arrivalYellow");
         }
-        if(arrival.depot) arrivalTimeSpan.innerHTML = "G";
+        if(arrival.depot) arrivalTimeSpan.innerHTML += "G";
         arrivalItem.addEventListener("click", () => {
           showBusById(arrival, arrivalsScroll, data.station.code_id);
         });
@@ -1275,7 +1260,7 @@ const nextBusTemplate = (data, parent) => {
       arrivalTimeSpan.innerHTML = "PRIHOD";
       arrivalTimeSpan.classList.add("arrivalRed");
     }
-    if(arrival.depot) arrivalTimeSpan.innerHTML = "G";
+    if(arrival.depot) arrivalTimeSpan.innerHTML += "G";
     arrivalItem.addEventListener("click", () => {
       showBusById(arrival, arrivalsScroll, data.station.code_id);
     });

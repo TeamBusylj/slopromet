@@ -199,8 +199,7 @@ async function loop(firsttim, arrival, station) {
   displayBuses(firsttim, arrival, station);
 }
 
-var vectorSource,
-  vectorLayer,
+var 
   rasterLayer,
   markers,
   iconFeature,
@@ -208,12 +207,7 @@ var vectorSource,
   tempMarkersSource,
   buses = [];
 async function displayBuses(firsttim, arrival, station) {
-  tempMarkersSource = new ol.layer.Vector({
-    source: new ol.source.Vector({
-    }),
-  });
-
-  let busid;
+ tempMarkersSource = new ol.source.Vector();
 
   for (const i in busObject) {
     const bus = busObject[i];
@@ -224,7 +218,6 @@ async function displayBuses(firsttim, arrival, station) {
       
       if (!buses.includes(bus.bus_unit_id)) {
         buses.push(bus.bus_unit_id);
-        busid = bus;
         const coordinates = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
 
         // Create a feature for the bus
@@ -253,7 +246,7 @@ async function displayBuses(firsttim, arrival, station) {
         marker.setStyle(busStyle);
 
         // Add the marker to the layer
-        tempMarkersSource.getSource().addFeature(marker);
+        tempMarkersSource.addFeature(marker);
       } else {
         try {
           markers.getSource().forEachFeature(function (feature) {
@@ -328,6 +321,7 @@ async function displayBuses(firsttim, arrival, station) {
       document.querySelector(".loader").style.backgroundSize = "40% 40%";
     }, 300);
   }
+
 }
 async function generateRouteVector(data, trip_id, lno, stationID) {
 
@@ -382,33 +376,19 @@ async function generateRouteVector(data, trip_id, lno, stationID) {
     // Set styles for stations
     stationFeature.setStyle(
       new ol.style.Style({
-        image: new ol.style.Icon({
-          src:
-            index === 0 ||
-            index === data.length - 1 ||
-            station.station_code == stationID
-              ? "./images/station_full.svg"
-              : "./images/bus.svg",
-
-          anchor: [0.5, 24],
-          color:
-            station.station_code == stationID
-              ? darkenColor(lineColorsObj[lno.replace(/\D/g, "")], -50)
-              : lineColorsObj[lno.replace(/\D/g, "")],
-
-          anchorXUnits: "fraction",
-          anchorYUnits: "pixels",
-
-          scale:  0.3,
-        }),
-        /* text: new ol.style.Text({
-                text: `${station.order_no}. ${station.name}`,
-                offsetY: -15,
-                font: '12px Arial',
-                fill: new ol.style.Fill({ color: '#000' }),
-                backgroundFill: new ol.style.Fill({ color: '#fff' }),
-            }),*/
-      })
+        image: new ol.style.Circle({
+            radius: 6, // Adjust size as needed
+            fill: new ol.style.Fill({
+                color: station.station_code == stationID
+                    ? darkenColor(lineColorsObj[lno.replace(/\D/g, "")], -50)
+                    : darkenColor(lineColorsObj[lno.replace(/\D/g, "")], 100)
+            }),
+            stroke: new ol.style.Stroke({
+                color: lineColorsObj[lno.replace(/\D/g, "")], // Border color
+                width: 3 // Border width
+            })
+        })
+    })
     );
     
     tempStationSource.addFeature(stationFeature);
@@ -463,20 +443,21 @@ async function generateRouteVector(data, trip_id, lno, stationID) {
       new ol.style.Style({
         stroke: new ol.style.Stroke({
           color: lineColorsObj[lno.replace(/\D/g, "")],
-          width: 6,
+          width: 7,
         }),
       })
     );
-
     // Add the feature to the route source
     tempRouteSource.addFeature(routeFeature);
   });
+
   if (busVectorLayer) {
     map.removeLayer(busVectorLayer);
   }
   busVectorLayer = new ol.layer.Vector({
     source: tempRouteSource,
     updateWhileInteracting: true,
+    style: {},
   });
   busVectorLayer.trip = trip_id;
   map.addLayer(busVectorLayer);
@@ -487,11 +468,13 @@ async function generateRouteVector(data, trip_id, lno, stationID) {
   busStationLayer = new ol.layer.Vector({
     source: tempStationSource,
     updateWhileInteracting: true,
+    style: {},
   });
   map.addLayer(busStationLayer);
   markers = new ol.layer.Vector({
-    source: tempMarkersSource.getSource(),
+    source: tempMarkersSource,
     updateWhileInteracting: true,
+    style: {},
   });
   map.addLayer(markers);
 setTimeout(() => {

@@ -78,6 +78,7 @@ body {
   overscroll-behavior: none;
   overflow: hidden;
 }
+
 .station {
   padding: 15px;
   background: var(--md-sys-color-surface-container);
