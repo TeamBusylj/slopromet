@@ -652,6 +652,7 @@ function createFavourite(parent, search, query) {
     .map((key) => parseFloat(key).toFixed(5))
     .sort((a, b) => a - b)
     .map((key) => nearby[key]);
+console.log(sortedArray);
 
   if (sortedArray.length > 40) sortedArray.splice(40);
 
@@ -968,12 +969,20 @@ let station = stationa ? stationa : isArrivalsOpen;
       "https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
         stationList[station].ref_id
     );
-
+    let getMyBus = addElement("md-filled-tonal-button", null, "getMyBus");
+    container.insertBefore(getMyBus, arrivalsScroll);
+      getMyBus.innerHTML = "Moja vožnja";
+      const clickedMyBus = () => {
+        container.style.transform = "translateX(-100vw)";
+        container.style.opacity = "0";
+        getMyBusData()
+      }
+      getMyBus.addEventListener("click", clickedMyBus)
     arrivalsScroll.style.transform = "translateX(0px) translateY(0px)";
     arrivalsScroll.style.opacity = "1";
   }
   isArrivalsOpen = station;
-
+  
   showArrivals(arrivalsScroll, data);
 }
 /**
@@ -996,6 +1005,7 @@ function showArrivals(arrivalsScroll2, data) {
   arrivalsScroll =null
   arrivalsScroll =document.getElementById("arrivals-panel") 
   if (data.arrivals.length > 0) {
+  
     let busTemplate = addElement("div", arrivalsScroll, "busTemplate");
     nextBusTemplate(data, busTemplate);
     let listOfArrivals = [];
@@ -1647,6 +1657,77 @@ function sortArrivals(listArrivals, sortIndex) {
     }
   }
   return combinedArrivals;
+}
+
+async function getMyBusData() {
+  await getLocation()
+  let allBuses = await fetchData("https://cors.proxy.prometko.si/https://data.lpp.si/api/bus/bus-details?trip-info=1&stations-ids=1")
+  let myBusDiv = addElement("div", document.querySelector(".mainSheet"), "myBusDiv")
+  myBusDiv.classList.add("arrivalsScroll")
+  setTimeout(() => {
+    myBusDiv.style.opacity = "1";
+    myBusDiv.style.transform = "translateX(0px) translateY(0px)";
+  }, 1);
+  let nearByBuses = []
+   myBusDiv.innerHTML = "<span>S katero linijo se peljete?<span><br>"
+  for (const bus of allBuses) {
+    if (navigator.geolocation) {
+      const distance = haversineDistance(
+             latitude,
+             longitude,
+             bus.latitude,
+             bus.longitude
+           );
+      if (distance < 1) {
+        bus.distance = distance
+        nearByBuses.push(bus)
+      }
+    }
+  }
+  console.log(nearByBuses);
+  nearByBuses.sort((a, b) => a.distance - b.distance);
+   console.log(nearByBuses);
+   if(nearByBuses.length == 0){
+    myBusDiv.innerHTML = "<span>Niste na avtobusu.<span><br>"
+    return;
+   } else if(nearByBuses.length == 1){
+    clickedMyBus(nearByBuses[0])
+    return;
+   }
+  for (const line of nearByBuses) {
+    let arrivalItem = addElement("div", myBusDiv, "arrivalItem");
+        arrivalItem.style.order = line.line_number.replace(/\D/g, "");
+        let busNumberDiv = addElement("div", arrivalItem, "busNo2");
+        busNumberDiv.style.background = lineColors(line.line_number);
+        busNumberDiv.id = "bus_" + line.line_number;
+        busNumberDiv.textContent = line.line_number;
+        let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+        addElement("md-ripple", arrivalItem);
+
+        let tripNameSpan = addElement("span", arrivalDataDiv);
+        tripNameSpan.textContent = line.line_name;
+        if (line.line_number[0] == "N") {
+          arrivalItem.style.order = line.line_number.replace(/\D/g, "") + 100;
+        }
+        arrivalItem,busNumberDiv,arrivalDataDiv,tripNameSpan = null
+        arrivalItem.addEventListener("click", () => clickedMyBus(line))
+  }
+ 
+ 
+  
+  
+}
+function clickedMyBus(bus) {
+  let myBusDiv = document.querySelector(".myBusDiv")
+  myBusDiv.innerHTML = "Podatki za linijo "
+  let arrivalItem = addElement("div", myBusDiv, "arrivalItem");
+ let busNumberDiv = addElement("div", arrivalItem, "busNo2");
+        busNumberDiv.style.background = lineColors(bus.line_number);
+        busNumberDiv.id = "bus_" + bus.line_number;
+        busNumberDiv.textContent = bus.line_number;
+let tripNameSpan = addElement("span", arrivalItem);
+        tripNameSpan.textContent = bus.line_name;
+        myBusDiv.innerHTML +="Zadnja postaja: "+stationList[stationList.findIndex((obj) => obj.ref_id === String(parseInt(id) - 1))].name
 }
 function getDirections() {
   "https://maps.googleapis.com/maps/api/directions/json?origin=Central+Park,NY&destination=Times+Square,NY&mode=transit&key=AIzaSyCGnbK8F2HvhjqRrKo3xogo4Co7bitNwYA";

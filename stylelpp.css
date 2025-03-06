@@ -658,6 +658,10 @@ flex-direction: column !important;
   background: var(--md-sys-color-surface);
   padding: 8px 0;
 }
+.myBusDiv.arrivalsScroll {
+  position: absolute;
+  top: 40px !important;
+}
 .arrivalsOnStation.arrivalsScroll {
   
   display: flex
