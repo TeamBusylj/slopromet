@@ -169,11 +169,16 @@ body {
   top: unset !important;
 }
 
-md-fab.centerMap {
+md-fab.centerMap, .switch {
     position: absolute;
     bottom: 9dvh;
     right: 17px;
     z-index: 2;
+}
+.switch {
+  right: 12px;
+    bottom: 16dvh;
+    
 }
 #map {
   margin-bottom: -30px;

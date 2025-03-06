@@ -10,42 +10,7 @@ function debounce(func, delay) {
     }, delay);
   };
 }
-function moveFeature(feature, newCoordinates, dir) {
-  const currentGeometry = feature.getGeometry();
 
-  // Check if the feature has a geometry to update
-  if (currentGeometry && currentGeometry instanceof ol.geom.Point) {
-    // Smooth transition logic
-    const currentCoordinates = currentGeometry.getCoordinates();
-
-    // Interpolate coordinates for smooth movement
-    const x =
-      currentCoordinates[0] + (newCoordinates[0] - currentCoordinates[0]) * 0.1;
-    const y =
-      currentCoordinates[1] + (newCoordinates[1] - currentCoordinates[1]) * 0.1;
-
-    // Update the feature's geometry
-    feature.setGeometry(new ol.geom.Point([x, y]));
-
-    // Apply the predefined direction (rotation) to the feature's style
-    const style = feature.getStyle();
-    if (style && style.getImage) {
-      const image = style.getImage();
-      image.setRotation(dir); // Use the provided direction for rotation
-    }
-
-    // Check if the marker is close enough to the target to stop
-    if (
-      Math.abs(newCoordinates[0] - x) < 0.0001 &&
-      Math.abs(newCoordinates[1] - y) < 0.0001
-    ) {
-      feature.setGeometry(new ol.geom.Point(newCoordinates));
-      return false; // Stop animation
-    }
-    return true; // Continue animation
-  }
-  return false;
-}
 
 var map, busVectorLayer,  busStationLayer, animating, speed, now;
 const parser = new DOMParser();
@@ -135,9 +100,9 @@ async function makeMap() {
   );
 
   geolocation.on("change:position", function () {
-    const coordinates = geolocation.getPosition();
+    const coordinatesa = geolocation.getPosition();
     positionFeature.setGeometry(
-      coordinates ? new ol.geom.Point(coordinates) : null
+      coordinatesa ? new ol.geom.Point(coordinatesa) : null
     );
   });
 
@@ -328,7 +293,6 @@ async function createBuses() {
 }
 const changeTabs =  (event) => {
     let o = currentPanel.id == "location-panel" ?   document.querySelector(".listOfStations") : document.querySelector(".favouriteStations");
-        console.log(o);
         o.style.display = "none";
         o.style.transform = "translateX(0px) translateY(-20px)";
         o.style.opacity = "0";    
@@ -458,10 +422,7 @@ async function createStationItems(o) {
   }
   if (search) {
     for (const line of lines) {
-      console.log(
-        normalizeText(line.route_name),
-        normalizeText(query.toLowerCase())
-      );
+     
 
       if (
         normalizeText(line.route_name + line.route_number).includes(
@@ -652,7 +613,6 @@ function createFavourite(parent, search, query) {
     .map((key) => parseFloat(key).toFixed(5))
     .sort((a, b) => a - b)
     .map((key) => nearby[key]);
-console.log(sortedArray);
 
   if (sortedArray.length > 40) sortedArray.splice(40);
 
@@ -661,10 +621,7 @@ console.log(sortedArray);
   }
   if (search) {
     for (const line of lines) {
-      console.log(
-        normalizeText(line.route_name),
-        normalizeText(query.toLowerCase())
-      );
+      
 
       if (
         normalizeText(line.route_name + line.route_number).includes(
@@ -1317,7 +1274,7 @@ minimizeSheet();
     loop(1, arrival, station_id);
     busUpdateInterval = setInterval(() => {
       loop(0, arrival, station_id);
-    }, 5000);
+    }, document.querySelector(".switch").selected ? 3000 : 5000);
   } catch (error) {
     console.log(error);
     document.querySelector(".loader").style.setProperty("--_color", "red");
@@ -1470,7 +1427,6 @@ async function arrivalsOnStation( arrival, station_id, already) {
   let sortedArrivals = sortArrivals(listArrivals, sortIndex);
 
   sortedArrivals = sortedArrivals.slice(0, 10);
-  console.log(listArrivals);
   
 let long = sortedArrivals.length > 3 ? "" : "min";
   for (let [key, element] of sortedArrivals) {

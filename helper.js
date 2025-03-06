@@ -201,14 +201,25 @@ async function loop(firsttim, arrival, station) {
 
 var 
   rasterLayer,
+  coordinates, 
   markers,
+  stations,
   iconFeature,
   iconStyle,
   tempMarkersSource,
+  busPreviusPosition = {},
   buses = [];
 async function displayBuses(firsttim, arrival, station) {
  tempMarkersSource = new ol.source.Vector();
+ if(firsttim) {
+   
 
+ stations = await fetchData(
+  "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/stations-on-route?trip-id=" +
+    arrival.trip_id
+);
+ coordinates = await getCoordinates( arrival.trip_id, stations)
+}
   for (const i in busObject) {
     const bus = busObject[i];
 
@@ -218,11 +229,11 @@ async function displayBuses(firsttim, arrival, station) {
       
       if (!buses.includes(bus.bus_unit_id)) {
         buses.push(bus.bus_unit_id);
-        const coordinates = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
+        const coordinates1 = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
 
         // Create a feature for the bus
         const marker = new ol.Feature({
-          geometry: new ol.geom.Point(coordinates),
+          geometry: new ol.geom.Point(coordinates1),
         });
 
         // Create a style for the bus with rotation
@@ -245,8 +256,10 @@ async function displayBuses(firsttim, arrival, station) {
 
         marker.setStyle(busStyle);
 
-        // Add the marker to the layer
+       
         tempMarkersSource.addFeature(marker);
+        busPreviusPosition[bus.bus_unit_id] = coordinates1
+     
       } else {
         try {
           markers.getSource().forEachFeature(function (feature) {
@@ -257,24 +270,37 @@ async function displayBuses(firsttim, arrival, station) {
                 bus.longitude,
                 bus.latitude,
               ]);
-              now = new Date().getTime();
+            
+              
+              if(busPreviusPosition[bus.bus_unit_id][0]-newCoordinates[0] !== 0 ||  bus.ground_speed<5){
+                //console.log(busPreviusPosition[bus.bus_unit_id][0]-newCoordinates[0], busPreviusPosition[bus.bus_unit_id][1]-newCoordinates[1]);
+
+             
+                now = new Date().getTime();
   
-              const animate = () => {
-                const shouldContinue = moveFeature(
-                  feature,
-                  newCoordinates,
-                  (bus.cardinal_direction * Math.PI) / 180
-                );
-  
-                // Re-render map for smooth animation
-                map.render();
-  
-                if (shouldContinue) {
-                  requestAnimationFrame(animate); // Continue animation
-                }
-              };
-  
-              animate(); // Start animation loop
+                const animate = () => {
+                  const shouldContinue = moveMarker(
+                    feature,
+                    newCoordinates,
+                    (bus.cardinal_direction * Math.PI) / 180
+                  );
+    
+                  // Re-render map for smooth animation
+                  map.render();
+    
+                  if (shouldContinue) {
+                    requestAnimationFrame(animate); // Continue animation
+                  }
+                };
+    
+                animate(); // Start animation loop
+                
+               //feature.getGeometry().setCoordinates(newCoordinates);
+                busPreviusPosition[bus.bus_unit_id] = newCoordinates
+              }
+              if(bus.ground_speed>5 && document.querySelector(".switch").selected)moveBus(feature, bus.ground_speed, stations.at(-1))
+              
+              
             }
           });
         } catch (error) {
@@ -303,16 +329,14 @@ async function displayBuses(firsttim, arrival, station) {
   });
 
   if (firsttim) {
-    let response = await fetchData(
-      "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/stations-on-route?trip-id=" +
-        arrival.trip_id
-    );
+    
+   
     await generateRouteVector(
-      response,
+      stations,
       arrival.trip_id,
       arrival.route_name,
-
-      station
+      station,
+      coordinates
     );
   } else {
     document.querySelector(".loader").style.backgroundSize = "0% 0%";
@@ -323,40 +347,12 @@ async function displayBuses(firsttim, arrival, station) {
   }
 
 }
-async function generateRouteVector(data, trip_id, lno, stationID) {
+async function generateRouteVector(data, trip_id, lno, stationID, coordinatesRoute) {
 
   
   if (trip_id === undefined) return;
 
-  console.log("kkd");
-  var coordinates = await fetchData(
-    "https://mestnipromet.cyou/api/v1/resources/buses/shape?trip_id=" + trip_id
-  );
-  console.log(coordinates);
-  
-  if (!coordinates || coordinates.length == 0) {
-    let coords = "";
-    for (const i in data) {
-      coords += data[i].longitude + "," + data[i].latitude + ";";
-    }
-    coordinates = await (
-      await fetch(
-        "https://cors.proxy.prometko.si/https://router.project-osrm.org/route/v1/driving/" +
-          coords.substring(0, coords.length - 2) +
-          "?overview=full&geometries=geojson",
-        {
-          headers: {
-            apiKey: "D2F0C381-6072-45F9-A05E-513F1515DD6A",
-            Accept: "Travana",
-          },
-        }
-      )
-    ).json();
 
-  
-
-    coordinates = coordinates.routes[0].geometry.coordinates;
-  }
   // Create new vector sources for stations and routes
   const tempStationSource = new ol.source.Vector();
   const tempRouteSource = new ol.source.Vector();
@@ -399,17 +395,17 @@ async function generateRouteVector(data, trip_id, lno, stationID) {
   // Check if the geojson_shape is a MultiLineString or a LineString
   const hasLongSubarray = (arr) =>
     arr.some((sub) => Array.isArray(sub) && sub.length > 2);
-  if (hasLongSubarray(coordinates)) {
-    for (const j in coordinates) {
+  if (hasLongSubarray(coordinatesRoute)) {
+    for (const j in coordinatesRoute) {
       if (j[0][0] < j[0][1]) {
-        for (const i in coordinates) {
-          coordinates[j][i].reverse();
+        for (const i in coordinatesRoute) {
+          coordinatesRoute[j][i].reverse();
         }
       }
     }
 
     // For MultiLineString, iterate over each array of coordinates
-    lineStrings = coordinates.map((coordinatesa) => {
+    lineStrings = coordinatesRoute.map((coordinatesa) => {
       return new ol.geom.LineString(
         coordinatesa.map((c) => {
           return ol.proj.fromLonLat(c);
@@ -417,16 +413,16 @@ async function generateRouteVector(data, trip_id, lno, stationID) {
       );
     });
   } else {
-    if (coordinates[0][0] > coordinates[0][1]) {
-      for (const i in coordinates) {
-        coordinates[i].reverse();
+    if (coordinatesRoute[0][0] > coordinatesRoute[0][1]) {
+      for (const i in coordinatesRoute) {
+        coordinatesRoute[i].reverse();
       }
     }
 
     // For a single LineString, just create a single geometry
     lineStrings = [
       new ol.geom.LineString(
-        coordinates.map((c) => {
+        coordinatesRoute.map((c) => {
           return ol.proj.fromLonLat(c);
         })
       ),
@@ -482,6 +478,185 @@ setTimeout(() => {
 }, 100);
 
 }
+async function getCoordinates(trip_id, data) {
+  let coordinates = await fetchData(
+    "https://mestnipromet.cyou/api/v1/resources/buses/shape?trip_id=" + trip_id
+  );
+
+  
+  if (!coordinates || coordinates.length == 0) {
+    let coords = "";
+    for (const i in data) {
+      coords += data[i].longitude + "," + data[i].latitude + ";";
+    }
+    coordinates = await (
+      await fetch(
+        "https://cors.proxy.prometko.si/https://router.project-osrm.org/route/v1/driving/" +
+          coords.substring(0, coords.length - 2) +
+          "?overview=full&geometries=geojson",
+        {
+          headers: {
+            apiKey: "D2F0C381-6072-45F9-A05E-513F1515DD6A",
+            Accept: "Travana",
+          },
+        }
+      )
+    ).json();
+
+  
+
+    coordinates = coordinates.routes[0].geometry.coordinates;
+  }
+  return coordinates;
+}
+function moveMarker(marker, newCoord, dir) {
+  const duration = 2000; // Duration of the animation in milliseconds
+  const start = +new Date();
+  const end = start + duration;
+
+  const animateMove = function () {
+    const now = +new Date();
+    const elapsed = now - start;
+    const fraction = Math.min(elapsed / duration, 1);
+    const currentCoord = [
+      marker.getGeometry().getCoordinates()[0] + (newCoord[0] - marker.getGeometry().getCoordinates()[0]) * fraction,
+      marker.getGeometry().getCoordinates()[1] + (newCoord[1] - marker.getGeometry().getCoordinates()[1]) * fraction,
+    ];
+    marker.getGeometry().setCoordinates(currentCoord);
+
+    if (elapsed < duration) {
+      requestAnimationFrame(animateMove);
+    }
+  };
+  const style = marker.getStyle();
+  if (style && style.getImage) {
+    const image = style.getImage();
+    image.setRotation(dir); // Use the provided direction for rotation
+  }
+  animateMove();
+}
+function moveBus(busMarker, speed, stationID) {
+
+  let coords = [...coordinates];
+  if(coords[0][0][0]) {
+    coords=coords.flat()
+  }
+
+  
+  let currentIndex = findClosestPoint(ol.proj.toLonLat(busMarker.getGeometry().getCoordinates()), coords);
+  
+  
+  
+  let speedPerSecond = (speed * 1000) / 3600; // Convert km/h to meters per second
+  let maxDistance = speedPerSecond * 5; // Total distance to travel in 5 seconds
+
+  let traveledDistance = 0;
+  let nextIndex = currentIndex;
+
+
+  // Find the farthest coordinate within maxDistance
+  while (nextIndex < coords.length - 1 && traveledDistance < maxDistance) {
+      traveledDistance += getDistance(coords[nextIndex], coords[nextIndex + 1]);
+     nextIndex++; 
+  }
+  nextIndex = nextIndex - Math.floor((nextIndex-currentIndex)/2);
+  let nowCoord = [...coords[currentIndex]]; // Convert [lon, lat] to [lat, lon]
+  let nextCoord = [...coords[nextIndex]];
+  if(nowCoord[0] < nowCoord[1]) {
+    nowCoord.reverse()
+    nextCoord.reverse()
+  }
+
+  
+  let duration = 3000; // Move over 5 seconds
+  let start = performance.now();
+  const style = busMarker.getStyle();
+  const image = style.getImage();
+  function move(timestamp) {
+      let elapsed = timestamp - start;
+      let fraction = Math.min(elapsed / duration, 1); // Normalize progress
+
+      busMarker.getGeometry().setCoordinates(ol.proj.fromLonLat([
+        nowCoord[1] + (nextCoord[1] - nowCoord[1]) * fraction,
+        nowCoord[0] + (nextCoord[0] - nowCoord[0]) * fraction
+        
+          
+      ]));
+      
+      
+    image.setRotation(calculateDirection(nowCoord, nextCoord)); // Use the provided direction for rotation
+  
+      if (fraction < 1) requestAnimationFrame(move);
+  }
+
+  requestAnimationFrame(move);
+}
+function getDirLine(currentIndex, station) {
+  
+  
+ 
+  let searchArray = [ station.latitude,station.longitude];
+  searchArray = coordinates[findClosestPoint(searchArray, coordinates)]
+
+  let index = coordinates.findIndex(arr => 
+    arr.length === searchArray.length && arr.every((val, index) => val === searchArray[index])
+  );
+  if(index !== -1) {
+    searchArray.reverse()
+    index = coordinates.findIndex(arr => 
+      arr.length === searchArray.length && arr.every((val, index) => val === searchArray[index])
+    );
+  }
+  console.log(currentIndex,index);
+  
+  if(index>currentIndex) return 1;
+  if(index<currentIndex) return -1;
+
+ 
+}
+function calculateDirection(prevCoord, nextCoord) {
+  const x1 = prevCoord[0];
+  const y1 = prevCoord[1];
+  const x2 = nextCoord[0];
+  const y2 = nextCoord[1];
+
+  // Calculate the angle using atan2 in radians
+  const angleInRadians = Math.atan2(y2 - y1, x2 - x1);
+
+  return angleInRadians;
+}
+// Calculate distance between two coordinates (Haversine formula)
+function getDistance(coord1, coord2) {
+  const R = 6371000; // Earth's radius in meters
+  const lat1 = (coord1[1] * Math.PI) / 180;
+  const lat2 = (coord2[1] * Math.PI) / 180;
+  const deltaLat = ((coord2[1] - coord1[1]) * Math.PI) / 180;
+  const deltaLon = ((coord2[0] - coord1[0]) * Math.PI) / 180;
+
+  const a = Math.sin(deltaLat / 2) ** 2 +
+            Math.cos(lat1) * Math.cos(lat2) *
+            Math.sin(deltaLon / 2) ** 2;
+  
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))); // Distance in meters
+}
+
+
+function findClosestPoint(busCoord, routeCoords) {
+  let minDist = Infinity, closestIndex = 0;
+
+  
+  routeCoords.forEach((coord, index) => {
+      let dist = Math.hypot(coord[0] - busCoord[0], coord[1] - busCoord[1]);
+      if (dist < minDist) {
+          minDist = dist;
+          closestIndex = index;
+      }
+  });
+  return closestIndex;
+}
+// Calculate distance between two coordinates (Haversine formula can be used for more accuracy)
+
+
 function centerBus() {
   const myExtent = busVectorLayer.getSource().getExtent();
   const view = map.getView();
