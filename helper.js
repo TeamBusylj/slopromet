@@ -272,10 +272,10 @@ async function displayBuses(firsttim, arrival, station) {
               ]);
             
               
-              if(busPreviusPosition[bus.bus_unit_id][0]-newCoordinates[0] !== 0 ||  bus.ground_speed<5){
+              if((busPreviusPosition[bus.bus_unit_id][0]-newCoordinates[0] > 5 || busPreviusPosition[bus.bus_unit_id][1]-newCoordinates[1] > 5) ||  bus.ground_speed<5){
                 //console.log(busPreviusPosition[bus.bus_unit_id][0]-newCoordinates[0], busPreviusPosition[bus.bus_unit_id][1]-newCoordinates[1]);
 
-             
+             if(!document.querySelector(".switch").selected){
                 now = new Date().getTime();
   
                 const animate = () => {
@@ -294,8 +294,10 @@ async function displayBuses(firsttim, arrival, station) {
                 };
     
                 animate(); // Start animation loop
-                
-               //feature.getGeometry().setCoordinates(newCoordinates);
+              }else{
+feature.getGeometry().setCoordinates(newCoordinates);
+              }
+               
                 busPreviusPosition[bus.bus_unit_id] = newCoordinates
               }
               if(bus.ground_speed>5 && document.querySelector(".switch").selected)moveBus(feature, bus.ground_speed, stations.at(-1))
