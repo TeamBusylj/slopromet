@@ -162,8 +162,9 @@ var busImageData;
  * @param {string} trip - The trip name of the bus.
  * @returns {void}
  */
-async function loop(firsttim, arrival, station) {
+async function loop(firsttim, arrival, station, arOnSt) {
   
+ 
   
 
   if (firsttim) {
@@ -196,7 +197,7 @@ async function loop(firsttim, arrival, station) {
   busObject = tempBusObject;
 
   // Create or update markers
-  displayBuses(firsttim, arrival, station);
+  displayBuses(firsttim, arrival, station, arOnSt);
 }
 
 var 
@@ -209,7 +210,8 @@ var
   tempMarkersSource,
   busPreviusPosition = {},
   buses = [];
-async function displayBuses(firsttim, arrival, station) {
+async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
+
  tempMarkersSource = new ol.source.Vector();
  if(firsttim) {
    
@@ -271,9 +273,10 @@ async function displayBuses(firsttim, arrival, station) {
                 bus.latitude,
               ]);
             
-              
-              if((busPreviusPosition[bus.bus_unit_id][0]-newCoordinates[0] > 5 || busPreviusPosition[bus.bus_unit_id][1]-newCoordinates[1] > 5) ||  bus.ground_speed<5){
-                //console.log(busPreviusPosition[bus.bus_unit_id][0]-newCoordinates[0], busPreviusPosition[bus.bus_unit_id][1]-newCoordinates[1]);
+              const spanText = arrivalsOnRoutes[bus.bus_unit_id.toLowerCase()] .map(item => 
+                item === null ? null : item.match(/^(\d+)/)?.[1] || null
+            );
+            if((busPreviusPosition[bus.bus_unit_id][0]-newCoordinates[0] > 5 || busPreviusPosition[bus.bus_unit_id][1]-newCoordinates[1] > 5) ||  bus.ground_speed<5){                //console.log(busPreviusPosition[bus.bus_unit_id][0]-newCoordinates[0], busPreviusPosition[bus.bus_unit_id][1]-newCoordinates[1]);
 
              if(!document.querySelector(".switch").selected){
                 now = new Date().getTime();
@@ -295,12 +298,15 @@ async function displayBuses(firsttim, arrival, station) {
     
                 animate(); // Start animation loop
               }else{
-feature.getGeometry().setCoordinates(newCoordinates);
+              feature.getGeometry().setCoordinates(newCoordinates);
               }
                
                 busPreviusPosition[bus.bus_unit_id] = newCoordinates
               }
-              if(bus.ground_speed>5 && document.querySelector(".switch").selected)moveBus(feature, bus.ground_speed, stations.at(-1))
+        
+             
+             
+              if( document.querySelector(".switch").selected && bus.ground_speed>5)moveBus(feature, bus.ground_speed, stations.at(-1),spanText, arrivalsOnRoutes.stations )
               
               
             }
@@ -537,85 +543,98 @@ function moveMarker(marker, newCoord, dir) {
   }
   animateMove();
 }
-function moveBus(busMarker, speed, stationID) {
-
+function moveBus(busMarker, speed, stationID, arrivals, stationsList) {
   let coords = [...coordinates];
-  if(coords[0][0][0]) {
-    coords=coords.flat()
+  if (coords[0][0][0]) {
+    coords = coords.flat(); // Flatten the array if needed
   }
 
-  
   let currentIndex = findClosestPoint(ol.proj.toLonLat(busMarker.getGeometry().getCoordinates()), coords);
-  
-  
-  
-  let speedPerSecond = (speed * 1000) / 3600; // Convert km/h to meters per second
-  let maxDistance = speedPerSecond * 5; // Total distance to travel in 5 seconds
 
-  let traveledDistance = 0;
-  let nextIndex = currentIndex;
+  // Get the closest coordinate and the next station coordinates
+  let currentCoord = coords[currentIndex];
+  let nextIndex = currentIndex + 1;
 
-
-  // Find the farthest coordinate within maxDistance
-  while (nextIndex < coords.length - 1 && traveledDistance < maxDistance) {
-      traveledDistance += getDistance(coords[nextIndex], coords[nextIndex + 1]);
-     nextIndex++; 
-  }
-  nextIndex = nextIndex - Math.floor((nextIndex-currentIndex)/2);
-  let nowCoord = [...coords[currentIndex]]; // Convert [lon, lat] to [lat, lon]
-  let nextCoord = [...coords[nextIndex]];
-  if(nowCoord[0] < nowCoord[1]) {
-    nowCoord.reverse()
-    nextCoord.reverse()
+  if (nextIndex >= coords.length) {
+    console.log("Bus has reached the last coordinate.");
+    return; // Stop if we've reached the last coordinate
   }
 
+  let nextCoord = coords[nextIndex];
+
+  // Get the time to next station from arrivals (assuming it's in minutes)
+  let minToNextStation = arrivals.filter(item => item !== null)[0]; // Get time to the next station
+  if (!minToNextStation) return; // No valid time available for the next station
+
+  // Find the station arrival status for the next station
+  const nextStationArrival = arrivals[stationsList[arrivals.indexOf(minToNextStation)]];
+
+  // If next station arrival is "P" (indicating the bus should wait), stop the bus
+  if (nextStationArrival === "P") {
+    console.log("Bus is waiting at the station...");
+    return; // Wait at the station if the arrival is 'P'
+  }
+
   
-  let duration = 3000; // Move over 5 seconds
-  let start = performance.now();
+  if (currentIndex >findClosestPoint(stationsList[arrivals.indexOf(minToNextStation)], coords) && nextStationArrival == null) {
+    console.log("Bus is waiting at the station until the arrival status changes...");
+    return; // Wait at the station
+  }
+
+  // Calculate the distance to the next station and time to next station
+  let distanceToNextStation = getDistance(currentCoord, nextCoord);
+
+  // Calculate speed per second based on time to next station and distance
+  const timeToNextStationInSeconds = minToNextStation * 60; // Convert minutes to seconds
+  const realWorldSpeedInMetersPerSecond = distanceToNextStation / timeToNextStationInSeconds; // Real-world speed in meters per second
+
+  // Use the real-world speed to adjust bus movement
+  const speedFactor = speed / 100; // Adjust speed slightly based on provided speed argument (speedFactor can be tweaked)
+  const adjustedSpeedInMetersPerSecond = realWorldSpeedInMetersPerSecond * speedFactor;
+
+  // Duration for the bus to move (using 5-second intervals)
+  let duration = 5000; // Duration in milliseconds for each move
+  let startTime = performance.now();
+
   const style = busMarker.getStyle();
   const image = style.getImage();
+
   function move(timestamp) {
-      let elapsed = timestamp - start;
-      let fraction = Math.min(elapsed / duration, 1); // Normalize progress
+    let elapsedTime = timestamp - startTime;
+    let fraction = Math.min(elapsedTime / duration, 1); // Normalize progress
 
-      busMarker.getGeometry().setCoordinates(ol.proj.fromLonLat([
-        nowCoord[1] + (nextCoord[1] - nowCoord[1]) * fraction,
-        nowCoord[0] + (nextCoord[0] - nowCoord[0]) * fraction
-        
-          
-      ]));
-      
-      
-    image.setRotation(calculateDirection(nowCoord, nextCoord)); // Use the provided direction for rotation
-  
-      if (fraction < 1) requestAnimationFrame(move);
+    // Update the bus marker's position
+    busMarker.getGeometry().setCoordinates(ol.proj.fromLonLat([
+      currentCoord[0] + (nextCoord[0] - currentCoord[0]) * fraction,
+      currentCoord[1] + (nextCoord[1] - currentCoord[1]) * fraction
+    ]));
+
+    // Rotate the bus marker based on the direction of movement
+    image.setRotation(calculateDirection(currentCoord, nextCoord));
+
+    if (fraction < 1) {
+      requestAnimationFrame(move); // Continue moving until we reach the destination
+    } else {
+      // If the bus has reached the next coordinate, update to the next index
+      currentIndex++;
+      if (currentIndex < coords.length - 1) {
+        currentCoord = coords[currentIndex];
+        nextCoord = coords[currentIndex + 1];
+        distanceToNextStation = getDistance(currentCoord, nextCoord); // Recalculate distance
+        startTime = performance.now(); // Reset start time for the next movement
+        requestAnimationFrame(move); // Continue moving
+      }
+    }
   }
 
-  requestAnimationFrame(move);
-}
-function getDirLine(currentIndex, station) {
-  
-  
- 
-  let searchArray = [ station.latitude,station.longitude];
-  searchArray = coordinates[findClosestPoint(searchArray, coordinates)]
-
-  let index = coordinates.findIndex(arr => 
-    arr.length === searchArray.length && arr.every((val, index) => val === searchArray[index])
-  );
-  if(index !== -1) {
-    searchArray.reverse()
-    index = coordinates.findIndex(arr => 
-      arr.length === searchArray.length && arr.every((val, index) => val === searchArray[index])
-    );
+  // Start the bus movement only if the next station arrival is not "P" and if the bus is not on the station
+  if (nextStationArrival !== "P" && (currentIndex < stationsList.indexOf(stationID) || arrivals[nextIndex] !== "P")) {
+    requestAnimationFrame(move);
+  } else {
+    console.log("Waiting at the station until the arrival status changes...");
   }
-  console.log(currentIndex,index);
-  
-  if(index>currentIndex) return 1;
-  if(index<currentIndex) return -1;
-
- 
 }
+
 function calculateDirection(prevCoord, nextCoord) {
   const x1 = prevCoord[0];
   const y1 = prevCoord[1];
@@ -627,6 +646,7 @@ function calculateDirection(prevCoord, nextCoord) {
 
   return angleInRadians;
 }
+
 // Calculate distance between two coordinates (Haversine formula)
 function getDistance(coord1, coord2) {
   const R = 6371000; // Earth's radius in meters
@@ -642,11 +662,9 @@ function getDistance(coord1, coord2) {
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))); // Distance in meters
 }
 
-
 function findClosestPoint(busCoord, routeCoords) {
   let minDist = Infinity, closestIndex = 0;
 
-  
   routeCoords.forEach((coord, index) => {
       let dist = Math.hypot(coord[0] - busCoord[0], coord[1] - busCoord[1]);
       if (dist < minDist) {
@@ -656,7 +674,6 @@ function findClosestPoint(busCoord, routeCoords) {
   });
   return closestIndex;
 }
-// Calculate distance between two coordinates (Haversine formula can be used for more accuracy)
 
 
 function centerBus() {

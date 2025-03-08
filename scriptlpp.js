@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 function debounce(func, delay) {
   let timeoutId;
   return function () {
@@ -11,15 +11,13 @@ function debounce(func, delay) {
   };
 }
 
-
-var map, busVectorLayer,  busStationLayer, animating, speed, now;
+var map, busVectorLayer, busStationLayer, animating, speed, now;
 const parser = new DOMParser();
 
 async function makeMap() {
- 
   rasterLayer = new ol.layer.Tile({
     preload: Infinity,
-    source: new ol.source.Google({
+    /*source: new ol.source.Google({
       styles: window.matchMedia("(prefers-color-scheme: dark)").matches
         ? darkMap
         : lightMap,
@@ -29,13 +27,10 @@ async function makeMap() {
       transition: 1000,
       tileLoadFunction: function (imageTile, src) {
         const img = imageTile.getImage();
-       
-        
+
         img.src = src;
-    
-       
-    }
-    }),
+      },
+    }),*/
   });
   class GoogleLogoControl extends ol.control.Control {
     constructor() {
@@ -116,8 +111,6 @@ async function makeMap() {
 
     updateWhileInteracting: true,
   });
-  
-
 
   var container = document.getElementById("popup");
   const content = document.getElementById("popup-content");
@@ -160,7 +153,8 @@ async function makeMap() {
       }, 1);
       container.onclick = function () {
         clearInterval(interval);
-        if(document.querySelector(".arrivalsHolder"))document.querySelector(".arrivalsHolder").remove();
+        if (document.querySelector(".arrivalsHolder"))
+          document.querySelector(".arrivalsHolder").remove();
         let aos = document.querySelector(".arrivalsOnStation");
         let lnt = document.querySelector(".lineTimes");
         if (aos) {
@@ -182,12 +176,14 @@ async function makeMap() {
         clearInterval(busUpdateInterval);
         clearInterval(interval);
         stationClick(
-          stationList.findIndex((obj) => obj.name === feature.get("name")), 0, 1
+          stationList.findIndex((obj) => obj.name === feature.get("name")),
+          0,
+          1
         );
         interval = setInterval(async () => {
           await stationClick(isArrivalsOpen, true);
         }, 10000);
-        
+
         setTimeout(() => {
           let bottomSheet = document.querySelector(".bottomSheet");
           bottomSheet.style.transition =
@@ -206,7 +202,6 @@ async function makeMap() {
 
     popup.setPosition(coordinate);
   });
-
 }
 function centerMap() {
   const view = map.getView();
@@ -277,32 +272,33 @@ async function getLocation() {
 async function createBuses() {
   await getLocation();
   currentPanel = document.querySelector(".favouriteStations");
-  await updateStations()
+  await updateStations();
   var tabs = document.getElementById("tabsFav");
 
   tabs.addEventListener("change", changeTabs);
-  let e = document.querySelector(".favouriteStations")
- e.style.display = "flex";
-        e.style.transform = "translateX(0px) translateY(0px)";
-        e.style.opacity = "1"
-        setTimeout(async () => {
-          await makeMap();
-        }, 0);
-
-  
+  let e = document.querySelector(".favouriteStations");
+  e.style.display = "flex";
+  e.style.transform = "translateX(0px) translateY(0px)";
+  e.style.opacity = "1";
+  setTimeout(async () => {
+    await makeMap();
+  }, 0);
 }
-const changeTabs =  (event) => {
-    let o = currentPanel.id == "location-panel" ?   document.querySelector(".listOfStations") : document.querySelector(".favouriteStations");
-        o.style.display = "none";
-        o.style.transform = "translateX(0px) translateY(-20px)";
-        o.style.opacity = "0";    
-        const panelId = event.target.activeTab?.getAttribute('aria-controls') 
-        const root = event.target.getRootNode()
-        currentPanel = root.querySelector(`#${panelId}`);
-          currentPanel.style.display = "flex";
-            currentPanel.style.transform = "translateX(0px) translateY(0px)";
-            currentPanel.style.opacity = "1"
-}
+const changeTabs = (event) => {
+  let o =
+    currentPanel.id == "location-panel"
+      ? document.querySelector(".listOfStations")
+      : document.querySelector(".favouriteStations");
+  o.style.display = "none";
+  o.style.transform = "translateX(0px) translateY(-20px)";
+  o.style.opacity = "0";
+  const panelId = event.target.activeTab?.getAttribute("aria-controls");
+  const root = event.target.getRootNode();
+  currentPanel = root.querySelector(`#${panelId}`);
+  currentPanel.style.display = "flex";
+  currentPanel.style.transform = "translateX(0px) translateY(0px)";
+  currentPanel.style.opacity = "1";
+};
 async function updateStations() {
   let stations = await fetchData(
     "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/station-details?show-subroutes=1"
@@ -320,16 +316,16 @@ async function createStationItems(o) {
   }
   var loader = document.getElementById("loader");
   var list = document.querySelector(".listOfStations");
-  await clearElementContent(list)
+  await clearElementContent(list);
   list = document.querySelector(".listOfStations");
   var favList = document.querySelector(".favouriteStations");
-  await clearElementContent(favList)
+  await clearElementContent(favList);
   favList = document.querySelector(".favouriteStations");
   createFavourite(favList, search, query);
-  
+
   loader.style.display = "block";
   var nearby = {};
-  
+
   if (navigator.geolocation) {
     if (latitude == 46.051467939339034)
       list.innerHTML +=
@@ -341,7 +337,7 @@ async function createStationItems(o) {
           normalizeText(query.toLowerCase())
         )
       )
-        continue
+        continue;
       let item = addElement("div", null, "station");
       addElement("md-ripple", item);
       let textHolder = addElement("div", item, "textHolder");
@@ -400,11 +396,11 @@ async function createStationItems(o) {
           interval = setInterval(async () => {
             await stationClick(null, true);
           }, 10000);
-        }
+        };
         item.addEventListener("click", openStation);
-        item = null
-        buses = null
-        textHolder = null
+        item = null;
+        buses = null;
+        textHolder = null;
       }
     }
 
@@ -418,12 +414,10 @@ async function createStationItems(o) {
       list.appendChild(stationDistance);
     }
     loader.style.display = "none";
-    nearby = null
+    nearby = null;
   }
   if (search) {
     for (const line of lines) {
-     
-
       if (
         normalizeText(line.route_name + line.route_number).includes(
           normalizeText(query.toLowerCase())
@@ -461,13 +455,19 @@ async function createStationItems(o) {
           });
           let line2 = line;
           line2.route_name = line.route_number;
-          
+
           minimizeSheet();
-          arrivalsOnStation( line2, 0);
+          // Call arrivalsOnStation and store its return value
+          const arrivalsData = arrivalsOnStation(line2, 0);
+
+          // Store intervals to allow cleanup later
           arrivalsUpdateInterval = setInterval(() => {
             arrivalsOnStation(line2, 0, container.scrollTop);
           }, 10000);
-          loop(1, line, 60);
+
+          // Pass the return value to loop
+          loop(1, line, 60, arrivalsData);
+
           busUpdateInterval = setInterval(() => {
             loop(0, line, 60);
           }, 5000);
@@ -479,20 +479,20 @@ async function createStationItems(o) {
         if (line.route_number[0] == "N") {
           arrivalItem.style.order = line.route_number.replace(/\D/g, "") + 100;
         }
-        arrivalItem,busNumberDiv,arrivalDataDiv,tripNameSpan = null
+        arrivalItem, busNumberDiv, arrivalDataDiv, (tripNameSpan = null);
       }
     }
   }
 }
 function minimizeSheet() {
   let bottomSheet = document.querySelector(".bottomSheet");
-          bottomSheet.style.transition =
-            "all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1)";
-          setSheetHeight(40);
-          setTimeout(() => {
-            bottomSheet.style.transition = "";
-            bottomSheet.style.willChange = "";
-          }, 400);
+  bottomSheet.style.transition =
+    "all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1)";
+  setSheetHeight(40);
+  setTimeout(() => {
+    bottomSheet.style.transition = "";
+    bottomSheet.style.willChange = "";
+  }, 400);
 }
 async function refresh() {
   if (checkVisible(document.querySelector(".arrivalsOnStation"))) {
@@ -535,8 +535,6 @@ function createFavourite(parent, search, query) {
     parent.innerHTML +=
       "<p><md-icon>location_off</md-icon>Lokacija ni omogočena.</p>";
   for (const station in stationList) {
-    
-
     let item = addElement("div", null, "station");
     addElement("md-ripple", item);
     let textHolder = addElement("div", item, "textHolder");
@@ -602,11 +600,11 @@ function createFavourite(parent, search, query) {
         interval = setInterval(async () => {
           await stationClick(null, true);
         }, 10000);
-      }
+      };
       item.addEventListener("click", openStation);
-      item = null
-      buses = null
-      textHolder = null
+      item = null;
+      buses = null;
+      textHolder = null;
     }
   }
   const sortedArray = Object.keys(nearby)
@@ -621,8 +619,6 @@ function createFavourite(parent, search, query) {
   }
   if (search) {
     for (const line of lines) {
-      
-
       if (
         normalizeText(line.route_name + line.route_number).includes(
           normalizeText(query.toLowerCase())
@@ -677,7 +673,7 @@ function createFavourite(parent, search, query) {
         if (line.route_number[0] == "N") {
           arrivalItem.style.order = line.route_number.replace(/\D/g, "") + 100;
         }
-        arrivalItem,busNumberDiv,arrivalDataDiv,tripNameSpan = null
+        arrivalItem, busNumberDiv, arrivalDataDiv, (tripNameSpan = null);
       }
     }
   }
@@ -706,31 +702,32 @@ async function oppositeStation(id) {
   arS.style.transform = "translateX(0px) translateY(-20px)";
   arS.style.opacity = "0";
   setTimeout(async () => {
-    let i = document.querySelector(".timeTScroll") 
-    i= clearElementContent(document.querySelector(".timeTScroll"))
+    let i = document.querySelector(".timeTScroll");
+    i = clearElementContent(document.querySelector(".timeTScroll"));
     if (id % 2 === 0) {
       await stationClick(
         stationList.findIndex((obj) => obj.ref_id === String(parseInt(id) - 1)),
-        1, 1
+        1,
+        1
       );
     } else {
       await stationClick(
         stationList.findIndex((obj) => obj.ref_id === String(parseInt(id) + 1)),
-        1, 1
+        1,
+        1
       );
     }
-    arS =document.getElementById("arrivals-panel");
+    arS = document.getElementById("arrivals-panel");
     setTimeout(() => {
       arS.style.transform = "translateX(0px) translateY(0px)";
       arS.style.opacity = "1";
     }, 1);
-   
   }, 300);
 }
 var arrivalsScroll;
 async function stationClick(stationa, noAnimation, ia) {
-let station = stationa ? stationa : isArrivalsOpen;
-  
+  let station = stationa ? stationa : isArrivalsOpen;
+
   var stylesTransition = [
     document.querySelector(".searchContain").style,
     document.querySelector(".listOfStations").style,
@@ -861,7 +858,6 @@ let station = stationa ? stationa : isArrivalsOpen;
     mapca.innerHTML = "<md-icon>swap_calls</md-icon>";
     mapca.addEventListener("click", function () {
       oppositeStation(stationList[station].ref_id);
-      
     });
     if (stationList[station].ref_id % 2 === 0) {
       if (
@@ -928,18 +924,18 @@ let station = stationa ? stationa : isArrivalsOpen;
     );
     let getMyBus = addElement("md-filled-tonal-button", null, "getMyBus");
     container.insertBefore(getMyBus, arrivalsScroll);
-      getMyBus.innerHTML = "Moja vožnja";
-      const clickedMyBus = () => {
-        container.style.transform = "translateX(-100vw)";
-        container.style.opacity = "0";
-        getMyBusData()
-      }
-      getMyBus.addEventListener("click", clickedMyBus)
+    getMyBus.innerHTML = "Moja vožnja";
+    const clickedMyBus = () => {
+      container.style.transform = "translateX(-100vw)";
+      container.style.opacity = "0";
+      getMyBusData();
+    };
+    getMyBus.addEventListener("click", clickedMyBus);
     arrivalsScroll.style.transform = "translateX(0px) translateY(0px)";
     arrivalsScroll.style.opacity = "1";
   }
   isArrivalsOpen = station;
-  
+
   showArrivals(arrivalsScroll, data);
 }
 /**
@@ -957,12 +953,11 @@ let station = stationa ? stationa : isArrivalsOpen;
  */
 
 function showArrivals(arrivalsScroll2, data) {
-  let arrivalsScroll =document.getElementById("arrivals-panel")  
-  clearElementContent(arrivalsScroll)
-  arrivalsScroll =null
-  arrivalsScroll =document.getElementById("arrivals-panel") 
+  let arrivalsScroll = document.getElementById("arrivals-panel");
+  clearElementContent(arrivalsScroll);
+  arrivalsScroll = null;
+  arrivalsScroll = document.getElementById("arrivals-panel");
   if (data.arrivals.length > 0) {
-  
     let busTemplate = addElement("div", arrivalsScroll, "busTemplate");
     nextBusTemplate(data, busTemplate);
     let listOfArrivals = [];
@@ -990,10 +985,9 @@ function showArrivals(arrivalsScroll2, data) {
           arrivalTimeSpan.innerHTML = "OBVOZ";
           arrivalTimeSpan.classList.add("arrivalYellow");
         }
-        if(arrival.depot) arrivalTimeSpan.innerHTML += "G";
-       
-          arrivalTimeSpan = null
-         
+        if (arrival.depot) arrivalTimeSpan.innerHTML += "G";
+
+        arrivalTimeSpan = null;
       } else {
         let arrivalItem = addElement("div", arrivalsScroll, "arrivalItem");
         arrivalItem.style.order = arrival.route_name.replace(/\D/g, "");
@@ -1031,18 +1025,18 @@ function showArrivals(arrivalsScroll2, data) {
           arrivalTimeSpan.innerHTML = "OBVOZ";
           arrivalTimeSpan.classList.add("arrivalYellow");
         }
-        if(arrival.depot) arrivalTimeSpan.innerHTML += "G";
+        if (arrival.depot) arrivalTimeSpan.innerHTML += "G";
         arrivalItem.addEventListener("click", () => {
           showBusById(arrival, arrivalsScroll, data.station.code_id);
         });
-       
-          arrivalTimeSpan ,
-          arrivalItem ,
+
+        arrivalTimeSpan,
+          arrivalItem,
           busNumberDiv,
-          arrivalDataDiv ,
-          tripNameSpan ,
-          etaDiv ,
-          arrivalTimeSpan  = null
+          arrivalDataDiv,
+          tripNameSpan,
+          etaDiv,
+          (arrivalTimeSpan = null);
       }
     }
   } else {
@@ -1227,26 +1221,26 @@ const nextBusTemplate = (data, parent) => {
       arrivalTimeSpan.innerHTML = "PRIHOD";
       arrivalTimeSpan.classList.add("arrivalRed");
     }
-    if(arrival.depot) arrivalTimeSpan.innerHTML += "G";
+    if (arrival.depot) arrivalTimeSpan.innerHTML += "G";
     arrivalItem.addEventListener("click", () => {
       showBusById(arrival, arrivalsScroll, data.station.code_id);
     });
     i++;
-    arrivalTimeSpan ,
-    arrivalItem ,
-    busNumberDiv,
-    arrivalDataDiv ,
-    tripNameSpan ,
-    etaDiv ,
-    arrivalTimeSpan  = null
+    arrivalTimeSpan,
+      arrivalItem,
+      busNumberDiv,
+      arrivalDataDiv,
+      tripNameSpan,
+      etaDiv,
+      (arrivalTimeSpan = null);
   }
 };
 var busUpdateInterval, arrivalsUpdateInterval;
-function showBusById(arrival, parent, station_id) {
+async function showBusById(arrival, parent, station_id) {
   clearInterval(busUpdateInterval);
   document.querySelector(".bottomSheet").style.transform =
     "translate3d(-50%,60dvh, 0px)";
-minimizeSheet();
+  minimizeSheet();
   if (parent) {
     let container = addElement(
       "div",
@@ -1257,46 +1251,39 @@ minimizeSheet();
     container.classList.add("arrivalsScroll");
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(-100vw)";
-    arrivalsOnStation( arrival, station_id);
-    arrivalsUpdateInterval = setInterval(() => {
-      arrivalsOnStation(
+      var arOnSt = await arrivalsOnStation(arrival, station_id);
+    arrivalsUpdateInterval = setInterval( async () => {
+      arOnSt =  await arrivalsOnStation(
         arrival,
         station_id,
         document.querySelector(".arrivalsOnStation").scrollTop + 1
       );
     }, 10000);
+    loop(1, arrival, station_id, arOnSt);
+    busUpdateInterval = setInterval(
+      () => {
+        loop(0, arrival, station_id, arOnSt);
+      },
+      document.querySelector(".switch").selected ? 3000 : 5000
+    );
     setTimeout(() => {
       container.style.transform = "translateX(0px) translateY(0px)";
       container.style.opacity = "1";
     }, 100);
   }
-  try {
-    loop(1, arrival, station_id);
-    busUpdateInterval = setInterval(() => {
-      loop(0, arrival, station_id);
-    }, document.querySelector(".switch").selected ? 3000 : 5000);
-  } catch (error) {
-    console.log(error);
-    document.querySelector(".loader").style.setProperty("--_color", "red");
-    setTimeout(() => {
-      document.querySelector(".loader").style.display = "none";
-      document.querySelector(".loader").style.backgroundSize = "40% 40%";
-    }, 300);
-  }
+
 }
-async function arrivalsOnStation( arrival, station_id, already) {
-
-
+async function arrivalsOnStation(arrival, station_id, already) {
   let info = await fetchData(
     "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/arrivals-on-route?trip-id=" +
       arrival.trip_id
   );
   let container = document.querySelector(".arrivalsOnStation");
-  if (already){
-   clearElementContent(container)
-   container = document.querySelector(".arrivalsOnStation");
+  if (already) {
+    clearElementContent(container);
+    container = document.querySelector(".arrivalsOnStation");
   }
-  
+
   let iks = addElement("md-icon-button", container, "iks");
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
@@ -1418,17 +1405,14 @@ async function arrivalsOnStation( arrival, station_id, already) {
       listArrivals[ar["vehicle_id"]][index] =
         ar["eta_min"] + `<span style="display:none;">${ar["type"]}</span>`;
     }
-    arDiv ,
-    lineStation ,
-    lnimg ,
-    nameStation = null;
+    arDiv, lineStation, lnimg, (nameStation = null);
   });
 
   let sortedArrivals = sortArrivals(listArrivals, sortIndex);
 
   sortedArrivals = sortedArrivals.slice(0, 10);
-  
-let long = sortedArrivals.length > 3 ? "" : "min";
+
+  let long = sortedArrivals.length > 3 ? "" : "min";
   for (let [key, element] of sortedArrivals) {
     let etaHolder = addElement("div", arrivalsColumns, "etaHoder");
     let previousItem = null;
@@ -1480,24 +1464,30 @@ let long = sortedArrivals.length > 3 ? "" : "min";
         }${border ? border : ""}">${stationHTML}</div>`;
       })
       .join("");
-      etaHolder = null
+    etaHolder = null;
   }
 
   try {
-    
-      const childRect = document
-        .querySelector(".nameStation_" + station_id)
-        .parentNode.getBoundingClientRect();
-      const grandparentRect = container.getBoundingClientRect();
-      const offsetTop =
-        childRect.top - grandparentRect.top + container.scrollTop;
-      container.scrollTo({
-        top: already ? already - 25 : offsetTop - 15,
-        behavior: already ? "instant" : "smooth",
-      });
-    
-  } catch (error) {console.log(error);
+    const childRect = document
+      .querySelector(".nameStation_" + station_id)
+      .parentNode.getBoundingClientRect();
+    const grandparentRect = container.getBoundingClientRect();
+    const offsetTop = childRect.top - grandparentRect.top + container.scrollTop;
+    container.scrollTo({
+      top: already ? already - 25 : offsetTop - 15,
+      behavior: already ? "instant" : "smooth",
+    });
+  } catch (error) {
+    console.log(error);
   }
+
+  listArrivals.stations = []
+  info.forEach((arrivalRoute, index) => {
+   listArrivals.stations[index] =[arrivalRoute.latitude, arrivalRoute.longitude];
+  })
+
+  
+  return listArrivals;
 }
 function sortArrivals(listArrivals, sortIndex) {
   let combinedArrivals = [];
@@ -1616,74 +1606,80 @@ function sortArrivals(listArrivals, sortIndex) {
 }
 
 async function getMyBusData() {
-  await getLocation()
-  let allBuses = await fetchData("https://cors.proxy.prometko.si/https://data.lpp.si/api/bus/bus-details?trip-info=1&stations-ids=1")
-  let myBusDiv = addElement("div", document.querySelector(".mainSheet"), "myBusDiv")
-  myBusDiv.classList.add("arrivalsScroll")
+  await getLocation();
+  let allBuses = await fetchData(
+    "https://cors.proxy.prometko.si/https://data.lpp.si/api/bus/bus-details?trip-info=1&stations-ids=1"
+  );
+  let myBusDiv = addElement(
+    "div",
+    document.querySelector(".mainSheet"),
+    "myBusDiv"
+  );
+  myBusDiv.classList.add("arrivalsScroll");
   setTimeout(() => {
     myBusDiv.style.opacity = "1";
     myBusDiv.style.transform = "translateX(0px) translateY(0px)";
   }, 1);
-  let nearByBuses = []
-   myBusDiv.innerHTML = "<span>S katero linijo se peljete?<span><br>"
+  let nearByBuses = [];
+  myBusDiv.innerHTML = "<span>S katero linijo se peljete?<span><br>";
   for (const bus of allBuses) {
     if (navigator.geolocation) {
       const distance = haversineDistance(
-             latitude,
-             longitude,
-             bus.latitude,
-             bus.longitude
-           );
+        latitude,
+        longitude,
+        bus.latitude,
+        bus.longitude
+      );
       if (distance < 1) {
-        bus.distance = distance
-        nearByBuses.push(bus)
+        bus.distance = distance;
+        nearByBuses.push(bus);
       }
     }
   }
   console.log(nearByBuses);
   nearByBuses.sort((a, b) => a.distance - b.distance);
-   console.log(nearByBuses);
-   if(nearByBuses.length == 0){
-    myBusDiv.innerHTML = "<span>Niste na avtobusu.<span><br>"
+  console.log(nearByBuses);
+  if (nearByBuses.length == 0) {
+    myBusDiv.innerHTML = "<span>Niste na avtobusu.<span><br>";
     return;
-   } else if(nearByBuses.length == 1){
-    clickedMyBus(nearByBuses[0])
+  } else if (nearByBuses.length == 1) {
+    clickedMyBus(nearByBuses[0]);
     return;
-   }
+  }
   for (const line of nearByBuses) {
     let arrivalItem = addElement("div", myBusDiv, "arrivalItem");
-        arrivalItem.style.order = line.line_number.replace(/\D/g, "");
-        let busNumberDiv = addElement("div", arrivalItem, "busNo2");
-        busNumberDiv.style.background = lineColors(line.line_number);
-        busNumberDiv.id = "bus_" + line.line_number;
-        busNumberDiv.textContent = line.line_number;
-        let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
-        addElement("md-ripple", arrivalItem);
+    arrivalItem.style.order = line.line_number.replace(/\D/g, "");
+    let busNumberDiv = addElement("div", arrivalItem, "busNo2");
+    busNumberDiv.style.background = lineColors(line.line_number);
+    busNumberDiv.id = "bus_" + line.line_number;
+    busNumberDiv.textContent = line.line_number;
+    let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+    addElement("md-ripple", arrivalItem);
 
-        let tripNameSpan = addElement("span", arrivalDataDiv);
-        tripNameSpan.textContent = line.line_name;
-        if (line.line_number[0] == "N") {
-          arrivalItem.style.order = line.line_number.replace(/\D/g, "") + 100;
-        }
-        arrivalItem,busNumberDiv,arrivalDataDiv,tripNameSpan = null
-        arrivalItem.addEventListener("click", () => clickedMyBus(line))
+    let tripNameSpan = addElement("span", arrivalDataDiv);
+    tripNameSpan.textContent = line.line_name;
+    if (line.line_number[0] == "N") {
+      arrivalItem.style.order = line.line_number.replace(/\D/g, "") + 100;
+    }
+    arrivalItem, busNumberDiv, arrivalDataDiv, (tripNameSpan = null);
+    arrivalItem.addEventListener("click", () => clickedMyBus(line));
   }
- 
- 
-  
-  
 }
 function clickedMyBus(bus) {
-  let myBusDiv = document.querySelector(".myBusDiv")
-  myBusDiv.innerHTML = "Podatki za linijo "
+  let myBusDiv = document.querySelector(".myBusDiv");
+  myBusDiv.innerHTML = "Podatki za linijo ";
   let arrivalItem = addElement("div", myBusDiv, "arrivalItem");
- let busNumberDiv = addElement("div", arrivalItem, "busNo2");
-        busNumberDiv.style.background = lineColors(bus.line_number);
-        busNumberDiv.id = "bus_" + bus.line_number;
-        busNumberDiv.textContent = bus.line_number;
-let tripNameSpan = addElement("span", arrivalItem);
-        tripNameSpan.textContent = bus.line_name;
-        myBusDiv.innerHTML +="Zadnja postaja: "+stationList[stationList.findIndex((obj) => obj.ref_id === String(parseInt(id) - 1))].name
+  let busNumberDiv = addElement("div", arrivalItem, "busNo2");
+  busNumberDiv.style.background = lineColors(bus.line_number);
+  busNumberDiv.id = "bus_" + bus.line_number;
+  busNumberDiv.textContent = bus.line_number;
+  let tripNameSpan = addElement("span", arrivalItem);
+  tripNameSpan.textContent = bus.line_name;
+  myBusDiv.innerHTML +=
+    "Zadnja postaja: " +
+    stationList[
+      stationList.findIndex((obj) => obj.ref_id === String(parseInt(id) - 1))
+    ].name;
 }
 function getDirections() {
   "https://maps.googleapis.com/maps/api/directions/json?origin=Central+Park,NY&destination=Times+Square,NY&mode=transit&key=AIzaSyCGnbK8F2HvhjqRrKo3xogo4Co7bitNwYA";
@@ -1818,7 +1814,7 @@ function getDirections() {
 
   let panel = addElement("div", container, "panel");
   goButton.addEventListener("click", () => {
-    panel = clearElementContent(panel)
+    panel = clearElementContent(panel);
 
     if (depart.value !== "" && arrive.value !== "") {
       //goButton.style.display = "none";
@@ -1881,7 +1877,7 @@ function calcRoute(start, end, panel, agencies, leave, arrive) {
       let routesHolder = document.querySelector(".stepDiv")
         ? document.querySelector(".stepDiv")
         : addElement("div", panel, "stepDiv");
-        routesHolder= clearElementContent(routesHolder)
+      routesHolder = clearElementContent(routesHolder);
 
       routesHolder.style.flexDirection = "column";
       routesHolder.style.overflow = "visible";
@@ -1918,7 +1914,7 @@ function calcRoute(start, end, panel, agencies, leave, arrive) {
           route.legs[0].duration.text +
           "</span>";
         routeDiv.addEventListener("click", () => {
-          panel = clearElementContent(panel)
+          panel = clearElementContent(panel);
           displayRoute(panel, route);
         });
       }
