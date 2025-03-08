@@ -279,7 +279,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
            if(findClosestPoint([
             bus.longitude,
             bus.latitude,
-          ]) < findClosestPoint(ol.proj.toLonLat(busMarker.getGeometry().getCoordinates()))){
+          ]) < findClosestPoint(ol.proj.toLonLat(feature.getGeometry().getCoordinates()))){
              if(!document.querySelector(".switch").selected){
                 now = new Date().getTime();
   
