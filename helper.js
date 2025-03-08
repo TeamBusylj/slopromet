@@ -276,8 +276,10 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
               const spanText = arrivalsOnRoutes[bus.bus_unit_id.toLowerCase()] .map(item => 
                 item === null ? null : item.match(/^(\d+)/)?.[1] || null
             );
-            if((busPreviusPosition[bus.bus_unit_id][0]-newCoordinates[0] > 5 || busPreviusPosition[bus.bus_unit_id][1]-newCoordinates[1] > 5) ||  bus.ground_speed<5){                //console.log(busPreviusPosition[bus.bus_unit_id][0]-newCoordinates[0], busPreviusPosition[bus.bus_unit_id][1]-newCoordinates[1]);
-
+           if(findClosestPoint([
+            bus.longitude,
+            bus.latitude,
+          ]) < findClosestPoint(ol.proj.toLonLat(busMarker.getGeometry().getCoordinates()))){
              if(!document.querySelector(".switch").selected){
                 now = new Date().getTime();
   
