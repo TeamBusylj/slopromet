@@ -641,6 +641,8 @@ console.log(nextStationGlobal);
     ]));
 
     // Rotate the bus marker based on the direction of movement
+    
+    
     image.setRotation(calculateDirection(currentCoord, nextCoord));
   }
     if (fraction < 1) {
@@ -678,9 +680,9 @@ function getWay(stationsList) {
 
 function calculateDirection(prev, next) {
   const toRadians = (degrees) => degrees * (Math.PI / 180);
-  const deltaLng = toRadians(next[1] - prev[1]);
-  const prevLatRad = toRadians(prev[0]);
-  const nextLatRad = toRadians(next[0]);
+  const deltaLng = toRadians(next[0] - prev[0]);
+  const prevLatRad = toRadians(prev[1]);
+  const nextLatRad = toRadians(next[1]);
   
   const y = Math.sin(deltaLng) * Math.cos(nextLatRad);
   const x = Math.cos(prevLatRad) * Math.sin(nextLatRad) -
