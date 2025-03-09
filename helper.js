@@ -309,7 +309,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
         
              
              
-              if( document.querySelector(".switch").selected && bus.ground_speed>5)moveBus(feature, bus.ground_speed, stations.at(-1),spanText, arrivalsOnRoutes.stations )
+              if( document.querySelector(".switch").selected)moveBus(feature, bus.ground_speed, stations.at(-1),spanText, arrivalsOnRoutes.stations )
               
               
             }
@@ -580,7 +580,6 @@ function moveBus(busMarker, speed, stationID, arrivals, stationsList) {
   const nextStationArrival = arrivals[stationsList[arrivals.indexOf(minToNextStation)]];
   if(arrivals.indexOf(minToNextStation) !== nextStationGlobal) {
     nextStationGlobal = arrivals.indexOf(minToNextStation)
-    console.log("Bus went from station");
   }
   // If next station arrival is "P" (indicating the bus should wait), stop the bus
 if(nextStationGlobal&&stationsList[nextStationGlobal][0] > stationsList[nextStationGlobal][1]) {
@@ -625,10 +624,13 @@ if(nextStationGlobal&&stationsList[nextStationGlobal][0] > stationsList[nextStat
     
     if (nextStationGlobal && (findClosestPoint(ol.proj.toLonLat(busMarker.getGeometry().getCoordinates()), coords) == findClosestPoint(stationsList[nextStationGlobal], coords))) {
       console.log("Bus went too far...");
+      if(arrivals[nextStationGlobal] == "P"){
       busMarker.getGeometry().setCoordinates(ol.proj.fromLonLat([
         stationsList[nextStationGlobal][0],
         stationsList[nextStationGlobal][1]
+     
       ]));
+    }
       io = true
       return; 
     }

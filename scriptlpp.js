@@ -1405,7 +1405,6 @@ async function arrivalsOnStation(arrival, station_id, already) {
     }
     arDiv, lineStation, lnimg, (nameStation = null);
   });
-  console.log(already);
   
  if(already !== undefined) loop(0, arrival, station_id, listArrivals);
   let sortedArrivals = sortArrivals(listArrivals, sortIndex);
