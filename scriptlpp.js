@@ -17,7 +17,7 @@ const parser = new DOMParser();
 async function makeMap() {
   rasterLayer = new ol.layer.Tile({
     preload: Infinity,
-    /*source: new ol.source.Google({
+    source: window.location.href.includes("127")? new ol.source.OSM():new ol.source.Google({
       styles: window.matchMedia("(prefers-color-scheme: dark)").matches
         ? darkMap
         : lightMap,
@@ -30,7 +30,7 @@ async function makeMap() {
 
         img.src = src;
       },
-    }),*/
+    }),
   });
   class GoogleLogoControl extends ol.control.Control {
     constructor() {
@@ -1351,7 +1351,7 @@ async function arrivalsOnStation(arrival, station_id, already) {
     }
     let nameStation = addElement("div", arDiv, "nameStation");
     nameStation.classList.add("nameStation_" + arrivalRoute.station_code);
-    nameStation.innerHTML = arrivalRoute.name + index;
+    nameStation.innerHTML = arrivalRoute.name;
     if (arrivalRoute.station_code == station_id) sortIndex = index;
 
     for (let i = 0; i < arrivalRoute.arrivals.length; i++) {

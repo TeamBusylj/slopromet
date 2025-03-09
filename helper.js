@@ -586,7 +586,7 @@ function moveBus(busMarker, speed, stationID, arrivals, stationsList) {
 if(nextStationGlobal&&stationsList[nextStationGlobal][0] > stationsList[nextStationGlobal][1]) {
   stationsList[nextStationGlobal].reverse()
 }
-console.log(nextStationGlobal);
+
 
   if (nextStationGlobal && (arrivals[nextStationGlobal] == "P")) {
     console.log("Bus is waiting at the station...");
@@ -625,6 +625,10 @@ console.log(nextStationGlobal);
     
     if (nextStationGlobal && (findClosestPoint(ol.proj.toLonLat(busMarker.getGeometry().getCoordinates()), coords) == findClosestPoint(stationsList[nextStationGlobal], coords))) {
       console.log("Bus went too far...");
+      busMarker.getGeometry().setCoordinates(ol.proj.fromLonLat([
+        stationsList[nextStationGlobal][0],
+        stationsList[nextStationGlobal][1]
+      ]));
       io = true
       return; 
     }
@@ -669,10 +673,10 @@ function getWay(stationsList) {
   if(stationsList.at(-1)[0] > stationsList.at(-1)[1]) {
     stationsList.at(-1).reverse()
   }
+let coords2=[...coordinates].flat()
 
-  console.log(coordinates[findClosestPoint(stationsList.at(-1), coordinates) ]);
   
-  if(findClosestPoint(stationsList.at(-1), coordinates) < findClosestPoint(stationsList.at(0), coordinates)) {
+  if(findClosestPoint(stationsList.at(-1), coords2) < findClosestPoint(stationsList.at(0), coords2)) {
     return false
   }
   return true
