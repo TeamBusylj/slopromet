@@ -167,6 +167,7 @@ async function loop(firsttim, arrival, station, arOnSt) {
  
   
 
+
   if (firsttim) {
     document.querySelector(".loader").style.display = "grid";
     document
@@ -279,7 +280,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
            if(findClosestPoint([
             bus.longitude,
             bus.latitude,
-          ], coordinates) < findClosestPoint(ol.proj.toLonLat(feature.getGeometry().getCoordinates()), coordinates)){
+          ], coordinates) > findClosestPoint(ol.proj.toLonLat(feature.getGeometry().getCoordinates()), coordinates)){
              if(!document.querySelector(".switch").selected){
                 now = new Date().getTime();
   
@@ -545,10 +546,17 @@ function moveMarker(marker, newCoord, dir) {
   }
   animateMove();
 }
+
 function moveBus(busMarker, speed, stationID, arrivals, stationsList) {
+  let dirWay = getWay(stationList)
+  var nextStationGlobal 
+  var io = false
   let coords = [...coordinates];
   if (coords[0][0][0]) {
     coords = coords.flat(); // Flatten the array if needed
+  }
+  if(!dirWay){
+    coords = coords.reverse();
   }
 
   let currentIndex = findClosestPoint(ol.proj.toLonLat(busMarker.getGeometry().getCoordinates()), coords);
@@ -570,18 +578,30 @@ function moveBus(busMarker, speed, stationID, arrivals, stationsList) {
 
   // Find the station arrival status for the next station
   const nextStationArrival = arrivals[stationsList[arrivals.indexOf(minToNextStation)]];
-
+  if(arrivals.indexOf(minToNextStation) !== nextStationGlobal) {
+    nextStationGlobal = arrivals.indexOf(minToNextStation)
+    console.log("Bus went from station");
+  }
   // If next station arrival is "P" (indicating the bus should wait), stop the bus
-  if (nextStationArrival === "P") {
+if(nextStationGlobal&&stationsList[nextStationGlobal][0] > stationsList[nextStationGlobal][1]) {
+  stationsList[nextStationGlobal].reverse()
+}
+console.log(nextStationGlobal);
+
+  if (nextStationGlobal && (arrivals[nextStationGlobal] == "P")) {
     console.log("Bus is waiting at the station...");
-    return; // Wait at the station if the arrival is 'P'
+    io = true
+    busMarker.getGeometry().setCoordinates(ol.proj.fromLonLat([
+      stationsList[nextStationGlobal][0],
+      stationsList[nextStationGlobal][1]
+    ]));
+
+    return; 
   }
 
+ 
   
-  if (currentIndex >findClosestPoint(stationsList[arrivals.indexOf(minToNextStation)], coords) && nextStationArrival == null) {
-    console.log("Bus is waiting at the station until the arrival status changes...");
-    return; // Wait at the station
-  }
+
 
   // Calculate the distance to the next station and time to next station
   let distanceToNextStation = getDistance(currentCoord, nextCoord);
@@ -602,9 +622,18 @@ function moveBus(busMarker, speed, stationID, arrivals, stationsList) {
   const image = style.getImage();
 
   function move(timestamp) {
+    
+    if (nextStationGlobal && (findClosestPoint(ol.proj.toLonLat(busMarker.getGeometry().getCoordinates()), coords) == findClosestPoint(stationsList[nextStationGlobal], coords))) {
+      console.log("Bus went too far...");
+      io = true
+      return; 
+    }
+    
     let elapsedTime = timestamp - startTime;
     let fraction = Math.min(elapsedTime / duration, 1); // Normalize progress
-
+    
+    
+    if(!io){
     // Update the bus marker's position
     busMarker.getGeometry().setCoordinates(ol.proj.fromLonLat([
       currentCoord[0] + (nextCoord[0] - currentCoord[0]) * fraction,
@@ -613,7 +642,7 @@ function moveBus(busMarker, speed, stationID, arrivals, stationsList) {
 
     // Rotate the bus marker based on the direction of movement
     image.setRotation(calculateDirection(currentCoord, nextCoord));
-
+  }
     if (fraction < 1) {
       requestAnimationFrame(move); // Continue moving until we reach the destination
     } else {
@@ -624,29 +653,40 @@ function moveBus(busMarker, speed, stationID, arrivals, stationsList) {
         nextCoord = coords[currentIndex + 1];
         distanceToNextStation = getDistance(currentCoord, nextCoord); // Recalculate distance
         startTime = performance.now(); // Reset start time for the next movement
-        requestAnimationFrame(move); // Continue moving
+        //requestAnimationFrame(move); // Continue moving
       }
-    }
+    
+  }
   }
 
-  // Start the bus movement only if the next station arrival is not "P" and if the bus is not on the station
-  if (nextStationArrival !== "P" && (currentIndex < stationsList.indexOf(stationID) || arrivals[nextIndex] !== "P")) {
+ 
     requestAnimationFrame(move);
-  } else {
-    console.log("Waiting at the station until the arrival status changes...");
+  
+}
+function getWay(stationsList) {
+  if(stationsList.at(-1)[0] > stationsList.at(-1)[1]) {
+    stationsList.at(-1).reverse()
   }
+
+  console.log(coordinates[findClosestPoint(stationsList.at(-1), coordinates) ]);
+  
+  if(findClosestPoint(stationsList.at(-1), coordinates) < findClosestPoint(stationsList.at(0), coordinates)) {
+    return false
+  }
+  return true
 }
 
-function calculateDirection(prevCoord, nextCoord) {
-  const x1 = prevCoord[0];
-  const y1 = prevCoord[1];
-  const x2 = nextCoord[0];
-  const y2 = nextCoord[1];
-
-  // Calculate the angle using atan2 in radians
-  const angleInRadians = Math.atan2(y2 - y1, x2 - x1);
-
-  return angleInRadians;
+function calculateDirection(prev, next) {
+  const toRadians = (degrees) => degrees * (Math.PI / 180);
+  const deltaLng = toRadians(next[1] - prev[1]);
+  const prevLatRad = toRadians(prev[0]);
+  const nextLatRad = toRadians(next[0]);
+  
+  const y = Math.sin(deltaLng) * Math.cos(nextLatRad);
+  const x = Math.cos(prevLatRad) * Math.sin(nextLatRad) -
+            Math.sin(prevLatRad) * Math.cos(nextLatRad) * Math.cos(deltaLng);
+  
+  return Math.atan2(y, x); // Direction in radians
 }
 
 // Calculate distance between two coordinates (Haversine formula)

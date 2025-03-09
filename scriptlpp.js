@@ -726,6 +726,7 @@ async function oppositeStation(id) {
 }
 var arrivalsScroll;
 async function stationClick(stationa, noAnimation, ia) {
+  if(document.querySelector(".arrivalsOnStation")) return;
   let station = stationa ? stationa : isArrivalsOpen;
 
   var stylesTransition = [
@@ -1251,21 +1252,18 @@ async function showBusById(arrival, parent, station_id) {
     container.classList.add("arrivalsScroll");
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(-100vw)";
-      var arOnSt = await arrivalsOnStation(arrival, station_id);
+      loop(1, arrival, station_id);
+      await arrivalsOnStation(arrival, station_id);
+     
     arrivalsUpdateInterval = setInterval( async () => {
-      arOnSt =  await arrivalsOnStation(
+      await arrivalsOnStation(
         arrival,
         station_id,
         document.querySelector(".arrivalsOnStation").scrollTop + 1
       );
-    }, 10000);
-    loop(1, arrival, station_id, arOnSt);
-    busUpdateInterval = setInterval(
-      () => {
-        loop(0, arrival, station_id, arOnSt);
-      },
-      document.querySelector(".switch").selected ? 3000 : 5000
-    );
+      
+    }, 5000);
+  
     setTimeout(() => {
       container.style.transform = "translateX(0px) translateY(0px)";
       container.style.opacity = "1";
@@ -1353,7 +1351,7 @@ async function arrivalsOnStation(arrival, station_id, already) {
     }
     let nameStation = addElement("div", arDiv, "nameStation");
     nameStation.classList.add("nameStation_" + arrivalRoute.station_code);
-    nameStation.innerHTML = arrivalRoute.name;
+    nameStation.innerHTML = arrivalRoute.name + index;
     if (arrivalRoute.station_code == station_id) sortIndex = index;
 
     for (let i = 0; i < arrivalRoute.arrivals.length; i++) {
@@ -1407,7 +1405,9 @@ async function arrivalsOnStation(arrival, station_id, already) {
     }
     arDiv, lineStation, lnimg, (nameStation = null);
   });
-
+  console.log(already);
+  
+ if(already !== undefined) loop(0, arrival, station_id, listArrivals);
   let sortedArrivals = sortArrivals(listArrivals, sortIndex);
 
   sortedArrivals = sortedArrivals.slice(0, 10);
