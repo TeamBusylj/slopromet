@@ -234,7 +234,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
         const busStyle = new ol.style.Style({
           image: new ol.style.Icon({
             rotateWithView: true,
-            anchor: [0.5, 0.5],
+            anchor: [0.52, 0.5],
             anchorXUnits: "fraction",
             anchorYUnits: "fraction",
             
@@ -259,8 +259,8 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
           }
           markers.getSource().forEachFeature(function (feature) {
             if (bus.bus_unit_id === feature.busId) {
-              let cordi =  coords[findClosestPoint([bus.longitude,
-                bus.latitude], coords)]
+              let cordi =  [...coords[findClosestPoint([bus.longitude,
+                bus.latitude], coords)]]
                 cordi[0]>cordi[1] ? cordi.reverse() : cordi
               let newCoordinates = ol.proj.fromLonLat(
                 cordi
@@ -346,7 +346,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
       arrival.trip_id,
       arrival.route_name,
       station,
-      coordinates
+      [...coordinates]
     );
   } else {
     document.querySelector(".loader").style.backgroundSize = "0% 0%";
@@ -428,13 +428,16 @@ async function generateRouteVector(
   const hasLongSubarray = (arr) =>
     arr.some((sub) => Array.isArray(sub) && sub.length > 2);
   if (hasLongSubarray(coordinatesRoute)) {
-    for (const j in coordinatesRoute) {
-      if (j[0][0] < j[0][1]) {
-        for (const i in coordinatesRoute) {
-          coordinatesRoute[j][i].reverse();
+    console.log(coordinatesRoute);
+    for (const j of coordinatesRoute) {
+      if (j[0][0] > j[0][1]) {
+        for (const i of j) {
+         i.reverse();
         }
       }
     }
+    console.log(coordinatesRoute);
+    
 
     // For MultiLineString, iterate over each array of coordinates
     lineStrings = coordinatesRoute.map((coordinatesa) => {
