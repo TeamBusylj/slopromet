@@ -164,6 +164,8 @@ var busImageData;
  * @returns {void}
  */
 async function loop(firsttim, arrival, station, arOnSt) {
+  console.log(arrival);
+  
   if (firsttim) {
     document.querySelector(".loader").style.display = "grid";
     document
@@ -227,8 +229,6 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
         const marker = new ol.Feature({
           geometry: new ol.geom.Point(coordinates1),
         });
-        let baseColorNext = lineColorsObj[Object.keys(lineColorsObj)[Object.keys(lineColorsObj).indexOf(bus.route_number.replace(/\D/g, "")) + 1]];
-        console.log(baseColorNext);
         
         // Create a style for the bus with rotation
         const busStyle = new ol.style.Style({
@@ -238,7 +238,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
             anchorXUnits: "fraction",
             anchorYUnits: "fraction",
             
-            src: generateCustomSVG(baseColorNext,darkenColor(baseColorNext, 100)), // Generate dynamic SVG
+            src: generateCustomSVG(darkenColor(lineColorsObj[bus.route_number.replace(/\D/g, "")], -100),lineColorsObj[bus.route_number.replace(/\D/g, "")]), // Generate dynamic SVG
             scale:.5,
             rotation: (bus.cardinal_direction * Math.PI) / 180, // Convert degrees to radians
           }),
@@ -260,19 +260,19 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
           markers.getSource().forEachFeature(function (feature) {
             if (bus.bus_unit_id === feature.busId) {
               let cordi =  [...coords[findClosestPoint([bus.longitude,
-                bus.latitude], coords)]]
+                bus.latitude], coords)]];
+                cordi = getDistance(cordi, [bus.longitude, bus.latitude]) > 10 ? [bus.longitude, bus.latitude] : cordi;
+                console.log(getDistance(cordi, [bus.longitude, bus.latitude]));
+                
                 cordi[0]>cordi[1] ? cordi.reverse() : cordi
+
               let newCoordinates = ol.proj.fromLonLat(
                 cordi
               );
 
 
 
-              const spanText = arrivalsOnRoutes[
-                bus.bus_unit_id.toLowerCase()
-              ].map((item) =>
-                item === null ? null : item.match(/^(\d+)/)?.[1] || null
-              );
+              
               if (
                 findClosestPoint([bus.longitude, bus.latitude], coords) >
                   findClosestPoint(
@@ -307,7 +307,12 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
                 busPreviusPosition[bus.bus_unit_id] = newCoordinates;
               }
 
-              if (document.querySelector(".switch").selected)
+              if (document.querySelector(".switch").selected){
+                const spanText = arrivalsOnRoutes[
+                  bus.bus_unit_id.toLowerCase()
+                ].map((item) =>
+                  item === null ? null : item.match(/^(\d+)/)?.[1] || null
+                );
                 moveBus(
                   feature,
                   bus.ground_speed,
@@ -315,6 +320,8 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
                   spanText,
                   arrivalsOnRoutes.stations
                 );
+              }
+                
             }
           });
         } catch (error) {
@@ -428,7 +435,6 @@ async function generateRouteVector(
   const hasLongSubarray = (arr) =>
     arr.some((sub) => Array.isArray(sub) && sub.length > 2);
   if (hasLongSubarray(coordinatesRoute)) {
-    console.log(coordinatesRoute);
     for (const j of coordinatesRoute) {
       if (j[0][0] > j[0][1]) {
         for (const i of j) {
@@ -436,7 +442,6 @@ async function generateRouteVector(
         }
       }
     }
-    console.log(coordinatesRoute);
     
 
     // For MultiLineString, iterate over each array of coordinates
@@ -519,7 +524,6 @@ function generateCustomSVG(fillColor, borderColor) {
   <path fill="RGB(${borderColor})" d="M1003,456.3l43.8,43.8c24.2,24.2,24.2,63.5,0,87.7-11.7,11.7-27.3,18.2-43.8,18.2s-32.1-6.4-43.8-18.2c-11.7-11.7-18.2-27.3-18.2-43.8s6.4-32.1,18.2-43.8l43.8-43.8M1003,404.8c-3.1,0-6.3,1.2-8.7,3.6l-63.4,63.4c-39.8,39.8-39.8,104.4,0,144.2h0c19.9,19.9,46,29.9,72.1,29.9s52.2-10,72.1-29.9h0c39.8-39.8,39.8-104.4,0-144.2l-63.4-63.4c-2.4-2.4-5.5-3.6-8.7-3.6h0Z"/>
 </svg>
   `;
-  console.log(svg);
   
   return `data:image/svg+xml;base64,${btoa(svg)}`;
 }
@@ -808,14 +812,12 @@ const lineColors = (i) => {
   if (!color) color = [201, 51, 54]; // Return empty string if the index is not found
   if (/[a-zA-Z]/.test(i)) color = darkenColor(color, 40);
 
-  let darkerColor = i.includes("N")
-    ? darkenColor(color, 100)
-    : darkenColor(color, 70);
+  let darkerColor = darkenColor(color, 70);
 
   return i.includes("N")
-    ? `linear-gradient(320deg,rgb(${darkerColor.join(",")})50%,rgb(${color.join(
+    ? `linear-gradient(320deg,rgb(0,0,0)10%,rgb(${color.join(
         ","
-      )})130%) `
+      )})160%) `
     : `linear-gradient(165deg,rgb(${color.join(",")}),rgb(${darkerColor.join(
         ","
       )}))`;

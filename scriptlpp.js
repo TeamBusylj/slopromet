@@ -297,8 +297,11 @@ const changeTabs = (event) => {
   const root = event.target.getRootNode();
   currentPanel = root.querySelector(`#${panelId}`);
   currentPanel.style.display = "flex";
-  currentPanel.style.transform = "translateX(0px) translateY(0px)";
-  currentPanel.style.opacity = "1";
+  setTimeout(() => {
+    currentPanel.style.transform = "translateX(0px) translateY(0px)";
+    currentPanel.style.opacity = "1";
+  }, 1);
+ 
 };
 async function updateStations() {
   let stations = await fetchData(
@@ -535,15 +538,23 @@ function createFavourite(parent, search, query) {
   if (latitude == 46.051467939339034)
     parent.innerHTML +=
       "<p><md-icon>location_off</md-icon>Lokacija ni omogočena.</p>";
+      const favList = JSON.parse(
+        localStorage.getItem("favouriteStations") || "[]"
+      );
   for (const station in stationList) {
+    if(favList.length == 0 && !search){ 
+      let p = addElement("p", parent);
+      p.innerHTML =
+        "<p><md-icon>favorite</md-icon>Nimate priljubljenih postaj.</p>";
+      break;
+
+    }
     let item = addElement("div", null, "station");
     addElement("md-ripple", item);
     let textHolder = addElement("div", item, "textHolder");
     textHolder.innerHTML =
       '<span class="stationName">' + stationList[station].name + "</span>";
-    const favList = JSON.parse(
-      localStorage.getItem("favouriteStations") || "[]"
-    );
+    
     if (
       search &&
       !normalizeText(stationList[station].name.toLowerCase()).includes(
@@ -899,23 +910,27 @@ async function stationClick(stationa, noAnimation, ia) {
     timeTScroll.classList.add("arrivalsScroll");
     timeTScroll.style.display = "none";
     tabs.addEventListener("change", () => {
-      if (currentPanel2) {
-        currentPanel2.style.display = "none";
-        currentPanel2.style.transform = "translateX(0px) translateY(-20px)";
-        currentPanel2.style.opacity = "0";
-      }
+      
+      
+      let o =
+    currentPanel2.id == "arrivals-panel"
+      ? document.getElementById("arrivals-panel")
+      : document.querySelector(".timeTScroll");
+  o.style.display = "none";
+  o.style.transform = "translateX(0px) translateY(-20px)";
+  o.style.opacity = "0";
 
-      const panelId = tabs.activeTab?.getAttribute("aria-controls");
-      const root = tabs.getRootNode();
-      currentPanel2 = root.querySelector(`#${panelId}`);
-      if (currentPanel2) {
-        currentPanel2.style.display = "flex";
-        setTimeout(() => {
-          currentPanel2.style.transform = "translateX(0px) translateY(0px)";
-          currentPanel2.style.opacity = "1";
-        }, 1);
-      }
-      if (currentPanel2 == timeTScroll && !notYet) {
+  const panelId = event.target.activeTab?.getAttribute("aria-controls");
+  const root = event.target.getRootNode();
+  currentPanel2 = root.querySelector(`#${panelId}`);
+  currentPanel2.style.display = "flex";
+  setTimeout(() => {
+    currentPanel2.style.transform = "translateX(0px) translateY(0px)";
+    currentPanel2.style.opacity = "1";
+  }, 1);
+
+  console.log(o, currentPanel2);
+      if (currentPanel2.id == "time-panel" && !notYet) {
         notYet = true;
         showLines(timeTScroll, stationList[station]);
       }
@@ -1088,6 +1103,7 @@ async function showLines(parent, station) {
 async function showLineTime(routeN, station_id, routeName, arrival) {
   let arrival2 = arrival;
   arrival2.route_name = routeN;
+  
   showBusById(arrival2);
   let container = addElement(
     "div",
@@ -1240,10 +1256,8 @@ const nextBusTemplate = (data, parent) => {
 };
 var busUpdateInterval, arrivalsUpdateInterval;
 async function showBusById(arrival, parent, station_id) {
-  setTimeout(() => {
-    alert("Klikni na avtobus, da si ogledaš njegovo sliko. ")
 
-  }, 500);
+
   clearInterval(busUpdateInterval);
   document.querySelector(".bottomSheet").style.transform =
     "translate3d(-50%,60dvh, 0px)";
@@ -1274,6 +1288,12 @@ async function showBusById(arrival, parent, station_id) {
       container.style.transform = "translateX(0px) translateY(0px)";
       container.style.opacity = "1";
     }, 100);
+  } else{
+    await loop(1, arrival, station_id);
+    arrivalsUpdateInterval = setInterval( async () => {
+      await loop(0, arrival, station_id);
+    }, 5000);
+    
   }
 
 }
