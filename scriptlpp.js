@@ -203,7 +203,8 @@ async function makeMap() {
     popup.setPosition(coordinate);
   });
 }
-function centerMap() {
+async function centerMap() {
+  await getLocation()
   const view = map.getView();
   var center = ol.proj.fromLonLat([longitude, latitude]);
   var duration = 1000;
