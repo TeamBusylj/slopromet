@@ -926,6 +926,7 @@ async function stationClick(stationa, noAnimation, ia) {
     let getMyBus = addElement("md-filled-tonal-button", null, "getMyBus");
     container.insertBefore(getMyBus, arrivalsScroll);
     getMyBus.innerHTML = "Moja vožnja";
+    getMyBus.style.display="none"
     const clickedMyBus = () => {
       container.style.transform = "translateX(-100vw)";
       container.style.opacity = "0";
@@ -1238,6 +1239,10 @@ const nextBusTemplate = (data, parent) => {
 };
 var busUpdateInterval, arrivalsUpdateInterval;
 async function showBusById(arrival, parent, station_id) {
+  setTimeout(() => {
+    alert("Klikni na avtobus, da si ogledaš njegovo sliko. ")
+
+  }, 500);
   clearInterval(busUpdateInterval);
   document.querySelector(".bottomSheet").style.transform =
     "translate3d(-50%,60dvh, 0px)";
