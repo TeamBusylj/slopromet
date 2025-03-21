@@ -545,8 +545,8 @@ async function getCoordinates(trip_id, data) {
   let coordinates = await fetchData(
     "https://mestnipromet.cyou/api/v1/resources/buses/shape?trip_id=" + trip_id
   );
-
-  if (!coordinates || coordinates.length == 0) {
+  //!coordinates || coordinates.length == 0
+  if (true) {
     let coords = "";
     for (const i in data) {
       coords += data[i].longitude + "," + data[i].latitude + ";";
