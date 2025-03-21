@@ -333,6 +333,8 @@ md-list .arrivalItem {
   display: none;
   align-items: center;
   justify-content: center;
+opacity: 0;
+  transition: all 0.3s;
 
 }
 span.hidden{
@@ -343,8 +345,25 @@ img.busImgElement {
   max-width: 100%;
   border-radius: 25px;
   padding: 10px;
+
   box-sizing: border-box;
   animation: show 0.5s forwards;
+}
+.busImg span {
+  position: fixed;
+  z-index: 10;
+  top: 31%;
+  right: 20px;
+  background: #0000008c;
+  backdrop-filter: blur(4px);
+  padding: 10px;
+  border-radius: 100px;
+  height: 20px;
+  width: 20px;
+  text-align: center;
+  font-size: large;
+  color: #ffffff;
+  font-weight: bold;
 }
 @keyframes show {
   0% {

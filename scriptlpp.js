@@ -740,7 +740,7 @@ var arrivalsScroll;
 async function stationClick(stationa, noAnimation, ia) {
   if(document.querySelector(".arrivalsOnStation")) return;
   let station = stationa ? stationa : isArrivalsOpen;
-
+  window.history.pushState(null, document.title + " - "+stationList[station].name, "/" + encodeURIComponent(stationList[station].name))
   var stylesTransition = [
     document.querySelector(".searchContain").style,
     document.querySelector(".listOfStations").style,
@@ -823,6 +823,7 @@ async function stationClick(stationa, noAnimation, ia) {
     let iks = addElement("md-icon-button", holder, "iks");
     iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
     iks.addEventListener("click", function () {
+      window.history.replaceState(null, document.title, "/")
       container.style.transform = "translateX(100vw)";
       document.querySelector(".infoBar").style.transform = "translateY(30px)";
       container.style.opacity = "0";
@@ -1103,7 +1104,7 @@ async function showLines(parent, station) {
 async function showLineTime(routeN, station_id, routeName, arrival) {
   let arrival2 = arrival;
   arrival2.route_name = routeN;
-  
+  window.history.pushState(null, document.title, "/urnik-linije-"+encodeURIComponent(routeN))
   showBusById(arrival2);
   let container = addElement(
     "div",
@@ -1118,6 +1119,7 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
   let iks = addElement("md-icon-button", container, "iks");
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
+    window.history.replaceState(null, document.title, "/")
     container.style.transform = "translateX(100vw)";
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(0vw)";
@@ -1257,7 +1259,7 @@ const nextBusTemplate = (data, parent) => {
 var busUpdateInterval, arrivalsUpdateInterval;
 async function showBusById(arrival, parent, station_id) {
 
-
+  window.history.pushState(null, document.title, "/bus-"+arrival.route_name)
   clearInterval(busUpdateInterval);
   document.querySelector(".bottomSheet").style.transform =
     "translate3d(-50%,60dvh, 0px)";
@@ -1311,6 +1313,7 @@ async function arrivalsOnStation(arrival, station_id, already) {
   let iks = addElement("md-icon-button", container, "iks");
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
+    window.history.replaceState(null, document.title, "/")
     container.style.transform = "translateX(100vw)";
     if (document.querySelector(".arrivalsHolder")) {
       document.querySelector(".arrivalsHolder").style.transform =
@@ -1628,6 +1631,11 @@ function sortArrivals(listArrivals, sortIndex) {
     }
   }
   return combinedArrivals;
+}
+window.onpopstate = function(event) {
+  document.querySelectorAll(".iks").forEach((iks) => {
+    if(iks.getBoundingClientRect().left>0)iks.click();
+  });
 }
 
 async function getMyBusData() {

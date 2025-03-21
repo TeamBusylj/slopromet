@@ -262,7 +262,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
               let cordi =  [...coords[findClosestPoint([bus.longitude,
                 bus.latitude], coords)]];
                 cordi = getDistance(cordi, [bus.longitude, bus.latitude]) > 10 ? [bus.longitude, bus.latitude] : cordi;
-                console.log(getDistance(cordi, [bus.longitude, bus.latitude]));
+               
                 
                 cordi[0]>cordi[1] ? cordi.reverse() : cordi
 
@@ -336,14 +336,28 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
     });
     if (feature && feature.busNo) {
       let holder = document.querySelector(".busImg");
-      holder.innerHTML = "";
+      holder.innerHTML = "<span><md-ripple></md-ripple>&#10005;</span>"
+      setTimeout(() => {
+        holder.style.opacity = 1
+      }, 100);
+      
       holder.style.display = "flex";
       let img = addElement("img", holder, "busImgElement");
       img.src =
         "https://mestnipromet.cyou/tracker/img/avtobusi/" +
         feature.busNo +
         ".jpg";
-      img.onclick = () => (holder.style.display = "none");
+      holder.querySelector("span").onclick = () => {
+        setTimeout(() => {
+           holder.style.display = "none"
+          img.remove()
+           holder = null;
+           img = null;
+        }, 300);
+        holder.style.opacity = 0
+       
+      };
+     
     }
   });
 
