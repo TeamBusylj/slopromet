@@ -202,6 +202,9 @@ async function makeMap() {
 
     popup.setPosition(coordinate);
   });
+  map.once('postrender', function(event) {
+    document.querySelector("#map").style.opacity = "1";
+});
 }
 async function centerMap() {
   await getLocation()
@@ -279,8 +282,12 @@ async function createBuses() {
   tabs.addEventListener("change", changeTabs);
   let e = document.querySelector(".favouriteStations");
   e.style.display = "flex";
-  e.style.transform = "translateX(0px) translateY(0px)";
-  e.style.opacity = "1";
+  setTimeout(() => {
+    e.style.transform = "translateX(0px) translateY(0px)";
+    e.style.opacity = "1";
+  }, 10);
+
+ 
   setTimeout(async () => {
     await makeMap();
   }, 0);
