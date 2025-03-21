@@ -500,10 +500,13 @@ async function generateRouteVector(
     // Add the feature to the route source
     tempRouteSource.addFeature(routeFeature);
   });
+  const myExtent = tempRouteSource.getExtent();
+  const view = map.getView();
+  view.fit(myExtent, { duration: 750 });
+  document.querySelector(".loader").style.backgroundSize = "0% 0%";
+  
 
-  if (busVectorLayer) {
-    map.removeLayer(busVectorLayer);
-  }
+  setTimeout(() => {
   busVectorLayer = new ol.layer.Vector({
     source: tempRouteSource,
     updateWhileInteracting: true,
@@ -512,9 +515,7 @@ async function generateRouteVector(
   busVectorLayer.trip = trip_id;
   map.addLayer(busVectorLayer);
 
-  if (busStationLayer) {
-    map.removeLayer(busStationLayer);
-  }
+  
   busStationLayer = new ol.layer.Vector({
     source: tempStationSource,
     updateWhileInteracting: true,
@@ -527,8 +528,9 @@ async function generateRouteVector(
     style: {},
   });
   map.addLayer(markers);
-  setTimeout(() => {
-    centerBus();
+
+  document.querySelector(".loader").style.display = "none";
+  document.querySelector(".loader").style.backgroundSize = "40% 40%";
   }, 100);
 }
 function generateCustomSVG(fillColor, borderColor) {
@@ -545,8 +547,8 @@ async function getCoordinates(trip_id, data) {
   let coordinates = await fetchData(
     "https://mestnipromet.cyou/api/v1/resources/buses/shape?trip_id=" + trip_id
   );
-  //!coordinates || coordinates.length == 0
-  if (true) {
+
+  if (!coordinates || coordinates.length == 0) {
     let coords = "";
     for (const i in data) {
       coords += data[i].longitude + "," + data[i].latitude + ";";
@@ -795,28 +797,7 @@ function findClosestPoint(busCoord, routeCoords) {
   return closestIndex;
 }
 
-function centerBus() {
-  const myExtent = busVectorLayer.getSource().getExtent();
-  const view = map.getView();
-  /*var resolution = view.getResolutionForExtent(myExtent);
-  var zoom = view.getZoomForResolution(resolution);
-  var center = ol.extent.getCenter(myExtent);
-  var duration = 1000;
-  view.animate({
-    center: center,
-    duration: duration,
-  });
-  view.animate({
-    zoom: zoom,
-    duration: duration,
-  });*/
-  view.fit(myExtent, { duration: 750 });
-  document.querySelector(".loader").style.backgroundSize = "0% 0%";
-  setTimeout(() => {
-    document.querySelector(".loader").style.display = "none";
-    document.querySelector(".loader").style.backgroundSize = "40% 40%";
-  }, 300);
-}
+
 const darkenColor = (rgbArray, amount) =>
   rgbArray.map((channel) => Math.max(0, channel - amount));
 
