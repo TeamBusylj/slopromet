@@ -105,8 +105,6 @@ async function makeMap() {
     map: map,
     source: new ol.source.Vector({
       features: [accuracyFeature, positionFeature],
-
-      updateWhileInteracting: true,
     }),
 
     updateWhileInteracting: true,
@@ -142,7 +140,7 @@ async function makeMap() {
       container.style.display = "none";
 
       content.innerHTML =
-        "<md-icon>directions_bus</md-icon>" + feature.get("name");
+        "<md-ripple></md-ripple><md-icon>directions_bus</md-icon>" + feature.get("name");
       popup.setPosition(coordinate);
       setTimeout(() => {
         container.style.display = "block";
@@ -151,8 +149,10 @@ async function makeMap() {
           duration: 500,
         });
       }, 1);
-      container.onclick = function () {
+      container.onclick = async function () {
         clearInterval(interval);
+        clearInterval(arrivalsUpdateInterval);
+        clearInterval(busUpdateInterval);
         if (document.querySelector(".arrivalsHolder"))
           document.querySelector(".arrivalsHolder").remove();
         let aos = document.querySelector(".arrivalsOnStation");
@@ -171,20 +171,22 @@ async function makeMap() {
           if (lnt) {
             lnt.remove();
           }
+          stationClick(
+            stationList.findIndex((obj) => obj.name === feature.get("name")),
+            0,
+            1
+          );
         }, 500);
-        clearInterval(arrivalsUpdateInterval);
-        clearInterval(busUpdateInterval);
-        clearInterval(interval);
-        stationClick(
-          stationList.findIndex((obj) => obj.name === feature.get("name")),
-          0,
-          1
-        );
+       
+       
         interval = setInterval(async () => {
           await stationClick(isArrivalsOpen, true);
+          
         }, 10000);
-
-        setTimeout(() => {
+        
+        
+        setTimeout( () => {
+        
           let bottomSheet = document.querySelector(".bottomSheet");
           bottomSheet.style.transition =
             "all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1)";
@@ -745,9 +747,11 @@ async function oppositeStation(id) {
 }
 var arrivalsScroll;
 async function stationClick(stationa, noAnimation, ia) {
+  console.log(stationa);
+  
   if(document.querySelector(".arrivalsOnStation")) return;
   let station = stationa ? stationa : isArrivalsOpen;
-  window.history.pushState(null, document.title + " - "+stationList[station].name, "/" + encodeURIComponent(stationList[station].name))
+  
   var stylesTransition = [
     document.querySelector(".searchContain").style,
     document.querySelector(".listOfStations").style,
@@ -807,6 +811,7 @@ async function stationClick(stationa, noAnimation, ia) {
       localStorage.setItem("favouriteStations", JSON.stringify(favList));
     });
   } else {
+    window.history.pushState(null, document.title + " - "+stationList[station].name, "/" + encodeURIComponent(stationList[station].name))
     container = addElement(
       "div",
       document.querySelector(".mainSheet"),
@@ -1313,7 +1318,7 @@ async function arrivalsOnStation(arrival, station_id, already) {
   );
   let container = document.querySelector(".arrivalsOnStation");
   if (already) {
-    clearElementContent(container);
+    await clearElementContent(container);
     container = document.querySelector(".arrivalsOnStation");
   }
 
@@ -1853,8 +1858,10 @@ function getDirections() {
   goButton.innerHTML = "Pokaži pot";
 
   let panel = addElement("div", container, "panel");
-  goButton.addEventListener("click", () => {
-    panel = clearElementContent(panel);
+  goButton.addEventListener("click",async  () => {
+    console.log(panel);
+    panel = await clearElementContent(panel);
+
 
     if (depart.value !== "" && arrive.value !== "") {
       //goButton.style.display = "none";
@@ -1888,7 +1895,7 @@ function calcRoute(start, end, panel, agencies, leave, arrive) {
       modes: ["BUS", "TRAIN"],
     },
   };
-  directionsService.route(request, function (result, status) {
+  directionsService.route(request, async function (result, status) {
     if (status == "OK") {
       directionsRenderer.setDirections(result);
 
@@ -1907,24 +1914,26 @@ function calcRoute(start, end, panel, agencies, leave, arrive) {
           .filter((step) => step.transit)
           .map((step) => step.transit.line.agencies[0].name);
 
-        console.log(routeAgencies);
+        
         return routeAgencies.every(
           (agency) =>
             allowedAgencies.some((allowed) => agency.includes(allowed)) // Partial match check or skip if no allowed agencies
         );
       });
 
+
       let routesHolder = document.querySelector(".stepDiv")
         ? document.querySelector(".stepDiv")
         : addElement("div", panel, "stepDiv");
-      routesHolder = clearElementContent(routesHolder);
+      routesHolder = await clearElementContent(routesHolder);
 
       routesHolder.style.flexDirection = "column";
       routesHolder.style.overflow = "visible";
-      panel.parentNode.insertBefore(routesHolder, panel);
+   
+      document.querySelector(".directions").insertBefore(routesHolder, panel);
       for (const route of validRoutes) {
         let routeDiv = addElement("div", routesHolder, "routeDiv");
-
+        addElement("md-ripple", routeDiv);
         console.log(route);
 
         for (const step of route.legs[0].steps) {
@@ -1953,8 +1962,8 @@ function calcRoute(start, end, panel, agencies, leave, arrive) {
           "<span style='margin-left:auto;'>" +
           route.legs[0].duration.text +
           "</span>";
-        routeDiv.addEventListener("click", () => {
-          panel = clearElementContent(panel);
+        routeDiv.addEventListener("click",async  () => {
+          panel = await clearElementContent(panel);
           displayRoute(panel, route);
         });
       }
@@ -2077,6 +2086,7 @@ function displayRoute(panel, dira) {
   }
   panel.style.opacity = "1";
   panel.style.transform = "translateY(0)";
+  startDuration.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 function openRouteInGoogleMapsApp(originLat, originLng, destLat, destLng) {
   // Construct the Google Maps URL scheme for the mobile app (with walking mode)
