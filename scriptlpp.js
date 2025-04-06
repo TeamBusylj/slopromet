@@ -211,13 +211,13 @@ async function makeMap() {
       return feature;
     });
 
-    if (feature && feature.busNo) {
+    if (feature && feature.busId) {
       document.querySelector(".arrivalsOnStation").style.transform =
         "translateX(-100vw)";
       document.querySelector(".arrivalsOnStation").style.opacity = "0";
       console.log("clicked");
 
-      getMyBusData(feature.busNo);
+      getMyBusData(feature.busId);
     }
   });
 }
@@ -1065,7 +1065,7 @@ function showArrivals(arrivalsScroll2, data) {
         }
         if (arrival.depot) arrivalTimeSpan.innerHTML += "G";
         arrivalItem.addEventListener("click", () => {
-          showBusById(arrival, arrivalsScroll, data.station.code_id);
+          showBusById(arrival, data.station.code_id, data.arrivals);
         });
 
         arrivalTimeSpan,
@@ -1267,7 +1267,7 @@ const nextBusTemplate = (data, parent) => {
     }
     if (arrival.depot) arrivalTimeSpan.innerHTML += "G";
     arrivalItem.addEventListener("click", () => {
-      showBusById(arrival, arrivalsScroll, data.station.code_id);
+      showBusById(arrival, data.station.code_id, data.arrivals);
     });
     i++;
     arrivalTimeSpan,
@@ -1280,42 +1280,24 @@ const nextBusTemplate = (data, parent) => {
   }
 };
 var busUpdateInterval, arrivalsUpdateInterval, intervalBusk;
-async function showBusById(arrival, parent, station_id) {
+async function showBusById(arrival, station_id, arrivals) {
   window.history.pushState(null, document.title, "/bus-" + arrival.route_name);
   clearInterval(busUpdateInterval);
   document.querySelector(".bottomSheet").style.transform =
     "translate3d(-50%,60dvh, 0px)";
   minimizeSheet();
-  if (parent) {
-    let container = addElement(
-      "div",
-      document.querySelector(".mainSheet"),
-      "arrivalsOnStation"
-    );
 
-    container.classList.add("arrivalsScroll");
+  await loop(1, arrival, station_id);
+  busUpdateInterval = setInterval(async () => {
+    loop(0, arrival, station_id);
+  }, 5000);
+  if (arrivals) {
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(-100vw)";
-    loop(1, arrival, station_id);
-    await arrivalsOnStation(arrival, station_id);
+    document.querySelector(".arrivalsHolder").style.opacity = "0";
+    console.log("clicked");
 
-    arrivalsUpdateInterval = setInterval(async () => {
-      await arrivalsOnStation(
-        arrival,
-        station_id,
-        document.querySelector(".arrivalsOnStation").scrollTop + 1
-      );
-    }, 5000);
-
-    setTimeout(() => {
-      container.style.transform = "translateX(0px) translateY(0px)";
-      container.style.opacity = "1";
-    }, 100);
-  } else {
-    await loop(1, arrival, station_id);
-    arrivalsUpdateInterval = setInterval(async () => {
-      await loop(0, arrival, station_id);
-    }, 5000);
+    getMyBusData(null, arrivals, arrival.trip_id);
   }
 }
 async function arrivalsOnStation(arrival, station_id, already) {
@@ -1659,17 +1641,14 @@ window.onpopstate = function (event) {
   });
 };
 
-async function getMyBusData(busId) {
+async function getMyBusData(busId, arrivalsAll, tripId) {
+  const arrivals = arrivalsAll
+    ? arrivalsAll.filter((element) => element.trip_id == tripId)
+    : null;
   clearInterval(intervalBusk);
   intervalBusk = null;
-  console.log("fired");
 
-  await getLocation();
-  let busName = busId ? "&bus-name=" + busId : "";
-  let allBuses = await fetchData(
-    "https://cors.proxy.prometko.si/https://data.lpp.si/api/bus/bus-details?trip-info=1&station-ids=1" +
-      busName
-  );
+  let busName = busId ? "&bus-id=" + busId : "";
   if (document.querySelector(".myBusHolder")) {
     document.querySelector(".myBusHolder").remove();
   }
@@ -1680,6 +1659,30 @@ async function getMyBusData(busId) {
   );
   holder.classList.add("arrivalsScroll");
   let iks = addElement("md-icon-button", holder, "iks");
+  if (arrivals && arrivals.length > 1) {
+    let myEtaHolder = addElement("div", holder, "myEtaHolder");
+    for (const arrival of arrivals) {
+      let arTime = addElement("div", myEtaHolder, "arrivalTime");
+      arTime.innerHTML = arrival.eta_min + " min";
+      arTime.busId = arrival.vehicle_id;
+      addElement("md-ripple", arTime);
+      arTime.addEventListener("click", function () {
+        myEtaHolder.querySelector(".selected").classList.remove("selected");
+        arTime.classList.add("selected");
+        clearInterval(intervalBusk);
+        intervalBusk = null;
+        let busek = busObject.find(
+          (el) => el.bus_unit_id == arrival.vehicle_id.toUpperCase()
+        );
+
+        clickedMyBus(busek);
+        intervalBusk = setInterval(() => {
+          clickedMyBus(busek);
+        }, 10000);
+      });
+    }
+    myEtaHolder.firstElementChild.classList.add("selected");
+  }
   let myBusDiv = document.querySelector(".myBusDiv")
     ? clearElementContent(document.querySelector(".myBusDiv"))
     : addElement("div", holder, "myBusDiv");
@@ -1690,9 +1693,10 @@ async function getMyBusData(busId) {
   iks.addEventListener("click", function () {
     holder.style.transform = "translateX(100vw)";
     clearInterval(intervalBusk);
-    document.querySelector(".arrivalsOnStation").style.transform =
+    document.querySelector(".arrivalsHolder").style.transform =
       "translateX(0vw)";
-    document.querySelector(".arrivalsOnStation").style.opacity = "1";
+    document.querySelector(".arrivalsHolder").style.opacity = "1";
+    clearMap();
     setTimeout(() => {
       clearElementContent(holder);
       setTimeout(() => {
@@ -1704,21 +1708,20 @@ async function getMyBusData(busId) {
     holder.style.opacity = "1";
     holder.style.transform = "translateX(0px) translateY(0px)";
   }, 10);
-  if (busId) {
-    setTimeout(() => {
-      minimizeSheet(98);
-    }, 500);
-
-    clickedMyBus(allBuses[0]);
+  if (arrivals || busId) {
+    clickedMyBus(busObject[0]);
     intervalBusk = setInterval(() => {
-      clickedMyBus(allBuses[0]);
+      clickedMyBus(busObject[0]);
     }, 10000);
     return;
   }
+
+  //get buse based on location
+  await getLocation();
   let nearByBuses = [];
   let span = addElement("span", myBusDiv, "myBusSpan");
   span.innerHTML = "S katero linijo se peljete?";
-  for (const bus of allBuses) {
+  for (const bus of busObject) {
     if (navigator.geolocation) {
       const distance = haversineDistance(
         latitude,
@@ -1844,6 +1847,7 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
     const ar = arrivalRoute.arrivals.find(
       (el) => el.vehicle_id == busIdUp.toLowerCase()
     );
+    console.log(ar, busIdUp.toLowerCase());
 
     try {
       if (!ar) {
@@ -1860,7 +1864,8 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
         return;
       }
     } catch (e) {
-      console.log(info, index);
+      console.log(e);
+      return;
     }
 
     if (
