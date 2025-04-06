@@ -48,7 +48,9 @@ function makeBottomSheet(title, height) {
       document.documentElement.clientHeight || 0,
       window.innerHeight || 0
     );
-    const scrollList = document.querySelector(".arrivalsOnStation")
+    const scrollList = document.querySelector(".myBusDiv")
+      ? document.querySelector(".myBusDiv")
+      : document.querySelector(".arrivalsOnStation")
       ? document.querySelector(".arrivalsOnStation")
       : document.querySelector(".lineTimes")
       ? document.querySelector(".lineTimes")
@@ -84,7 +86,9 @@ function makeBottomSheet(title, height) {
     setSheetHeight(sheetHeight + deltaHeight);
   };
   const onDragEnd = () => {
-    (document.querySelector(".arrivalsOnStation")
+    (document.querySelector(".myBusDiv")
+      ? document.querySelector(".myBusDiv")
+      : document.querySelector(".arrivalsOnStation")
       ? document.querySelector(".arrivalsOnStation")
       : document.querySelector(".lineTimes")
       ? document.querySelector(".lineTimes")
@@ -165,7 +169,7 @@ var busImageData;
  */
 async function loop(firsttim, arrival, station, arOnSt) {
   console.log(arrival);
-  
+
   if (firsttim) {
     document.querySelector(".loader").style.display = "grid";
     document
@@ -229,7 +233,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
         const marker = new ol.Feature({
           geometry: new ol.geom.Point(coordinates1),
         });
-        
+
         // Create a style for the bus with rotation
         const busStyle = new ol.style.Style({
           image: new ol.style.Icon({
@@ -237,15 +241,21 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
             anchor: [0.52, 0.5],
             anchorXUnits: "fraction",
             anchorYUnits: "fraction",
-            
-            src: generateCustomSVG(darkenColor(lineColorsObj[bus.route_number.replace(/\D/g, "")], -100),lineColorsObj[bus.route_number.replace(/\D/g, "")]), // Generate dynamic SVG
-            scale:.5,
+
+            src: generateCustomSVG(
+              darkenColor(
+                lineColorsObj[bus.route_number.replace(/\D/g, "")],
+                -100
+              ),
+              lineColorsObj[bus.route_number.replace(/\D/g, "")]
+            ), // Generate dynamic SVG
+            scale: 0.5,
             rotation: (bus.cardinal_direction * Math.PI) / 180, // Convert degrees to radians
           }),
         });
 
         marker.busId = bus.bus_unit_id;
-        marker.busNo = bus.no;
+        marker.busNo = bus.bus_name.replace("LJ LPP-", "");
 
         marker.setStyle(busStyle);
 
@@ -259,20 +269,20 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
           }
           markers.getSource().forEachFeature(function (feature) {
             if (bus.bus_unit_id === feature.busId) {
-              let cordi =  [...coords[findClosestPoint([bus.longitude,
-                bus.latitude], coords)]];
-                cordi = getDistance(cordi, [bus.longitude, bus.latitude]) > 10 ? [bus.longitude, bus.latitude] : cordi;
-               
-                
-                cordi[0]>cordi[1] ? cordi.reverse() : cordi
+              let cordi = [
+                ...coords[
+                  findClosestPoint([bus.longitude, bus.latitude], coords)
+                ],
+              ];
+              cordi =
+                getDistance(cordi, [bus.longitude, bus.latitude]) > 10
+                  ? [bus.longitude, bus.latitude]
+                  : cordi;
 
-              let newCoordinates = ol.proj.fromLonLat(
-                cordi
-              );
+              cordi[0] > cordi[1] ? cordi.reverse() : cordi;
 
+              let newCoordinates = ol.proj.fromLonLat(cordi);
 
-
-              
               if (
                 findClosestPoint([bus.longitude, bus.latitude], coords) >
                   findClosestPoint(
@@ -307,7 +317,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
                 busPreviusPosition[bus.bus_unit_id] = newCoordinates;
               }
 
-              if (document.querySelector(".switch").selected){
+              if (document.querySelector(".switch").selected) {
                 const spanText = arrivalsOnRoutes[
                   bus.bus_unit_id.toLowerCase()
                 ].map((item) =>
@@ -321,7 +331,6 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
                   arrivalsOnRoutes.stations
                 );
               }
-                
             }
           });
         } catch (error) {
@@ -334,30 +343,12 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
     const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
       return feature;
     });
+
     if (feature && feature.busNo) {
-      let holder = document.querySelector(".busImg");
-      holder.innerHTML = "<span><md-ripple></md-ripple>&#10005;</span>"
-      setTimeout(() => {
-        holder.style.opacity = 1
-      }, 100);
-      
-      holder.style.display = "flex";
-      let img = addElement("img", holder, "busImgElement");
-      img.src =
-        "https://mestnipromet.cyou/tracker/img/avtobusi/" +
-        feature.busNo +
-        ".jpg";
-      holder.querySelector("span").onclick = () => {
-        setTimeout(() => {
-           holder.style.display = "none"
-          img.remove()
-           holder = null;
-           img = null;
-        }, 300);
-        holder.style.opacity = 0
-       
-      };
-     
+      document.querySelector(".arrivalsOnStation").style.transform =
+        "translateX(-100vw)";
+      document.querySelector(".arrivalsOnStation").style.opacity = "0";
+      getMyBusData(feature.busNo);
     }
   });
 
@@ -389,32 +380,29 @@ async function generateRouteVector(
   if (coords1[0][0][0]) {
     coords1 = coords1.flat(); // Flatten the array if needed
   }
-  
- 
-    for (const i of coords1) {
-     
-      if (i[0] < i[1]) {
+
+  for (const i of coords1) {
+    if (i[0] < i[1]) {
       i.reverse();
-
-  }
     }
+  }
 
-  
   // Create new vector sources for stations and routes
   const tempStationSource = new ol.source.Vector();
   const tempRouteSource = new ol.source.Vector();
 
   // Add station markers
   data.forEach((station, index) => {
-    
-    let loca = [...coords1[findClosestPoint( [station.latitude, station.longitude], coords1)]]
-    loca =  loca.reverse()
-   // console.log(loca,coords1);
-    
+    let loca = [
+      ...coords1[
+        findClosestPoint([station.latitude, station.longitude], coords1)
+      ],
+    ];
+    loca = loca.reverse();
+    // console.log(loca,coords1);
+
     const stationFeature = new ol.Feature({
-      geometry: new ol.geom.Point(
-        ol.proj.fromLonLat(loca)
-      ),
+      geometry: new ol.geom.Point(ol.proj.fromLonLat(loca)),
       name: station.name,
       order: station.order_no,
       code: station.station_code,
@@ -452,11 +440,10 @@ async function generateRouteVector(
     for (const j of coordinatesRoute) {
       if (j[0][0] > j[0][1]) {
         for (const i of j) {
-         i.reverse();
+          i.reverse();
         }
       }
     }
-    
 
     // For MultiLineString, iterate over each array of coordinates
     lineStrings = coordinatesRoute.map((coordinatesa) => {
@@ -504,33 +491,31 @@ async function generateRouteVector(
   const view = map.getView();
   view.fit(myExtent, { duration: 750 });
   document.querySelector(".loader").style.backgroundSize = "0% 0%";
-  
 
   setTimeout(() => {
-  busVectorLayer = new ol.layer.Vector({
-    source: tempRouteSource,
-    updateWhileInteracting: true,
-    style: {},
-  });
-  busVectorLayer.trip = trip_id;
-  map.addLayer(busVectorLayer);
+    busVectorLayer = new ol.layer.Vector({
+      source: tempRouteSource,
+      updateWhileInteracting: true,
+      style: {},
+    });
+    busVectorLayer.trip = trip_id;
+    map.addLayer(busVectorLayer);
 
-  
-  busStationLayer = new ol.layer.Vector({
-    source: tempStationSource,
-    updateWhileInteracting: true,
-    style: {},
-  });
-  map.addLayer(busStationLayer);
-  markers = new ol.layer.Vector({
-    source: tempMarkersSource,
-    updateWhileInteracting: true,
-    style: {},
-  });
-  map.addLayer(markers);
+    busStationLayer = new ol.layer.Vector({
+      source: tempStationSource,
+      updateWhileInteracting: true,
+      style: {},
+    });
+    map.addLayer(busStationLayer);
+    markers = new ol.layer.Vector({
+      source: tempMarkersSource,
+      updateWhileInteracting: true,
+      style: {},
+    });
+    map.addLayer(markers);
 
-  document.querySelector(".loader").style.display = "none";
-  document.querySelector(".loader").style.backgroundSize = "40% 40%";
+    document.querySelector(".loader").style.display = "none";
+    document.querySelector(".loader").style.backgroundSize = "40% 40%";
   }, 100);
 }
 function generateCustomSVG(fillColor, borderColor) {
@@ -540,7 +525,7 @@ function generateCustomSVG(fillColor, borderColor) {
   <path fill="RGB(${borderColor})" d="M1003,456.3l43.8,43.8c24.2,24.2,24.2,63.5,0,87.7-11.7,11.7-27.3,18.2-43.8,18.2s-32.1-6.4-43.8-18.2c-11.7-11.7-18.2-27.3-18.2-43.8s6.4-32.1,18.2-43.8l43.8-43.8M1003,404.8c-3.1,0-6.3,1.2-8.7,3.6l-63.4,63.4c-39.8,39.8-39.8,104.4,0,144.2h0c19.9,19.9,46,29.9,72.1,29.9s52.2-10,72.1-29.9h0c39.8-39.8,39.8-104.4,0-144.2l-63.4-63.4c-2.4-2.4-5.5-3.6-8.7-3.6h0Z"/>
 </svg>
   `;
-  
+
   return `data:image/svg+xml;base64,${btoa(svg)}`;
 }
 async function getCoordinates(trip_id, data) {
@@ -797,7 +782,6 @@ function findClosestPoint(busCoord, routeCoords) {
   return closestIndex;
 }
 
-
 const darkenColor = (rgbArray, amount) =>
   rgbArray.map((channel) => Math.max(0, channel - amount));
 
@@ -810,9 +794,7 @@ const lineColors = (i) => {
   let darkerColor = darkenColor(color, 70);
 
   return i.includes("N")
-    ? `linear-gradient(320deg,rgb(0,0,0)10%,rgb(${color.join(
-        ","
-      )})160%) `
+    ? `linear-gradient(320deg,rgb(0,0,0)10%,rgb(${color.join(",")})160%) `
     : `linear-gradient(165deg,rgb(${color.join(",")}),rgb(${darkerColor.join(
         ","
       )}))`;

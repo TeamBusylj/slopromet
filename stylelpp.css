@@ -4,18 +4,18 @@ body {
   font-family: sans-serif !important;
   user-select: none;
 }
-md-primary-tab{
+md-primary-tab {
   font-family: sans-serif;
 }
 .gmnoprint {
   display: none;
 }
 .titleHolder {
-    margin-left: auto;
+  margin-left: auto;
 }
 .title {
-    z-index: 3;
-    margin: 0 20px;
+  z-index: 3;
+  margin: 0 20px;
   display: block;
   height: max-content;
   justify-content: left;
@@ -27,19 +27,18 @@ md-primary-tab{
   color: var(--md-sys-color-on-surface);
   text-align: center;
   position: sticky;
-    top: -1px;
+  top: -1px;
 }
 
 @media only screen and (max-width: 500px) {
-    .title{
-        font-size: 1.5rem !important;
-    }
-     .center {
-        font-size: 1rem !important;
-        padding:0 !important;
-    }
+  .title {
+    font-size: 1.5rem !important;
   }
-
+  .center {
+    font-size: 1rem !important;
+    padding: 0 !important;
+  }
+}
 
 .buses {
   gap: 10px;
@@ -55,7 +54,6 @@ md-circular-progress#loader {
   left: 50%;
   transform: translate(-50%, -50%);
 }
-
 
 md-filled-text-field {
   --_active-indicator-height: 0;
@@ -104,17 +102,17 @@ body {
   display: flex;
 }
 .searchContain {
-    position: sticky;
-    top: 40px;
-    width: 100%;
-    z-index: 2;
-    transition: all 0.5s;
-    transform: translateX(0);
-    background: var(--md-sys-color-surface);
-    padding: 0 30px;
+  position: sticky;
+  top: 40px;
+  width: 100%;
+  z-index: 2;
+  transition: all 0.5s;
+  transform: translateX(0);
+  background: var(--md-sys-color-surface);
+  padding: 0 30px;
 }
 #tabsFav {
-    top: 96px !important;
+  top: 96px !important;
 }
 .gm-style iframe + div {
   border: none !important;
@@ -136,13 +134,13 @@ body {
       var(--md-sys-color-error-container)
     ) !important;
   }
-  .arrivalTime{
+  .arrivalTime {
     color: #c4dfc0;
   }
   .arrivalYellow {
     background: linear-gradient(163deg, #fce45c, #b49901) !important;
     color: #000000d5;
-}
+  }
 }
 
 @media (prefers-color-scheme: light) {
@@ -156,29 +154,29 @@ body {
       var(--md-sys-color-on-error-container)
     ) !important;
   }
-  .arrivalTime{
+  .arrivalTime {
     color: #264720;
   }
   .arrivalYellow {
     background: linear-gradient(147deg, #ffe86a, #d6b400) !important;
     color: #000000d5;
-}
+  }
 }
 #map div div a[target="_blank"] div img {
   left: unset !important;
   top: unset !important;
 }
 
-md-fab.centerMap, .switch {
-    position: absolute;
-    bottom: 9dvh;
-    right: 17px;
-    z-index: 2;
+md-fab.centerMap,
+.switch {
+  position: absolute;
+  bottom: 9dvh;
+  right: 17px;
+  z-index: 2;
 }
 .switch {
   right: 12px;
-    bottom: 16dvh;
-    
+  bottom: 16dvh;
 }
 #map {
   margin-bottom: -30px;
@@ -186,7 +184,7 @@ md-fab.centerMap, .switch {
   height: 67dvh;
   position: relative;
   opacity: 0;
-  transition: .4s;
+  transition: 0.4s;
 }
 .ol-control {
   background: none !important;
@@ -238,42 +236,36 @@ md-fab.centerMap, .switch {
   display: flex;
 }
 .stationDistance md-icon {
-    margin-right: 5px;
-    font-size: 16px;
+  margin-right: 5px;
+  font-size: 16px;
 }
 .stationName {
   font-weight: 400;
   font-size: 1.2rem;
 }
 .material-symbols-outlined {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 300,
-  'GRAD' 0,
-  'opsz' 40
+  font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 40;
 }
-.iconFill{
-    font-variation-settings:  'FILL' 1,
-    'wght' 300,
-    'GRAD' 0,
-    'opsz' 40
+.iconFill {
+  font-variation-settings: "FILL" 1, "wght" 300, "GRAD" 0, "opsz" 40;
 }
-md-list.listOfStations, md-list.favouriteStations {
-    overflow-y: scroll;
-    height: 100%;
-    width: 100%;
-    transition: all 0.5s;
-    transform: translateY(-20px);
-    opacity: 0;
-    padding: 0 40px;
-    overscroll-behavior: none;
-    overflow-x: hidden;
-    overflow-y: scroll;
-    height: calc(100dvh - 180px);
-    position: relative;
-    padding-bottom: 50px;
-    margin-top: 10px;
-    display: none;
+md-list.listOfStations,
+md-list.favouriteStations {
+  overflow-y: scroll;
+  height: 100%;
+  width: 100%;
+  transition: all 0.5s;
+  transform: translateY(-20px);
+  opacity: 0;
+  padding: 0 40px;
+  overscroll-behavior: none;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  height: calc(100dvh - 180px);
+  position: relative;
+  padding-bottom: 50px;
+  margin-top: 10px;
+  display: none;
 }
 .hideStations {
   position: absolute;
@@ -305,8 +297,8 @@ md-list.listOfStations, md-list.favouriteStations {
   left: 0;
   width: 100%;
   overscroll-behavior: none;
-  overflow-x : hidden;
-  overflow-y : scroll;
+  overflow-x: hidden;
+  overflow-y: scroll;
   opacity: 0;
 }
 md-list-item.stationItem {
@@ -323,49 +315,14 @@ md-list .arrivalItem {
   box-sizing: border-box;
   color: var(--md-sys-color-on-surface);
 }
-.busImg {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 100;
-  height: 100%;
-  background: #000000ba;
-  width: 100%;
-  display: none;
-  align-items: center;
-  justify-content: center;
-opacity: 0;
-  transition: all 0.3s;
 
-}
-span.hidden{
+span.hidden {
   display: none;
 }
 img.busImgElement {
-  object-fit: fill;
   max-width: 100%;
   border-radius: 25px;
-  padding: 10px;
-
-  box-sizing: border-box;
-  animation: show 0.5s forwards;
-}
-.busImg span {
-  position: fixed;
-  z-index: 10;
-  top: 31%;
-  right: 20px;
-  background: #0000008c;
-  backdrop-filter: blur(4px);
-  padding: 10px;
-  border-radius: 100px;
-  height: 20px;
-  width: 20px;
-  text-align: center;
-  font-size: large;
-  color: #ffffff;
-  font-weight: bold;
+  margin-top: 10px;
 }
 @keyframes show {
   0% {
@@ -484,7 +441,7 @@ md-tabs::part(divider) {
 }*/
 .busNo {
   font-weight: 900;
-   height: 60%; 
+  height: 60%;
   border-radius: 200px;
   aspect-ratio: 1 / 1;
   background: red;
@@ -508,7 +465,6 @@ md-tabs::part(divider) {
   position: relative;
   cursor: pointer;
 }
-
 
 .nextBus {
   background: transparent;
@@ -534,13 +490,13 @@ md-tabs::part(divider) {
   gap: 0px;
 }
 .lineTimes {
-    position: absolute !important;
-    top: 40px !important;
-    overscroll-behavior: none;
-    height: calc(100dvh - 55px);
-    animation: showIn 0.5s;
-    transition: transform 0.5s !important;
-    transform: translateX(0);
+  position: absolute !important;
+  top: 40px !important;
+  overscroll-behavior: none;
+  height: calc(100dvh - 55px);
+  animation: showIn 0.5s;
+  transition: transform 0.5s !important;
+  transform: translateX(0);
 }
 .lineTimes .busNo2 {
   background: var(--md-sys-color-surface-container-high);
@@ -570,8 +526,9 @@ sub {
   top: 0;
   left: 0;
 }
-.iksa{
-    visibility:hidden;pointer-events:none;
+.iksa {
+  visibility: hidden;
+  pointer-events: none;
 }
 @keyframes showIn {
   0% {
@@ -588,12 +545,12 @@ span.nextBusTitle {
   font-size: 1.5rem;
   text-align: center;
 }
-.none{
+.none {
   display: none;
 }
 .arrivalsScroll {
-    z-index: 2;
-display: flex;
+  z-index: 2;
+  display: flex;
   width: calc(100% - 40px);
   margin: 0 20px;
   position: relative;
@@ -601,9 +558,9 @@ display: flex;
   flex-direction: column;
   align-items: center;
   transform: translateX(0) translateY(-20px);
- opacity: 0;
- transition: all 0.3s;
- padding-bottom: 50px;
+  opacity: 0;
+  transition: all 0.3s;
+  padding-bottom: 50px;
 }
 
 .hideLoad {
@@ -649,9 +606,8 @@ display: flex;
   background: var(--md-sys-color-surface);
   width: 100%;
   height: 30px;
-  display: flex
-;
-transition: all 0.5s;
+  display: flex;
+  transition: all 0.5s;
   border-top: 1px var(--md-sys-color-outline-variant, #cac4d0) solid;
   overflow: hidden;
   white-space: nowrap;
@@ -661,20 +617,30 @@ transition: all 0.5s;
 }
 .infoText {
   display: inline-block;
-  padding:0;
+  padding: 0;
   animation: slideText 30s linear infinite;
 }
 
 @keyframes slideText {
   from {
-      transform: translateX(100vw);
+    transform: translateX(100vw);
   }
   to {
-      transform: translateX(-100%);
+    transform: translateX(-100%);
   }
 }
-.arrivalsOnStation{
-flex-direction: column !important;
+.myBusHolder {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  transition: all 0.5s;
+}
+.myBusDiv .arrivalsOnStation {
+  width: 100%;
+  z-index: 1;
+}
+.arrivalsOnStation {
+  flex-direction: column !important;
 }
 .arrivalsOnStation .iks {
   position: sticky;
@@ -684,14 +650,27 @@ flex-direction: column !important;
   background: var(--md-sys-color-surface);
   padding: 8px 0;
 }
-.myBusDiv.arrivalsScroll {
+.myBusDiv {
   position: absolute;
   top: 40px !important;
+  height: calc(100dvh - 55px);
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+.busDataDiv {
+  z-index: 2;
+}
+table.busDataTable {
+  background: var(--md-sys-color-surface-container);
+  width: 100%;
+  border-radius: 25px;
+  padding: 15px;
+}
+tr {
+  line-height: 20px;
 }
 .arrivalsOnStation.arrivalsScroll {
-  
-  display: flex
-;
+  display: flex;
   flex-direction: row;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -705,15 +684,13 @@ flex-direction: column !important;
   overscroll-behavior: none;
 }
 .arOnRoute {
-  display: flex
-;
+  display: flex;
   flex-direction: column;
   margin-left: 10px;
   gap: 0px;
 }
 .arrDiv {
-  display: flex
-;
+  display: flex;
   justify-content: left;
 }
 .lineStation {
@@ -723,7 +700,8 @@ flex-direction: column !important;
   /* background-image: url(./images/bus.svg); */
   position: relative;
 }
-.arrDiv.half-hidden-first div .lineStationImg, .arrDiv.half-hidden div .lineStationImg {
+.arrDiv.half-hidden-first div .lineStationImg,
+.arrDiv.half-hidden div .lineStationImg {
   width: 25px;
   height: 25px;
   border-width: 0;
@@ -733,8 +711,8 @@ flex-direction: column !important;
   height: 10px;
   position: absolute;
   left: 50%;
-background-color: darkred;
-border: 5px red solid ;
+  background-color: darkred;
+  border: 5px red solid;
   top: 50%;
   transform: translate(-50%, -50%);
   border-radius: 50%;
@@ -746,17 +724,15 @@ img.googleLogo {
   z-index: 2;
 }
 .busOnStation {
-  display: flex
-;
+  display: flex;
   align-items: center;
   justify-content: center;
   color: rgb(140, 136, 65);
 }
-.busBetween{
-  display: flex
-;
-    align-items: center;
-    justify-content: center;
+.busBetween {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .busBetween md-icon {
   color: rgb(140, 136, 65);
@@ -764,7 +740,7 @@ img.googleLogo {
   font-size: 1rem;
   border-radius: 50%;
   width: 20px;
-    height: 20px;
+  height: 20px;
 }
 .busOnStation md-icon {
   color: rgb(140, 136, 65);
@@ -775,13 +751,13 @@ img.googleLogo {
 .etaStation {
   font-size: 1.1rem;
   display: flex;
-background: var(--md-sys-color-surface-container-low);
+  background: var(--md-sys-color-surface-container-low);
   align-items: center;
   height: 50px;
   position: relative;
   padding: 0 10px;
 }
-.noBG{
+.noBG {
   background: none;
 }
 .etaStation md-icon {
@@ -791,23 +767,21 @@ background: var(--md-sys-color-surface-container-low);
   right: -4px;
   top: 6px;
 }
-.etaStation sub{
-  margin-top: .5rem;
+.etaStation sub {
+  margin-top: 0.5rem;
 }
-
 
 .etaHoder {
   height: fit-content;
-width: min-content;
+  width: min-content;
 
   border-radius: 25px;
 }
 .nameStation {
   margin-left: 20px;
-  font-size: .9rem;
+  font-size: 0.9rem;
   align-items: center;
-  display: flex
-;
+  display: flex;
 }
 .arrivalsOnStation .iks {
   position: sticky;
@@ -816,43 +790,42 @@ width: min-content;
   width: 100%;
 }
 .etaHolder {
-  display: flex
-;
+  display: flex;
 
-gap: 40px;
+  gap: 40px;
 }
 .arrivalsColumns {
-  display: flex
-;
+  display: flex;
   margin-left: auto;
   flex-direction: row;
   gap: 10px;
-  padding-bottom: 100dvh;
+  padding-bottom: 100px;
   height: fit-content;
   max-width: 74vw;
-    overflow-x: scroll;
+  overflow-x: scroll;
 }
- p {
+p {
   color: var(--md-sys-color-on-surface);
   align-items: center;
   margin: 10px 0;
-  display: flex
-;
+  display: flex;
   justify-content: center;
   gap: 10px;
 }
 p md-icon {
   font-size: 1.4rem;
 }
-.arrivalsScroll p{
+.arrivalsScroll p {
   margin-top: 30px;
 }
-.half-hidden, .half-hidden-first {
+.half-hidden,
+.half-hidden-first,
+.half-hidden-normal {
   position: relative;
 }
 
 .half-hidden::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -12.3px;
   left: -10px;
@@ -861,8 +834,9 @@ p md-icon {
   background: var(--md-sys-color-surface);
   pointer-events: none;
 }
-.half-hidden-first::after {
-  content: '';
+.half-hidden-first::after,
+.half-hidden-normal::after {
+  content: "";
   position: absolute;
   top: -12.3px;
   left: -10px;
@@ -871,28 +845,30 @@ p md-icon {
   background: var(--md-sys-color-surface);
   pointer-events: none;
 }
-md-fab.refresh, .directionsButton {
+.half-hidden-normal::after {
+  top: -9.7px;
+}
+md-fab.refresh,
+.directionsButton {
   position: fixed;
   bottom: 70px;
   z-index: 100;
   right: 25px;
-  transition: all .5s;
+  transition: all 0.5s;
 }
- md-fab.refresh {
- 
+md-fab.refresh {
   bottom: 140px;
- 
 }
-.directions{
+.directions {
   overflow-y: scroll;
   overflow-x: hidden;
   align-items: normal;
-height: calc(100dvh - 55px);
-transition: transform 0.5s !important;
-overscroll-behavior: none;
-position: absolute;
-top: 40px;
-transform: translateX(100vw);
+  height: calc(100dvh - 55px);
+  transition: transform 0.5s !important;
+  overscroll-behavior: none;
+  position: absolute;
+  top: 40px;
+  transform: translateX(100vw);
 }
 md-filled-text-field.locationInput {
   margin: 10px auto;
@@ -903,15 +879,13 @@ md-filled-text-field.locationInput {
   --md-filled-text-field-label-text-color: #898989;
 }
 
-
 md-filled-text-field.timeInput {
   width: 120px;
   border: 2px solid var(--ol-subtle-foreground-color);
   border-radius: 250px;
 }
 .timeHolder {
-  display: flex
-;
+  display: flex;
   justify-content: space-evenly;
   margin-top: 10px;
 }
@@ -919,9 +893,8 @@ md-filled-text-field.timeInput {
 .stepDiv {
   margin: 10px 0;
   padding: 20px;
-  display: flex
-;
-position: relative;
+  display: flex;
+  position: relative;
   align-items: center;
   gap: 10px;
   overflow: hidden;
@@ -930,23 +903,22 @@ position: relative;
 }
 .stepTextContent {
   width: 100%;
-  display: flex
-;
-overflow: hidden;
+  display: flex;
+  overflow: hidden;
   flex-direction: column;
   gap: 5px;
 }
 .stepTextContent div {
- font-size: 1rem;
- --md-icon-size: 1.1rem;
- display: flex;
- gap: 15px;
- flex-wrap: wrap;
+  font-size: 1rem;
+  --md-icon-size: 1.1rem;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
 }
 .stepTextContent div span {
- display: flex;
- align-items: center;
- gap: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 span.stepText.endStation {
   align-items: center;
@@ -967,17 +939,15 @@ b {
 }
 .stepsDir {
   background: var(--md-sys-color-surface-container-low);
- 
+
   box-sizing: border-box;
   border-radius: 25px;
-  
 }
 .goButton {
   width: 40%;
   margin: 10px auto;
-
 }
-.panel{
+.panel {
   opacity: 0;
   transform: translateY(-20px);
   transition: all 0.3s;
@@ -996,24 +966,22 @@ b {
   height: 30px;
 }
 .pac-item {
- border: none;
+  border: none;
   padding: 10px;
   color: var(--md-sys-color-on-surface);
 }
 .pac-item:not(:first-child) {
   border-top: 3px solid var(--md-sys-color-surface);
- 
 }
 span.pac-item-query {
   color: var(--md-sys-color-on-surface);
 }
 .chipsHolder {
-  display: flex
-;
+  display: flex;
   flex-wrap: wrap;
   gap: 5px;
 }
-.chip{
+.chip {
   flex-grow: 1; /* Items will expand to fill available space */
   flex-basis: 100px;
 }
@@ -1022,8 +990,7 @@ span.pac-item-query {
   border-radius: 1000px;
 }
 .stepIcon {
-  display: flex
-;
+  display: flex;
   flex-direction: column;
   align-items: center;
   gap: 5px;
@@ -1042,9 +1009,8 @@ span.pac-item-query {
   padding: 10px;
   box-sizing: border-box;
   border-radius: 25px;
-  display: flex
-;
-position: relative;
+  display: flex;
+  position: relative;
   gap: 5px;
   flex-wrap: wrap;
   align-items: stretch;
@@ -1056,7 +1022,7 @@ position: relative;
   position: absolute;
   left: 9px;
   bottom: -10px;
-  scale: .8;
+  scale: 0.8;
   border: 1px solid var(--md-sys-color-on-surface);
 }
 .busHolder {
@@ -1066,14 +1032,13 @@ position: relative;
 .textMin {
   position: absolute;
   top: 12px;
-  font-size: .8rem;
+  font-size: 0.8rem;
   right: -5px;
-  opacity: .8;
+  opacity: 0.8;
   text-align: right;
 }
 div#popup-content {
-  display: flex
-;
+  display: flex;
   justify-content: center;
   align-items: center;
   gap: 5px;
@@ -1085,14 +1050,14 @@ div#popup {
   background: var(--md-sys-color-secondary);
   padding: 10px;
   border-radius: 25px;
-animation: popup .4s cubic-bezier(0.69, 0, 0.3, 1);
-transform-origin: center center;
+  animation: popup 0.4s cubic-bezier(0.69, 0, 0.3, 1);
+  transform-origin: center center;
 }
 @keyframes popup {
-  from{
+  from {
     transform: translate(-50%, -50%) scale(0);
   }
-  to{
+  to {
     transform: translate(-50%, -50%) scale(1);
   }
 }
