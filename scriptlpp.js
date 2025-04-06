@@ -206,6 +206,20 @@ async function makeMap() {
   map.once("postrender", function (event) {
     document.querySelector("#map").style.opacity = "1";
   });
+  map.on("singleclick", function (evt) {
+    const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+      return feature;
+    });
+
+    if (feature && feature.busNo) {
+      document.querySelector(".arrivalsOnStation").style.transform =
+        "translateX(-100vw)";
+      document.querySelector(".arrivalsOnStation").style.opacity = "0";
+      console.log("clicked");
+
+      getMyBusData(feature.busNo);
+    }
+  });
 }
 async function centerMap() {
   await getLocation();
@@ -1265,7 +1279,7 @@ const nextBusTemplate = (data, parent) => {
       (arrivalTimeSpan = null);
   }
 };
-var busUpdateInterval, arrivalsUpdateInterval;
+var busUpdateInterval, arrivalsUpdateInterval, intervalBusk;
 async function showBusById(arrival, parent, station_id) {
   window.history.pushState(null, document.title, "/bus-" + arrival.route_name);
   clearInterval(busUpdateInterval);
@@ -1646,6 +1660,10 @@ window.onpopstate = function (event) {
 };
 
 async function getMyBusData(busId) {
+  clearInterval(intervalBusk);
+  intervalBusk = null;
+  console.log("fired");
+
   await getLocation();
   let busName = busId ? "&bus-name=" + busId : "";
   let allBuses = await fetchData(
@@ -1655,20 +1673,20 @@ async function getMyBusData(busId) {
   if (document.querySelector(".myBusHolder")) {
     document.querySelector(".myBusHolder").remove();
   }
-  let holder = addElement(
+  var holder = addElement(
     "div",
     document.querySelector(".mainSheet"),
     "myBusHolder"
   );
+  holder.classList.add("arrivalsScroll");
   let iks = addElement("md-icon-button", holder, "iks");
   let myBusDiv = document.querySelector(".myBusDiv")
     ? clearElementContent(document.querySelector(".myBusDiv"))
     : addElement("div", holder, "myBusDiv");
   myBusDiv = document.querySelector(".myBusDiv");
-  holder.classList.add("arrivalsScroll");
 
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
-  let intervalBusk;
+
   iks.addEventListener("click", function () {
     holder.style.transform = "translateX(100vw)";
     clearInterval(intervalBusk);
@@ -1685,9 +1703,12 @@ async function getMyBusData(busId) {
   setTimeout(() => {
     holder.style.opacity = "1";
     holder.style.transform = "translateX(0px) translateY(0px)";
-  }, 1);
+  }, 10);
   if (busId) {
-    minimizeSheet(98);
+    setTimeout(() => {
+      minimizeSheet(98);
+    }, 500);
+
     clickedMyBus(allBuses[0]);
     intervalBusk = setInterval(() => {
       clickedMyBus(allBuses[0]);
@@ -1754,10 +1775,10 @@ async function clickedMyBus(bus) {
   );
   let busId = bus.bus_unit_id;
   let busData = busObject.find((el) => el.bus_unit_id === busId);
-  console.log(busData);
+
   let myBusDiv = document.querySelector(".myBusDiv");
   let scrollPosition = myBusDiv.scrollTop;
-  console.log(scrollPosition);
+
   clearElementContent(myBusDiv);
   myBusDiv = document.querySelector(".myBusDiv");
 
@@ -1823,8 +1844,6 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
     const ar = arrivalRoute.arrivals.find(
       (el) => el.vehicle_id == busIdUp.toLowerCase()
     );
-
-    console.log(ar);
 
     try {
       if (!ar) {

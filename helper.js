@@ -339,18 +339,6 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
       }
     }
   }
-  map.on("click", function (evt) {
-    const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
-      return feature;
-    });
-
-    if (feature && feature.busNo) {
-      document.querySelector(".arrivalsOnStation").style.transform =
-        "translateX(-100vw)";
-      document.querySelector(".arrivalsOnStation").style.opacity = "0";
-      getMyBusData(feature.busNo);
-    }
-  });
 
   if (firsttim) {
     await generateRouteVector(
