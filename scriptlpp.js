@@ -1709,9 +1709,12 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
     holder.style.transform = "translateX(0px) translateY(0px)";
   }, 10);
   if (arrivals || busId) {
-    clickedMyBus(busObject[0]);
+    let id = busId
+      ? busObject.find((el) => el.bus_unit_id == busId.toUpperCase())
+      : busObject[0];
+    clickedMyBus(id);
     intervalBusk = setInterval(() => {
-      clickedMyBus(busObject[0]);
+      clickedMyBus(id);
     }, 10000);
     return;
   }
