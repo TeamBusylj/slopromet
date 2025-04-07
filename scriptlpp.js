@@ -962,7 +962,7 @@ async function stationClick(stationa, noAnimation, ia) {
     let getMyBus = addElement("md-filled-tonal-button", null, "getMyBus");
     container.insertBefore(getMyBus, arrivalsScroll);
     getMyBus.innerHTML = "Moja vožnja";
-
+    getMyBus.style.display = "none";
     const clickedMyBus = () => {
       container.style.transform = "translateX(-100vw)";
       container.style.opacity = "0";
@@ -1647,8 +1647,6 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
     : null;
   clearInterval(intervalBusk);
   intervalBusk = null;
-
-  let busName = busId ? "&bus-id=" + busId : "";
   if (document.querySelector(".myBusHolder")) {
     document.querySelector(".myBusHolder").remove();
   }
@@ -1657,6 +1655,8 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
     document.querySelector(".mainSheet"),
     "myBusHolder"
   );
+  console.log(arrivals, arrivalsAll);
+
   holder.classList.add("arrivalsScroll");
   let iks = addElement("md-icon-button", holder, "iks");
   if (arrivals && arrivals.length > 1) {
@@ -1675,9 +1675,9 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
           (el) => el.bus_unit_id == arrival.vehicle_id.toUpperCase()
         );
 
-        clickedMyBus(busek);
+        clickedMyBus(busek, arrival.trip_id);
         intervalBusk = setInterval(() => {
-          clickedMyBus(busek);
+          clickedMyBus(busek, arrival.trip_id);
         }, 10000);
       });
     }
@@ -1709,12 +1709,15 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
     holder.style.transform = "translateX(0px) translateY(0px)";
   }, 10);
   if (arrivals || busId) {
-    let id = busId
-      ? busObject.find((el) => el.bus_unit_id == busId.toUpperCase())
-      : busObject[0];
-    clickedMyBus(id);
+    console.log(busId);
+
+    let bus = busObject.find(
+      (el) =>
+        el.bus_unit_id == (busId ? busId : arrivals[0].vehicle_id.toUpperCase())
+    );
+    clickedMyBus(bus, bus.trip_id);
     intervalBusk = setInterval(() => {
-      clickedMyBus(id);
+      clickedMyBus(bus.vehicle_id, bus.trip_id);
     }, 10000);
     return;
   }
@@ -1774,10 +1777,10 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
     arrivalItem.addEventListener("click", () => clickedMyBus(line));
   }
 }
-async function clickedMyBus(bus) {
+async function clickedMyBus(bus, tripId) {
   let arOnS = await fetchData(
     "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/arrivals-on-route?trip-id=" +
-      bus.trip_id
+      tripId
   );
   let busId = bus.bus_unit_id;
   let busData = busObject.find((el) => el.bus_unit_id === busId);
@@ -1850,7 +1853,6 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
     const ar = arrivalRoute.arrivals.find(
       (el) => el.vehicle_id == busIdUp.toLowerCase()
     );
-    console.log(ar, busIdUp.toLowerCase());
 
     try {
       if (!ar) {

@@ -168,8 +168,6 @@ var busImageData;
  * @returns {void}
  */
 async function loop(firsttim, arrival, station, arOnSt) {
-  console.log(arrival);
-
   if (firsttim) {
     document.querySelector(".loader").style.display = "grid";
     document

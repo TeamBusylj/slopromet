@@ -640,6 +640,7 @@ span.nextBusTitle {
 .myBusDiv .arrivalsOnStation {
   width: 100%;
   z-index: 1;
+  padding-bottom: 100px;
 }
 .arrivalsOnStation {
   flex-direction: column !important;
