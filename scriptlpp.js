@@ -1655,10 +1655,10 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
     document.querySelector(".mainSheet"),
     "myBusHolder"
   );
-  console.log(arrivals, arrivalsAll);
 
   holder.classList.add("arrivalsScroll");
   let iks = addElement("md-icon-button", holder, "iks");
+
   if (arrivals && arrivals.length > 1) {
     let myEtaHolder = addElement("div", holder, "myEtaHolder");
     for (const arrival of arrivals) {
@@ -1674,7 +1674,9 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
         let busek = busObject.find(
           (el) => el.bus_unit_id == arrival.vehicle_id.toUpperCase()
         );
-
+        document.querySelector(".myBusDiv").style.transform =
+          "translateY(-20px)";
+        document.querySelector(".myBusDiv").style.opacity = "0";
         clickedMyBus(busek, arrival.trip_id);
         intervalBusk = setInterval(() => {
           clickedMyBus(busek, arrival.trip_id);
@@ -1683,6 +1685,7 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
     }
     myEtaHolder.firstElementChild.classList.add("selected");
   }
+
   let myBusDiv = document.querySelector(".myBusDiv")
     ? clearElementContent(document.querySelector(".myBusDiv"))
     : addElement("div", holder, "myBusDiv");
@@ -1709,73 +1712,22 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
     holder.style.transform = "translateX(0px) translateY(0px)";
   }, 10);
   if (arrivals || busId) {
-    console.log(busId);
+    console.log(arrivals[0].vehicle_id.toUpperCase());
 
     let bus = busObject.find(
       (el) =>
         el.bus_unit_id == (busId ? busId : arrivals[0].vehicle_id.toUpperCase())
     );
+    console.log(bus);
+
     clickedMyBus(bus, bus.trip_id);
     intervalBusk = setInterval(() => {
-      clickedMyBus(bus.vehicle_id, bus.trip_id);
+      clickedMyBus(bus, bus.trip_id);
     }, 10000);
     return;
   }
 
-  //get buse based on location
-  await getLocation();
-  let nearByBuses = [];
-  let span = addElement("span", myBusDiv, "myBusSpan");
-  span.innerHTML = "S katero linijo se peljete?";
-  for (const bus of busObject) {
-    if (navigator.geolocation) {
-      const distance = haversineDistance(
-        latitude,
-        longitude,
-        bus.latitude,
-        bus.longitude
-      );
-      if (distance < 1) {
-        bus.distance = distance;
-        nearByBuses.push(bus);
-      }
-    }
-  }
-
-  nearByBuses.sort((a, b) => a.distance - b.distance);
-
-  if (nearByBuses.length == 0) {
-    let span = addElement("span", myBusDiv, "myBusSpan");
-    span.innerHTML = "Niste na avtobusu.";
-    return;
-  } else if (nearByBuses.length == 1) {
-    let scrollPosition = myBusDiv.scrollTop;
-    clickedMyBus(nearByBuses[0]);
-    intervalBusk = setInterval(() => {
-      scrollPosition = myBusDiv.scrollTop;
-      clickedMyBus(nearByBuses[0], scrollPosition);
-    }, 10000);
-
-    return;
-  }
-  for (const line of nearByBuses) {
-    let arrivalItem = addElement("div", myBusDiv, "arrivalItem");
-    arrivalItem.style.order = line.line_number.replace(/\D/g, "");
-    let busNumberDiv = addElement("div", arrivalItem, "busNo2");
-    busNumberDiv.style.background = lineColors(line.line_number);
-    busNumberDiv.id = "bus_" + line.line_number;
-    busNumberDiv.textContent = line.line_number;
-    let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
-    addElement("md-ripple", arrivalItem);
-
-    let tripNameSpan = addElement("span", arrivalDataDiv);
-    tripNameSpan.textContent = line.line_name;
-    if (line.line_number[0] == "N") {
-      arrivalItem.style.order = line.line_number.replace(/\D/g, "") + 100;
-    }
-    arrivalItem, busNumberDiv, arrivalDataDiv, (tripNameSpan = null);
-    arrivalItem.addEventListener("click", () => clickedMyBus(line));
-  }
+  //get buse based on location (removed)
 }
 async function clickedMyBus(bus, tripId) {
   let arOnS = await fetchData(
@@ -1798,13 +1750,17 @@ async function clickedMyBus(bus, tripId) {
   busNumberDiv.id = "bus_" + busData.route_number;
   busNumberDiv.textContent = busData.route_number;
   let tripNameSpan = addElement("span", arrivalItem);
-  tripNameSpan.textContent = busData.route_name;
+  const tripName = arOnS.find((station) => station?.arrivals?.length > 0)
+    ?.arrivals[0]?.trip_name;
+  tripNameSpan.textContent = tripName;
   let busDataDiv = addElement("div", myBusDiv, "busDataDiv");
-  createBusData(busData, busDataDiv);
+  await createBusData(busData, busDataDiv);
   let arrivalDataDiv = addElement("div", myBusDiv, "arrivalsOnStation");
   showArrivalsMyBus(arOnS, arrivalDataDiv, busData, busId);
 
   myBusDiv.scrollTop = scrollPosition ? scrollPosition : 0;
+  myBusDiv.style.transform = "translateY(0px)";
+  myBusDiv.style.opacity = "1";
 }
 function showArrivalsMyBus(info, container, arrival, busIdUp) {
   let holder = addElement("div", container, "arFlex");
@@ -1813,6 +1769,7 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
   let arHolder = addElement("div", holder, "arOnRoute");
   var listArrivals = {};
   let arrivalsColumns = addElement("div", holder, "arrivalsColumns");
+  let isItYet = true;
   info.forEach((arrivalRoute, index) => {
     //vsaka postaja
     let arDiv = addElement("div", arHolder, "arrDiv");
@@ -1857,11 +1814,11 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
     try {
       if (!ar) {
         if (
-          !info[index + 1].arrivals.find(
+          !info[index + 1]?.arrivals?.find(
             (el) => el.vehicle_id == busIdUp.toLowerCase()
           )
         ) {
-          arDiv.style.display = "none";
+          if (isItYet) arDiv.style.display = "none";
         } else {
           lineStation.parentNode.classList.add("half-hidden-normal");
         }
@@ -1870,9 +1827,8 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
       }
     } catch (e) {
       console.log(e);
-      return;
     }
-
+    isItYet = false;
     if (
       ar["type"] == 2 &&
       !lineStation.parentNode.classList.contains("half-hidden") &&
@@ -1980,21 +1936,37 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
     etaHolder = null;
   }
 }
-function createBusData(bus, busDataDiv) {
+async function createBusData(bus, busDataDiv) {
+  let busAge = await (await fetch("./busAge.json")).json();
+  const findYearByGarageNumber = (garageNumber) => {
+    for (const year in busAge) {
+      if (busAge[year].includes(garageNumber)) {
+        return year;
+      }
+    }
+    return null; // če ni najdeno
+  };
+  console.log(bus.category);
+
   busDataDiv.innerHTML = `<table class="busDataTable">
   <tr><td>Ime:</td><td>${bus.bus_name}</td></tr>
    <tr><td>Model:</td><td>${bus.model}</td></tr>
+   <tr><td>Leto izdelave:</td><td>${findYearByGarageNumber(bus.no)}</td></tr>
    <tr><td>Vrsta:</td><td>${bus.type}</td></tr>
    <tr><td>Hitrost:</td><td>${bus.ground_speed} km/h</td></tr>
-   <tr><td>Kilometrina:</td><td>${bus.odometer} km</td></tr>
    <tr><td>Zabeležen:</td><td>${bus.bus_timestamp.toLocaleString("sl-SI", {
      timeZone: "Europe/Ljubljana",
    })}</td></tr>
   `;
   if (bus.hasImage) {
     let img = addElement("img", busDataDiv, "busImgElement");
+    let imageLoaded = new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+    });
     img.src =
       "https://mestnipromet.cyou/tracker/img/avtobusi/" + bus.no + ".jpg";
+    await imageLoaded;
   }
 }
 function getDirections() {

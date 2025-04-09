@@ -322,7 +322,9 @@ span.hidden {
 img.busImgElement {
   max-width: 100%;
   border-radius: 25px;
+  z-index: 2;
   margin-top: 10px;
+  position: relative;
 }
 @keyframes show {
   0% {
@@ -657,6 +659,7 @@ span.nextBusTitle {
   height: calc(100dvh - 55px);
   padding: 0 10px;
   box-sizing: border-box;
+  transition: all 0.5s;
 }
 .myEtaHolder {
   display: flex;
@@ -816,7 +819,6 @@ img.googleLogo {
   padding-bottom: 100px;
   height: fit-content;
   max-width: 74vw;
-  overflow-x: scroll;
 }
 p {
   color: var(--md-sys-color-on-surface);
