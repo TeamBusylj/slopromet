@@ -1712,17 +1712,15 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
     holder.style.transform = "translateX(0px) translateY(0px)";
   }, 10);
   if (arrivals || busId) {
-    console.log(arrivals[0].vehicle_id.toUpperCase());
-
     let bus = busObject.find(
       (el) =>
         el.bus_unit_id == (busId ? busId : arrivals[0].vehicle_id.toUpperCase())
     );
-    console.log(bus);
+    console.log(arrivals);
 
-    clickedMyBus(bus, bus.trip_id);
+    clickedMyBus(bus, arrivals ? arrivals[0].trip_id : bus.trip_id);
     intervalBusk = setInterval(() => {
-      clickedMyBus(bus, bus.trip_id);
+      clickedMyBus(bus, arrivals ? arrivals[0].trip_id : bus.trip_id);
     }, 10000);
     return;
   }
@@ -1807,27 +1805,55 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
     nameStation.classList.add("nameStation_" + arrivalRoute.station_code);
     nameStation.innerHTML = arrivalRoute.name;
 
-    const ar = arrivalRoute.arrivals.find(
+    let ar = arrivalRoute.arrivals.find(
       (el) => el.vehicle_id == busIdUp.toLowerCase()
     );
 
     try {
       if (!ar) {
         if (
-          !info[index + 1]?.arrivals?.find(
+          info[index + 1]?.arrivals?.find(
             (el) => el.vehicle_id == busIdUp.toLowerCase()
-          )
+          ) &&
+          isItYet
         ) {
-          if (isItYet) arDiv.style.display = "none";
-        } else {
           lineStation.parentNode.classList.add("half-hidden-normal");
+          return;
         }
 
-        return;
+        if (
+          !info[index + 1]?.arrivals?.find(
+            (el) => el.vehicle_id == busIdUp.toLowerCase()
+          ) &&
+          isItYet
+        ) {
+          arDiv.style.display = "none";
+          return;
+        }
+        if (!isItYet) {
+          const moreThanAnHour = info
+            .slice(index)
+            .find((station) =>
+              station?.arrivals?.some(
+                (arrival) =>
+                  arrival?.vehicle_id?.toLowerCase() === busIdUp.toLowerCase()
+              )
+            )?.arrivals;
+          console.log(moreThanAnHour);
+
+          if (!moreThanAnHour) return;
+          console.log("no bus found");
+          let indexOf = info.find(
+            (station) => station?.arrivals?.length > 0
+          )?.arrivals;
+          ar = indexOf.find((el) => el.vehicle_id == busIdUp.toLowerCase());
+          ar["eta_min"] = "/";
+        }
       }
     } catch (e) {
       console.log(e);
     }
+
     isItYet = false;
     if (
       ar["type"] == 2 &&
@@ -1920,12 +1946,15 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
                 item + `<sub>${long}</sub>` + "<md-icon>near_me</md-icon>";
             } else if (typeValue === "2") {
               // If type is 2, replace the text with "P"
-              stationHTML = item.replace(item, "P");
+              stationHTML = item.replace(item, "PRIHOD");
             } else if (typeValue === "3") {
               // If type is 3, replace the text with "O"
-              stationHTML = item.replace(item, "O");
+              stationHTML = item.replace(item, "OBVOZ");
             }
           }
+          console.log(stationHTML);
+
+          stationHTML = stationHTML[0] == "/" ? "/" : stationHTML;
           // Return the formatted station HTML with the background removed if needed
           return `<div class="etaStation" style="${
             spanText ? "" : "background:none;"
@@ -1937,7 +1966,9 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
   }
 }
 async function createBusData(bus, busDataDiv) {
-  let busAge = await (await fetch("./busAge.json")).json();
+  let busAge = await (
+    await fetch("https://teambusylj.github.io/slopromet/busAge.json")
+  ).json();
   const findYearByGarageNumber = (garageNumber) => {
     for (const year in busAge) {
       if (busAge[year].includes(garageNumber)) {
@@ -1946,7 +1977,6 @@ async function createBusData(bus, busDataDiv) {
     }
     return null; // če ni najdeno
   };
-  console.log(bus.category);
 
   busDataDiv.innerHTML = `<table class="busDataTable">
   <tr><td>Ime:</td><td>${bus.bus_name}</td></tr>
