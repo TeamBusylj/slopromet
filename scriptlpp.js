@@ -1215,11 +1215,10 @@ async function createInfoBar(parent, station_id) {
     infoBar,
     "changeTime"
   );
-  changeTime.setAttribute("style", "--_container-height:30px;margin:10px 0;");
   let absolut = addElement("md-outlined-segmented-button", changeTime, "");
-  absolut.label = "Absolutni čas";
+  absolut.label = minToTime(3, 1);
   let relativ = addElement("md-outlined-segmented-button", changeTime, "");
-  relativ.label = "Relativni čas";
+  relativ.label = "3 min";
   localStorage.getItem("time") == "relativ"
     ? relativ.setAttribute("selected", "")
     : absolut.setAttribute("selected", "");
@@ -1234,7 +1233,8 @@ async function createInfoBar(parent, station_id) {
     refresh();
   });
   if (info.length !== 0) {
-    let infoText = addElement("div", infoBar, "infoText");
+    let infoTextC = addElement("div", infoBar, "infoTextContainer");
+    let infoText = addElement("div", infoTextC, "infoText");
     infoText.innerHTML = decodeURIComponent(info.toString());
   }
   setTimeout(() => {
@@ -2443,8 +2443,8 @@ function geocodeLatLng(latitude, longitude) {
   });
 }
 var absoluteTime = false;
-function minToTime(min) {
-  if (!absoluteTime) return min + " min";
+function minToTime(min, yes) {
+  if (!absoluteTime && !yes) return min + " min";
   const now = new Date();
   now.setMinutes(now.getMinutes() + min);
 

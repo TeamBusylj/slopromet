@@ -636,17 +636,23 @@ span.nextBusTitle {
   color: var(--md-sys-color-on-surface);
   align-items: center;
   transform: translateY(100%);
-  flex-direction: column;
+}
+.infoTextContainer {
+  overflow: hidden;
 }
 .infoText {
   display: inline-block;
   padding: 0;
   animation: slideText 30s linear infinite;
 }
-
+.changeTime {
+  --_container-height: 30px;
+  margin: 10px 0;
+  margin-left: 10px;
+}
 @keyframes slideText {
   from {
-    transform: translateX(100vw);
+    transform: translateX(50vw);
   }
   to {
     transform: translateX(-100%);
