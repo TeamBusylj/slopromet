@@ -257,6 +257,7 @@ window.addEventListener("load", async function () {
   busImageData = await fetch(
     "https://mestnipromet.cyou/tracker/js/json/images.json"
   );
+  absoluteTime = localStorage.getItem("time") ? true : false;
   busImageData = await busImageData.json();
 });
 async function getAllLines() {
@@ -526,6 +527,7 @@ async function refresh() {
     arH.style.transform = "translateX(0px) translateY(-20px)";
     arH.style.opacity = "0";
     await stationClick(isArrivalsOpen, true);
+    arH = document.querySelector(".arrivalsScroll");
     arH.style.transform = "translateX(0px) translateY(0px)";
     arH.style.opacity = "1";
   } else if (checkVisible(currentPanel)) {
@@ -847,7 +849,7 @@ async function stationClick(stationa, noAnimation, ia) {
     iks.addEventListener("click", function () {
       window.history.replaceState(null, document.title, "/");
       container.style.transform = "translateX(100vw)";
-      document.querySelector(".infoBar").style.transform = "translateY(30px)";
+      document.querySelector(".infoBar").style.transform = "translateY(100%)";
       container.style.opacity = "0";
       isArrivalsOpen = false;
       stylesTransition.forEach((style) => {
@@ -954,6 +956,7 @@ async function stationClick(stationa, noAnimation, ia) {
         notYet = true;
         showLines(timeTScroll, stationList[station]);
       }
+      getLocation();
     });
     data = await fetchData(
       "https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
@@ -1011,11 +1014,10 @@ function showArrivals(arrivalsScroll2, data) {
             "<md-icon style='animation-delay:" +
             randomOneDecimal() +
             "s;'>near_me</md-icon>" +
-            arrival.eta_min +
-            " min";
+            minToTime(arrival.eta_min);
           arrivalTimeSpan.classList.add("arrivalGreen");
         } else if (arrival.type == 1) {
-          arrivalTimeSpan.innerHTML = arrival.eta_min + " min";
+          arrivalTimeSpan.innerHTML = minToTime(arrival.eta_min);
         } else if (arrival.type == 2) {
           arrivalTimeSpan.innerHTML = "PRIHOD";
           arrivalTimeSpan.classList.add("arrivalRed");
@@ -1051,11 +1053,10 @@ function showArrivals(arrivalsScroll2, data) {
             "<md-icon style='animation-delay:" +
             randomOneDecimal() +
             "s;'>near_me</md-icon>" +
-            arrival.eta_min +
-            " min";
+            minToTime(arrival.eta_min);
           arrivalTimeSpan.classList.add("arrivalGreen");
         } else if (arrival.type == 1) {
-          arrivalTimeSpan.innerHTML = arrival.eta_min + " min";
+          arrivalTimeSpan.innerHTML = minToTime(arrival.eta_min);
         } else if (arrival.type == 2) {
           arrivalTimeSpan.innerHTML = "PRIHOD";
           arrivalTimeSpan.classList.add("arrivalRed");
@@ -1208,9 +1209,34 @@ async function createInfoBar(parent, station_id) {
   );
 
   let infoBar = addElement("div", parent, "infoBar");
-  if (info.length === 0) infoBar.style.display = "none";
-  let infoText = addElement("div", infoBar, "infoText");
-  infoText.innerHTML = decodeURIComponent(info.toString());
+
+  let changeTime = addElement(
+    "md-outlined-segmented-button-set",
+    infoBar,
+    "changeTime"
+  );
+  changeTime.setAttribute("style", "--_container-height:30px;margin:10px 0;");
+  let absolut = addElement("md-outlined-segmented-button", changeTime, "");
+  absolut.label = "Absolutni čas";
+  let relativ = addElement("md-outlined-segmented-button", changeTime, "");
+  relativ.label = "Relativni čas";
+  localStorage.getItem("time") == "relativ"
+    ? relativ.setAttribute("selected", "")
+    : absolut.setAttribute("selected", "");
+  relativ.addEventListener("click", function () {
+    localStorage.removeItem("time");
+    absoluteTime = false;
+    refresh();
+  });
+  absolut.addEventListener("click", function () {
+    localStorage.setItem("time", "absolute");
+    absoluteTime = true;
+    refresh();
+  });
+  if (info.length !== 0) {
+    let infoText = addElement("div", infoBar, "infoText");
+    infoText.innerHTML = decodeURIComponent(info.toString());
+  }
   setTimeout(() => {
     infoBar.style.transform = "translateY(0)";
   }, 10);
@@ -1256,11 +1282,10 @@ const nextBusTemplate = (data, parent) => {
         "<md-icon style='animation-delay:" +
         randomOneDecimal() +
         "s;'>near_me</md-icon>" +
-        arrival.eta_min +
-        " min";
+        minToTime(arrival.eta_min);
       arrivalTimeSpan.classList.add("arrivalGreen");
     } else if (arrival.type == 1) {
-      arrivalTimeSpan.innerHTML = arrival.eta_min + " min";
+      arrivalTimeSpan.innerHTML = minToTime(arrival.eta_min);
     } else if (arrival.type == 2) {
       arrivalTimeSpan.innerHTML = "PRIHOD";
       arrivalTimeSpan.classList.add("arrivalRed");
@@ -1431,7 +1456,8 @@ async function arrivalsOnStation(arrival, station_id, already) {
         }
       }
       listArrivals[ar["vehicle_id"]][index] =
-        ar["eta_min"] + `<span style="display:none;">${ar["type"]}</span>`;
+        minToTime(ar["eta_min"]) +
+        `<span style="display:none;">${ar["type"]}</span>`;
     }
     arDiv, lineStation, lnimg, (nameStation = null);
   });
@@ -1657,17 +1683,18 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
   );
 
   holder.classList.add("arrivalsScroll");
-  let iks = addElement("md-icon-button", holder, "iks");
+  let myEtaHolder = addElement("div", holder, "myEtaHolder");
 
+  let iks = addElement("md-icon-button", myEtaHolder, "iks");
+  let myEtaChips = addElement("div", myEtaHolder, "myEtaChips");
   if (arrivals && arrivals.length > 1) {
-    let myEtaHolder = addElement("div", holder, "myEtaHolder");
     for (const arrival of arrivals) {
-      let arTime = addElement("div", myEtaHolder, "arrivalTime");
-      arTime.innerHTML = arrival.eta_min + " min";
+      let arTime = addElement("div", myEtaChips, "arrivalTime");
+      arTime.innerHTML = minToTime(arrival.eta_min);
       arTime.busId = arrival.vehicle_id;
       addElement("md-ripple", arTime);
       arTime.addEventListener("click", function () {
-        myEtaHolder.querySelector(".selected").classList.remove("selected");
+        myEtaChips.querySelector(".selected").classList.remove("selected");
         arTime.classList.add("selected");
         clearInterval(intervalBusk);
         intervalBusk = null;
@@ -1683,7 +1710,7 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
         }, 10000);
       });
     }
-    myEtaHolder.firstElementChild.classList.add("selected");
+    myEtaChips.firstElementChild.classList.add("selected");
   }
 
   let myBusDiv = document.querySelector(".myBusDiv")
@@ -1817,7 +1844,6 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
           ) &&
           isItYet
         ) {
-          lineStation.parentNode.classList.add("half-hidden-normal");
           return;
         }
 
@@ -1864,13 +1890,10 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
         "<md-icon style='color:RGB(" +
         darkenColor(
           lineColorsObj[arrival.route_number.replace(/\D/g, "")],
-          50
+          100
         ).join(",") +
         ")!important;background-color:RGB(" +
-        darkenColor(
-          lineColorsObj[arrival.route_number.replace(/\D/g, "")],
-          -60
-        ).join(",") +
+        lineColorsObj[arrival.route_number.replace(/\D/g, "")].join(",") +
         ")'>directions_bus</md-icon>";
       lnimg.classList.add("busOnStation");
     }
@@ -1885,28 +1908,23 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
           "<md-icon style='color:RGB(" +
           darkenColor(
             lineColorsObj[arrival.route_number.replace(/\D/g, "")],
-            50
+            150
           ).join(",") +
           ")!important;background-color:RGB(" +
-          darkenColor(
-            lineColorsObj[arrival.route_number.replace(/\D/g, "")],
-            -60
-          ).join(",") +
+          lineColorsObj[arrival.route_number.replace(/\D/g, "")].join(",") +
           ")'>directions_bus</md-icon>";
         lnimg.classList.add("busBetween");
       }
     }
     listArrivals[ar["vehicle_id"]][index] =
-      ar["eta_min"] + `<span style="display:none;">${ar["type"]}</span>`;
+      minToTime(ar["eta_min"]).replace(" min", "") +
+      `<span style="display:none;">${ar["type"]}</span>`;
 
     arDiv, lineStation, lnimg, (nameStation = null);
   });
 
   let sortedArrivals = sortArrivals(listArrivals, 0);
-
-  sortedArrivals = sortedArrivals.slice(0, 10);
-
-  let long = sortedArrivals.length > 3 ? "" : "min";
+  let long = absoluteTime ? "" : "min";
   for (let [key, element] of sortedArrivals) {
     let etaHolder = addElement("div", arrivalsColumns, "etaHoder");
     etaHolder.innerHTML = element
@@ -1926,12 +1944,12 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
 
           if (item.includes("z")) {
             border =
-              "border-top-left-radius: 20px;border-top-right-radius: 20px;";
+              "border-top-left-radius: 15px;border-top-right-radius: 15px;";
             item = item.replace("z", "");
           }
           if (item.includes("m")) {
             border +=
-              "border-bottom-left-radius: 20px;border-bottom-right-radius: 20px;";
+              "border-bottom-left-radius: 15px;border-bottom-right-radius: 15px;";
             item = item.replace("m", "");
           }
 
@@ -1952,7 +1970,6 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
               stationHTML = item.replace(item, "OBVOZ");
             }
           }
-          console.log(stationHTML);
 
           stationHTML = stationHTML[0] == "/" ? "/" : stationHTML;
           // Return the formatted station HTML with the background removed if needed
@@ -1981,7 +1998,7 @@ async function createBusData(bus, busDataDiv) {
   busDataDiv.innerHTML = `<table class="busDataTable">
   <tr><td>Ime:</td><td>${bus.bus_name}</td></tr>
    <tr><td>Model:</td><td>${bus.model}</td></tr>
-   <tr><td>Leto izdelave:</td><td>${findYearByGarageNumber(bus.no)}</td></tr>
+   <tr><td>Leto:</td><td>${findYearByGarageNumber(bus.no)}</td></tr>
    <tr><td>Vrsta:</td><td>${bus.type}</td></tr>
    <tr><td>Hitrost:</td><td>${bus.ground_speed} km/h</td></tr>
    <tr><td>Zabeležen:</td><td>${bus.bus_timestamp.toLocaleString("sl-SI", {
@@ -1989,13 +2006,15 @@ async function createBusData(bus, busDataDiv) {
    })}</td></tr>
   `;
   if (bus.hasImage) {
-    let img = addElement("img", busDataDiv, "busImgElement");
+    let holder = addElement("div", busDataDiv, "busImgHolder");
+    let img = addElement("img", holder, "busImgElement");
     let imageLoaded = new Promise((resolve, reject) => {
       img.onload = resolve;
       img.onerror = reject;
     });
     img.src =
       "https://mestnipromet.cyou/tracker/img/avtobusi/" + bus.no + ".jpg";
+    holder.innerHTML += `<div class="busAuthor"><md-icon slot="trailing-icon">photo_camera</md-icon>${bus.author}</div>`;
     await imageLoaded;
   }
 }
@@ -2423,8 +2442,17 @@ function geocodeLatLng(latitude, longitude) {
     });
   });
 }
+var absoluteTime = false;
+function minToTime(min) {
+  if (!absoluteTime) return min + " min";
+  const now = new Date();
+  now.setMinutes(now.getMinutes() + min);
 
-// Example usage:
+  const hrs = now.getHours();
+  const mins = now.getMinutes();
+
+  return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+}
 
 function addElement(tag, parent, className) {
   var element = document.createElement(tag);

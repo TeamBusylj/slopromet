@@ -326,6 +326,25 @@ img.busImgElement {
   margin-top: 10px;
   position: relative;
 }
+.busAuthor {
+  position: absolute;
+  bottom: 3px;
+  z-index: 5;
+  padding: 7px 13px;
+  box-sizing: border-box;
+  background: RGBA(0, 0, 0, 0.6);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  backdrop-filter: blur(3px);
+  right: 0;
+  --md-icon-size: 15px;
+  border-radius: 15px 0px 25px 0px;
+}
+.busImgHolder {
+  position: relative;
+}
 @keyframes show {
   0% {
     scale: 0.95;
@@ -608,7 +627,7 @@ span.nextBusTitle {
   z-index: 4;
   background: var(--md-sys-color-surface);
   width: 100%;
-  height: 30px;
+  height: fit-content;
   display: flex;
   transition: all 0.5s;
   border-top: 1px var(--md-sys-color-outline-variant, #cac4d0) solid;
@@ -616,7 +635,8 @@ span.nextBusTitle {
   white-space: nowrap;
   color: var(--md-sys-color-on-surface);
   align-items: center;
-  transform: translateY(30px);
+  transform: translateY(100%);
+  flex-direction: column;
 }
 .infoText {
   display: inline-block;
@@ -637,12 +657,17 @@ span.nextBusTitle {
   top: 40px;
   left: 0;
   transition: all 0.5s;
+  width: 100%;
   transform: translateX(100vw);
+  margin: 0;
+  overscroll-behavior: none;
 }
 .myBusDiv .arrivalsOnStation {
   width: 100%;
   z-index: 1;
   padding-bottom: 100px;
+  margin-top: 10px;
+  overscroll-behavior: none;
 }
 .arrivalsOnStation {
   flex-direction: column !important;
@@ -657,15 +682,28 @@ span.nextBusTitle {
 }
 .myBusDiv {
   height: calc(100dvh - 55px);
-  padding: 0 10px;
   box-sizing: border-box;
   transition: all 0.5s;
+  margin: 0 30px;
 }
 .myEtaHolder {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   border-bottom: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
-  padding-bottom: 10px;
+  width: 100%;
+  justify-content: space-between;
+  z-index: 9;
+  background: var(--md-sys-color-surface);
+  padding: 10px 20px;
+  box-sizing: border-box;
+}
+.myEtaChips {
+  display: flex;
+  flex-grow: 1;
+  justify-content: center;
+  flex-wrap: wrap;
+  line-height: 30px;
+  gap: 5px;
 }
 .myEtaHolder .selected {
   background: linear-gradient(
@@ -673,6 +711,9 @@ span.nextBusTitle {
     var(--md-sys-color-surface-variant),
     var(--md-sys-color-outline-variant)
   );
+}
+.myEtaHolder .arrivalTime {
+  margin: 0;
 }
 .busDataDiv {
   z-index: 2;
@@ -711,11 +752,12 @@ tr {
   justify-content: left;
 }
 .lineStation {
-  width: 8px;
-  height: 50px;
+  width: 7px;
+  height: 48px;
   background: var(--md-sys-color-primary);
-  /* background-image: url(./images/bus.svg); */
   position: relative;
+  border-radius: 10px;
+  margin: 1px 0;
 }
 .arrDiv.half-hidden-first div .lineStationImg,
 .arrDiv.half-hidden div .lineStationImg {
@@ -770,8 +812,10 @@ img.googleLogo {
   display: flex;
   background: var(--md-sys-color-surface-container-low);
   align-items: center;
-  height: 50px;
+  height: 48px;
+  margin: 2px 0;
   position: relative;
+  border-radius: 5px;
   padding: 0 10px;
 }
 .noBG {
@@ -796,7 +840,7 @@ img.googleLogo {
 }
 .nameStation {
   margin-left: 20px;
-  font-size: 0.9rem;
+  font-size: 1rem;
   align-items: center;
   display: flex;
 }
