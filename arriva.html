@@ -6,7 +6,7 @@
     <title>SloPromet</title>
     <link rel="manifest" href="manifest.json" />
     <link rel="stylesheet" href="stylelpp.css" />
-    <link rel="stylesheet" href="themelpp.css" />
+    <link rel="stylesheet" href="themearriva.css" />
     <meta name="theme-color" content="#22282d" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net/" />
@@ -58,7 +58,7 @@
       // Add other bootstrap parameters as needed, using camel case.
     });
   </script>
-  <script src="scriptlpp.js"></script>
+  <script src="scriptarriva.js"></script>
   <script src="helper.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
   <script>
@@ -93,15 +93,11 @@
     <div id="popup" class="ol-popup">
       <div id="popup-content"></div>
     </div>
-    <div style="display: none" class="navigationBar">
-      <div id="lppTab" class="navigationTab selected">
+    <div class="navigationBar">
+      <div onclick="changeAgency('LPP')" id="lppTab" class="navigationTab">
         <md-ripple></md-ripple>LPP
       </div>
-      <div
-        onclick="changeAgency('ARRIVA')"
-        id="arrivaTab"
-        class="navigationTab"
-      >
+      <div id="arrivaTab" class="navigationTab selected">
         <md-ripple></md-ripple>ARRIVA
       </div>
     </div>

@@ -771,6 +771,14 @@ function findClosestPoint(busCoord, routeCoords) {
 const darkenColor = (rgbArray, amount) =>
   rgbArray.map((channel) => Math.max(0, channel - amount));
 
+/**
+ * Given a bus index (e.g. "201" or "N201"), returns a CSS gradient string
+ * that represents the line color. The direction of the gradient is determined
+ * by the "N" in the index.
+ *
+ * @param {string} i - Bus index
+ * @returns {string} - CSS gradient string
+ */
 const lineColors = (i) => {
   let color = lineColorsObj[i.replace(/\D/g, "")]; // Example: [201, 51, 54]
 
@@ -785,17 +793,67 @@ const lineColors = (i) => {
         ","
       )}))`;
 };
-async function fetchData(url) {
-  return (
-    await (
+function minToTime(min, yes) {
+  if (!absoluteTime && !yes) return min + " min";
+  const now = new Date();
+  now.setMinutes(now.getMinutes() + min);
+
+  const hrs = now.getHours();
+  const mins = now.getMinutes();
+
+  return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+}
+var agency = location.href.includes("arriva") ? "ARRIVA" : "LPP";
+async function fetchData(url, arrivaType) {
+  let data;
+  if (agency == "ARRIVA") {
+    data = await (
+      await fetch(url, {
+        headers: {
+          Authorization: "ApiKey bTl7H90FCtXPhsVTcxvyKWwIB8x4jc4J",
+        },
+      })
+    ).json();
+  } else {
+    data = await (
       await fetch(url, {
         headers: {
           apiKey: "D2F0C381-6072-45F9-A05E-513F1515DD6A",
           Accept: "Travana",
         },
       })
-    ).json()
-  ).data;
+    ).json();
+    data = data.data;
+  }
+  return data;
+}
+function changeAgency(agencyClicked) {
+  if (agencyClicked == "ARRIVA") {
+    agency = "ARRIVA";
+    localStorage.setItem("agency", "ARRIVA");
+    window.location.href = "./arriva.html";
+  } else {
+    agency = "LPP";
+    localStorage.setItem("agency", "LPP");
+    window.location.href = "./index.html";
+  }
+}
+function adaptDataArriva(data, type) {
+  let finishedData = [...data];
+
+  if (type == "stations") {
+    finishedData;
+    finishedData = finishedData.map((item) => ({
+      ...item,
+      ref_id: item.id,
+      id: item.gtfs_id,
+      latitude: item.lat,
+      longitude: item.lon,
+      route_groups_on_station: [],
+    }));
+  }
+
+  return finishedData;
 }
 async function clearElementContent(element) {
   if (!(element instanceof Element)) {

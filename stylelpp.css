@@ -1127,3 +1127,109 @@ div#popup {
     transform: translate(-50%, -50%) scale(1);
   }
 }
+.navigationBar {
+  position: fixed;
+  bottom: 0;
+  background: var(--md-sys-color-surface-container-high);
+  z-index: 10;
+  width: 100%;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  align-items: center;
+}
+.navigationTab.selected {
+  filter: brightness(1.2);
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+.navigationTab {
+  background: transparent;
+  position: relative;
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--md-sys-color-on-surface);
+  border-radius: 100px;
+  height: 30px;
+}
+body {
+  --transDur: 0.3s;
+}
+
+@keyframes scaleupy {
+  from {
+    scale: 0;
+  }
+  to {
+    scale: 1;
+  }
+}
+.bottomSheet {
+  position: fixed;
+  width: 100%;
+  max-width: 1000px;
+  left: 50%;
+  transform: translate(-50%, 100vh);
+  background-color: var(--md-sys-color-surface);
+  bottom: 0;
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+  z-index: 9;
+  overflow: hidden;
+  box-shadow: 0px 3px 20px 0px black;
+}
+.bottomSheetHandle {
+  transition: all var(--transDur);
+  margin-top: 7px;
+  background: var(--md-sys-color-on-surface);
+  width: 10%;
+  height: 3px;
+  border-radius: 50px;
+}
+.handleHolder {
+  left: 50%;
+  background: var(--md-sys-color-surface);
+  transform: translateX(-50%);
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  display: flex;
+  cursor: ns-resize;
+  justify-content: center;
+  height: 40px;
+  z-index: 200;
+}
+
+.sheetContents:not(.not-selectable) {
+  transition: all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1);
+}
+.sheetContents {
+  height: 100dvh;
+  overflow: hidden;
+}
+.bottomSheetScrim {
+  position: absolute;
+  height: 100vh;
+  overscroll-behavior: none;
+  width: 100vw;
+  top: 0;
+  transition: all var(--transDur) ease-out;
+
+  background-color: black;
+  opacity: 0;
+  z-index: 98;
+}
+
+.mainSheet {
+  display: flex;
+  transition: all calc(var(--transDur) - 0.1s);
+  padding: 40px 0 30px 0;
+
+  flex-wrap: wrap;
+  justify-content: center;
+  overscroll-behavior: none;
+  align-items: center;
+}

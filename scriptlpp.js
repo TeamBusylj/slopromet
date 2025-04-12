@@ -258,12 +258,15 @@ window.addEventListener("load", async function () {
     "https://mestnipromet.cyou/tracker/js/json/images.json"
   );
   absoluteTime = localStorage.getItem("time") ? true : false;
+
   busImageData = await busImageData.json();
 });
 async function getAllLines() {
-  lines = await fetchData(
-    "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/routes"
-  );
+  if (agency == "LPP") {
+    lines = await fetchData(
+      "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/routes"
+    );
+  }
 }
 var arrivalsMain = {};
 var tripIds = [];
@@ -325,6 +328,8 @@ const changeTabs = (event) => {
   }, 1);
 };
 async function updateStations() {
+  console.log(agency);
+
   let stations = await fetchData(
     "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/station-details?show-subroutes=1"
   );
@@ -441,7 +446,7 @@ async function createStationItems(o) {
     loader.style.display = "none";
     nearby = null;
   }
-  if (search) {
+  if (search && agency == "LPP") {
     for (const line of lines) {
       if (
         normalizeText(line.route_name + line.route_number).includes(
@@ -520,6 +525,7 @@ function minimizeSheet(h = 40) {
   }, 400);
 }
 async function refresh() {
+  document.querySelector(".navigationBar").style.display = "flex";
   if (checkVisible(document.querySelector(".arrivalsOnStation"))) {
     console.log("nebi");
   } else if (checkVisible(document.querySelector("#arrivals-panel"))) {
@@ -648,7 +654,7 @@ function createFavourite(parent, search, query) {
   for (const stationDistance of sortedArray) {
     parent.appendChild(stationDistance);
   }
-  if (search) {
+  if (search && agency == "LPP") {
     for (const line of lines) {
       if (
         normalizeText(line.route_name + line.route_number).includes(
@@ -711,8 +717,10 @@ function createFavourite(parent, search, query) {
 }
 function searchRefresh() {
   let query = document.querySelector(".search").value;
+
   createStationItems(true, query);
 }
+
 var interval;
 function haversineDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Radius of the Earth in kilometers
@@ -2443,16 +2451,6 @@ function geocodeLatLng(latitude, longitude) {
   });
 }
 var absoluteTime = false;
-function minToTime(min, yes) {
-  if (!absoluteTime && !yes) return min + " min";
-  const now = new Date();
-  now.setMinutes(now.getMinutes() + min);
-
-  const hrs = now.getHours();
-  const mins = now.getMinutes();
-
-  return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
-}
 
 function addElement(tag, parent, className) {
   var element = document.createElement(tag);
