@@ -411,7 +411,7 @@ async function createStationItems(stations) {
         };
         item.addEventListener("click", openStation);
         item = null;
-        buses = null;
+
         textHolder = null;
       }
     }
@@ -537,7 +537,7 @@ function createFavourite(parent, search, stations) {
       };
       item.addEventListener("click", openStation);
       item = null;
-      buses = null;
+
       textHolder = null;
     }
   }
@@ -820,7 +820,7 @@ async function stationClick(stationa, noAnimation, ia) {
   }
   isArrivalsOpen = station;
 
-  showArrivals(data);
+  showArrivals(data, station.id);
 }
 /**
  * Displays the arrivals of buses on the provided element.
@@ -836,7 +836,7 @@ async function stationClick(stationa, noAnimation, ia) {
  * @param {Array} data.data.arrivals - An array of bus arrival objects.
  */
 
-function showArrivals(data) {
+function showArrivals(data, station_id) {
   let arrivalsScroll = document.getElementById("arrivals-panel");
   clearElementContent(arrivalsScroll);
   arrivalsScroll = null;
@@ -870,12 +870,12 @@ function showArrivals(data) {
 
       let etaDiv = addElement("div", arrivalDataDiv, "eta");
       arrivalItem.addEventListener("click", () => {
-        showBusById(arrivalData, /*data.station.code*/ null, data);
+        showBusById(arrivalData, station_id, arrivalList);
       });
       let o = 1;
       for (const arrival of arrivalList) {
         let arrivalTimeRealtime = arrival.realtimeArrival;
-        let arrivalTimeSchedule = arrival.scheduledArrival;
+
         let order = minutesFromNow(arrivalTimeRealtime, 1);
         if (order > 120) continue;
 
@@ -914,7 +914,7 @@ function showArrivals(data) {
       "<p><md-icon>no_transfer</md-icon>V naslednji uri ni predvidenih avtobusov.</p>";
   }
 }
-function lineToColor(i) {
+function lineToColor(i, no) {
   const primeJump = 137;
   const hue = (parseInt(i) * primeJump) % 360;
 
@@ -935,7 +935,9 @@ function lineToColor(i) {
   const rgb = color.join(",");
   const rgbDark = darkerColor.join(",");
 
-  return `linear-gradient(165deg, rgb(${rgb}), rgb(${rgbDark}))`;
+  return no
+    ? rgb.split(",")
+    : `linear-gradient(165deg, rgb(${rgb}), rgb(${rgbDark}))`;
 }
 function hslToRgb(h, s, l) {
   s /= 100;
@@ -991,14 +993,14 @@ function minutesFromNow(date, nothours) {
   if (nothours) return diffInMinutes;
 
   // If the difference is more than 60 minutes, convert to hours and minutes
-  if (diffInMinutes >= 60) {
+  if (diffInMinutes >= 60 && !absoluteTime) {
     let hours = Math.floor(diffInMinutes / 60); // Get whole hours
     let minutes = diffInMinutes % 60; // Get the remaining minutes
     return `${hours} h ${minutes} min`;
   }
 
   // If it's less than an hour, just return the minutes
-  return `${diffInMinutes} min`;
+  return minToTime(diffInMinutes);
 }
 
 // Example usage
@@ -1147,7 +1149,7 @@ async function createInfoBar(parent, station_id) {
     absoluteTime = true;
     refresh();
   });
-  if (info.length !== 0) {
+  if (info.length !== 0 && false) {
     let infoTextC = addElement("div", infoBar, "infoTextContainer");
     let infoText = addElement("div", infoTextC, "infoText");
     infoText.innerHTML = decodeURIComponent(info.toString());
@@ -1237,7 +1239,7 @@ async function showBusById(arrival, station_id, arrivals) {
     document.querySelector(".arrivalsHolder").style.opacity = "0";
     console.log("clicked");
 
-    getMyBusData(null, arrivals, arrival.trip_id);
+    getMyBusData(null, arrivals, arrival.routeId);
   }
 }
 async function arrivalsOnStation(arrival, station_id, already) {
@@ -1582,9 +1584,9 @@ window.onpopstate = function (event) {
   });
 };
 
-async function getMyBusData(busId, arrivalsAll, tripId) {
+async function getMyBusData(busId, arrivalsAll, routeId) {
   const arrivals = arrivalsAll
-    ? arrivalsAll.filter((element) => element.trip_id == tripId)
+    ? arrivalsAll.filter((element) => element.routeId == routeId)
     : null;
   clearInterval(intervalBusk);
   intervalBusk = null;
@@ -1599,29 +1601,28 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
 
   holder.classList.add("arrivalsScroll");
   let myEtaHolder = addElement("div", holder, "myEtaHolder");
+  console.log(arrivals);
 
   let iks = addElement("md-icon-button", myEtaHolder, "iks");
   let myEtaChips = addElement("div", myEtaHolder, "myEtaChips");
   if (arrivals && arrivals.length > 1) {
     for (const arrival of arrivals) {
       let arTime = addElement("div", myEtaChips, "arrivalTime");
-      arTime.innerHTML = minToTime(arrival.eta_min);
-      arTime.busId = arrival.vehicle_id;
+      arTime.innerHTML = minutesFromNow(arrival.realtimeArrival);
+      arTime.busId = arrival.tripId;
       addElement("md-ripple", arTime);
       arTime.addEventListener("click", function () {
         myEtaChips.querySelector(".selected").classList.remove("selected");
         arTime.classList.add("selected");
         clearInterval(intervalBusk);
         intervalBusk = null;
-        let busek = busObject.find(
-          (el) => el.bus_unit_id == arrival.vehicle_id.toUpperCase()
-        );
+        let busek = busObject.find((el) => el.tripId == arrival.tripId);
         document.querySelector(".myBusDiv").style.transform =
           "translateY(-20px)";
         document.querySelector(".myBusDiv").style.opacity = "0";
-        clickedMyBus(busek, arrival.trip_id);
+        clickedMyBus(busek, arrival.tripId);
         intervalBusk = setInterval(() => {
-          clickedMyBus(busek, arrival.trip_id);
+          clickedMyBus(busek, arrival.tripId);
         }, 10000);
       });
     }
@@ -1654,28 +1655,33 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
     holder.style.transform = "translateX(0px) translateY(0px)";
   }, 10);
   if (arrivals || busId) {
-    let bus = busObject.find(
-      (el) =>
-        el.bus_unit_id == (busId ? busId : arrivals[0].vehicle_id.toUpperCase())
+    let bus = arrivals.find((arrival) =>
+      busObject.some((bus) => bus.tripId === arrival.tripId)
     );
     console.log(arrivals);
 
-    clickedMyBus(bus, arrivals ? arrivals[0].trip_id : bus.trip_id);
+    clickedMyBus(bus, bus ? bus.tripId : arrivals[0].tripId, arrivals[0]);
     intervalBusk = setInterval(() => {
-      clickedMyBus(bus, arrivals ? arrivals[0].trip_id : bus.trip_id);
+      clickedMyBus(bus, bus ? bus.tripId : arrivals[0].tripId, arrivals[0]);
     }, 10000);
     return;
   }
 
   //get buse based on location (removed)
 }
-async function clickedMyBus(bus, tripId) {
+async function clickedMyBus(bus, tripId, arrival) {
   let arOnS = await fetchData(
-    "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/arrivals-on-route?trip-id=" +
+    `https://arriva-mtb-prod.lit-transit.com/mtbp/service/api/v1/otp/trips/${encodeURIComponent(
       tripId
+    )}/stop-times?locale=sl-si`
   );
-  let busId = bus.bus_unit_id;
-  let busData = busObject.find((el) => el.bus_unit_id === busId);
+  arOnS = arOnS.stopTimeList;
+  arOnS.forEach((item) => {
+    const match = stationList.find((data) => data.id === item.stopId);
+    if (match) {
+      item.name = match.name;
+    }
+  });
 
   let myBusDiv = document.querySelector(".myBusDiv");
   let scrollPosition = myBusDiv.scrollTop;
@@ -1686,160 +1692,127 @@ async function clickedMyBus(bus, tripId) {
   let arrivalItem = addElement("div", myBusDiv, "arrivalItem");
   arrivalItem.style.margin = "10px 0";
   let busNumberDiv = addElement("div", arrivalItem, "busNo2");
-  busNumberDiv.style.background = lineColors(busData.route_number);
-  busNumberDiv.id = "bus_" + busData.route_number;
-  busNumberDiv.textContent = busData.route_number;
+  busNumberDiv.style.background = lineToColor(
+    parseInt(arrival.routeId.match(/:(.*?)_/)[1])
+  );
+  busNumberDiv.id = "bus_" + arrival.routeId.match(/:(.*?)_/)[1];
+  busNumberDiv.textContent = arrival.routeId.match(/:(.*?)_/)[1];
   let tripNameSpan = addElement("span", arrivalItem);
-  const tripName = arOnS.find((station) => station?.arrivals?.length > 0)
-    ?.arrivals[0]?.trip_name;
-  tripNameSpan.textContent = tripName;
-  let busDataDiv = addElement("div", myBusDiv, "busDataDiv");
-  await createBusData(busData, busDataDiv);
+  tripNameSpan.textContent = arOnS[0].headSign;
   let arrivalDataDiv = addElement("div", myBusDiv, "arrivalsOnStation");
-  showArrivalsMyBus(arOnS, arrivalDataDiv, busData, busId);
+  showArrivalsMyBus(arOnS, arrivalDataDiv, arrival);
 
   myBusDiv.scrollTop = scrollPosition ? scrollPosition : 0;
   myBusDiv.style.transform = "translateY(0px)";
   myBusDiv.style.opacity = "1";
 }
-function showArrivalsMyBus(info, container, arrival, busIdUp) {
+function showArrivalsMyBus(info, container, arrival) {
   let holder = addElement("div", container, "arFlex");
   holder.style.display = "flex";
-
+  let color =
+    "RGB(" +
+    lineToColor(parseInt(arrival.routeId.match(/:(.*?)_/)[1]), 1).join(",") +
+    ")";
   let arHolder = addElement("div", holder, "arOnRoute");
   var listArrivals = {};
   let arrivalsColumns = addElement("div", holder, "arrivalsColumns");
-  let isItYet = true;
-  info.forEach((arrivalRoute, index) => {
-    //vsaka postaja
+  info.forEach((ar, index) => {
     let arDiv = addElement("div", arHolder, "arrDiv");
     let lineStation = addElement("div", arDiv, "lineStation");
 
-    lineStation.style.backgroundColor =
-      "RGB(" +
-      lineColorsObj[arrival.route_number.replace(/\D/g, "")].join(",") +
-      ")";
+    lineStation.style.backgroundColor = color;
     let lnimg = addElement("div", lineStation, "lineStationImg");
 
     if (index == 0 || index == info.length - 1) {
       index == 0
         ? lineStation.parentNode.classList.add("half-hidden-first")
         : lineStation.parentNode.classList.add("half-hidden");
-      lnimg.style.backgroundColor =
-        "RGB(" +
-        lineColorsObj[arrival.route_number.replace(/\D/g, "")].join(",") +
-        ")";
+      lnimg.style.backgroundColor = color;
     } else {
       lnimg.style.backgroundColor =
         "RGB(" +
         darkenColor(
-          lineColorsObj[arrival.route_number.replace(/\D/g, "")],
+          lineToColor(parseInt(arrival.routeId.match(/:(.*?)_/)[1]), 1),
           50
         ).join(",") +
         ")";
 
-      lnimg.style.borderColor =
-        "RGB(" +
-        lineColorsObj[arrival.route_number.replace(/\D/g, "")].join(",") +
-        ")";
+      lnimg.style.borderColor = color;
     }
     let nameStation = addElement("div", arDiv, "nameStation");
-    nameStation.classList.add("nameStation_" + arrivalRoute.station_code);
-    nameStation.innerHTML = arrivalRoute.name;
-
-    let ar = arrivalRoute.arrivals.find(
-      (el) => el.vehicle_id == busIdUp.toLowerCase()
-    );
+    nameStation.classList.add("nameStation_" + ar.stopId);
+    nameStation.innerHTML = ar.name;
 
     try {
-      if (!ar) {
-        if (
-          info[index + 1]?.arrivals?.find(
-            (el) => el.vehicle_id == busIdUp.toLowerCase()
-          ) &&
-          isItYet
-        ) {
-          return;
-        }
-
-        if (
-          !info[index + 1]?.arrivals?.find(
-            (el) => el.vehicle_id == busIdUp.toLowerCase()
-          ) &&
-          isItYet
-        ) {
-          arDiv.style.display = "none";
-          return;
-        }
-        if (!isItYet) {
-          const moreThanAnHour = info
-            .slice(index)
-            .find((station) =>
-              station?.arrivals?.some(
-                (arrival) =>
-                  arrival?.vehicle_id?.toLowerCase() === busIdUp.toLowerCase()
-              )
-            )?.arrivals;
-          console.log(moreThanAnHour);
-
-          if (!moreThanAnHour) return;
-          console.log("no bus found");
-          let indexOf = info.find(
-            (station) => station?.arrivals?.length > 0
-          )?.arrivals;
-          ar = indexOf.find((el) => el.vehicle_id == busIdUp.toLowerCase());
-          ar["eta_min"] = "/";
-        }
+      let oneAfter = info[index + 1]
+        ? !isLessThanMinutes(
+            info[index + 1].realtimeArrival,
+            info[index + 1].scheduledArrival,
+            60
+          )
+        : false;
+      if (
+        !isLessThanMinutes(ar.realtimeArrival, ar.scheduledArrival, 60) &&
+        oneAfter
+      ) {
+        arDiv.style.display = "none";
+        return;
       }
     } catch (e) {
       console.log(e);
     }
 
-    isItYet = false;
+    let arrivalTimeRealtime = ar.realtimeArrival;
+
     if (
-      ar["type"] == 2 &&
+      isLessThanMinutes(arrivalTimeRealtime, getFormattedDate(), 1) &&
       !lineStation.parentNode.classList.contains("half-hidden") &&
       !lineStation.parentNode.classList.contains("half-hidden-first")
     ) {
       lnimg.innerHTML =
         "<md-icon style='color:RGB(" +
         darkenColor(
-          lineColorsObj[arrival.route_number.replace(/\D/g, "")],
+          lineToColor(parseInt(arrival.routeId.match(/:(.*?)_/)[1]), 1),
           100
         ).join(",") +
-        ")!important;background-color:RGB(" +
-        lineColorsObj[arrival.route_number.replace(/\D/g, "")].join(",") +
-        ")'>directions_bus</md-icon>";
+        ")!important;background-color:" +
+        color +
+        "'>directions_bus</md-icon>";
       lnimg.classList.add("busOnStation");
+      listArrivals[ar["tripId"]] = [];
+      listArrivals[ar["tripId"]][index] = "PRIHOD";
     }
-    if (!listArrivals[ar["vehicle_id"]]) {
-      listArrivals[ar["vehicle_id"]] = [];
-      if (
-        !lineStation.parentNode.classList.contains("half-hidden") &&
-        !lineStation.parentNode.classList.contains("half-hidden-first") &&
-        ar["type"] !== 2
-      ) {
+
+    if (isLessThanMinutes(ar.realtimeArrival, ar.scheduledArrival, 60)) {
+      if (!listArrivals[ar["tripId"]]) {
+        listArrivals[ar["tripId"]] = [];
+
         lnimg.innerHTML =
           "<md-icon style='color:RGB(" +
           darkenColor(
-            lineColorsObj[arrival.route_number.replace(/\D/g, "")],
+            lineToColor(parseInt(arrival.routeId.match(/:(.*?)_/)[1]), 1),
             150
           ).join(",") +
-          ")!important;background-color:RGB(" +
-          lineColorsObj[arrival.route_number.replace(/\D/g, "")].join(",") +
-          ")'>directions_bus</md-icon>";
+          ")!important;background-color:" +
+          color +
+          "'>directions_bus</md-icon>";
         lnimg.classList.add("busBetween");
+
+        listArrivals[ar["tripId"]][index] =
+          minutesFromNow(arrivalTimeRealtime).replace("min", "") +
+          `<span style="display:none;">${ar["realtime"]}</span>`;
+      } else {
+        listArrivals[ar["tripId"]][index] =
+          minutesFromNow(arrivalTimeRealtime).replace("min", "") +
+          `<span style="display:none;">${ar["realtime"]}</span>`;
       }
     }
-    listArrivals[ar["vehicle_id"]][index] =
-      minToTime(ar["eta_min"]).replace(" min", "") +
-      `<span style="display:none;">${ar["type"]}</span>`;
-
-    arDiv, lineStation, lnimg, (nameStation = null);
+    console.log(listArrivals);
   });
 
   let sortedArrivals = sortArrivals(listArrivals, 0);
   let long = absoluteTime ? "" : "min";
+
   for (let [key, element] of sortedArrivals) {
     let etaHolder = addElement("div", arrivalsColumns, "etaHoder");
     etaHolder.innerHTML = element
@@ -1870,19 +1843,16 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
 
           if (spanText) {
             const typeValue = spanText[1]; // Extracts the content inside the span
-            if (typeValue === "1") {
-              // If spanText is empty, remove the background from etaStation
-              stationHTML = item + `<sub>${long}</sub>`;
-            } else if (typeValue === "0") {
-              // If type is 0, add <md-icon>near_me</md-icon>
-              stationHTML =
-                item + `<sub>${long}</sub>` + "<md-icon>near_me</md-icon>";
-            } else if (typeValue === "2") {
+            console.log(typeValue);
+
+            if (item.at(0) == "0") {
               // If type is 2, replace the text with "P"
               stationHTML = item.replace(item, "PRIHOD");
-            } else if (typeValue === "3") {
-              // If type is 3, replace the text with "O"
-              stationHTML = item.replace(item, "OBVOZ");
+            } else if (typeValue == "false") {
+              stationHTML = item + `<sub>${long}</sub>`;
+            } else if (typeValue == "true") {
+              stationHTML =
+                item + `<sub>${long}</sub>` + "<md-icon>near_me</md-icon>";
             }
           }
 
@@ -1897,42 +1867,7 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
     etaHolder = null;
   }
 }
-async function createBusData(bus, busDataDiv) {
-  let busAge = await (
-    await fetch("https://teambusylj.github.io/slopromet/busAge.json")
-  ).json();
-  const findYearByGarageNumber = (garageNumber) => {
-    for (const year in busAge) {
-      if (busAge[year].includes(garageNumber)) {
-        return year;
-      }
-    }
-    return null; // če ni najdeno
-  };
 
-  busDataDiv.innerHTML = `<table class="busDataTable">
-  <tr><td>Ime:</td><td>${bus.bus_name}</td></tr>
-   <tr><td>Model:</td><td>${bus.model}</td></tr>
-   <tr><td>Leto:</td><td>${findYearByGarageNumber(bus.no)}</td></tr>
-   <tr><td>Vrsta:</td><td>${bus.type}</td></tr>
-   <tr><td>Hitrost:</td><td>${bus.ground_speed} km/h</td></tr>
-   <tr><td>Zabeležen:</td><td>${bus.bus_timestamp.toLocaleString("sl-SI", {
-     timeZone: "Europe/Ljubljana",
-   })}</td></tr>
-  `;
-  if (bus.hasImage) {
-    let holder = addElement("div", busDataDiv, "busImgHolder");
-    let img = addElement("img", holder, "busImgElement");
-    let imageLoaded = new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = reject;
-    });
-    img.src =
-      "https://mestnipromet.cyou/tracker/img/avtobusi/" + bus.no + ".jpg";
-    holder.innerHTML += `<div class="busAuthor"><md-icon slot="trailing-icon">photo_camera</md-icon>${bus.author}</div>`;
-    await imageLoaded;
-  }
-}
 function getDirections() {
   "https://maps.googleapis.com/maps/api/directions/json?origin=Central+Park,NY&destination=Times+Square,NY&mode=transit&key=AIzaSyCGnbK8F2HvhjqRrKo3xogo4Co7bitNwYA";
   let container = addElement(

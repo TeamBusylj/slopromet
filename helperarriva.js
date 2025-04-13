@@ -174,7 +174,7 @@ async function loop(firsttim, arrival, station, arOnSt) {
       .querySelector(".loader")
       .style.setProperty(
         "--_color",
-        lineToColor(parseInt(arrival.routeId.match(/:(.*?)_/)[1]))
+        lineToColor(parseInt(arrival.routeId.match(/:(.*?)_/)[1]), 1)
       );
   }
   console.log(arrival.routeId);
@@ -211,139 +211,145 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
       )}/stop-times?locale=sl-si`
     );
     stations = stations.stopTimeList;
-    coordinates = await getCoordinates(arrival.trip_id, stations);
+    stations.forEach((item) => {
+      const match = stationList.find((data) => data.id === item.stopId);
+      if (match) {
+        item.latitude = match.latitude;
+        item.longitude = match.longitude;
+        item.name = match.name;
+      }
+    });
+    coordinates = await getCoordinates(stations);
   }
-  console.log(stations);
 
   for (const i in busObject) {
     const bus = busObject[i];
 
-    if (bus.trip_id == arrival.trip_id) {
-      if (!buses.includes(bus.bus_unit_id)) {
-        buses.push(bus.bus_unit_id);
-        const coordinates1 = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
+    if (!buses.includes(bus.id)) {
+      buses.push(bus.id);
+      const coordinates1 = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
 
-        // Create a feature for the bus
-        const marker = new ol.Feature({
-          geometry: new ol.geom.Point(coordinates1),
-        });
+      // Create a feature for the bus
+      const marker = new ol.Feature({
+        geometry: new ol.geom.Point(coordinates1),
+      });
+      let prev = findClosestPoint([bus.longitude, bus.latitude], coordinates);
+      // Create a style for the bus with rotation
+      const busStyle = new ol.style.Style({
+        image: new ol.style.Icon({
+          rotateWithView: true,
+          anchor: [0.52, 0.5],
+          anchorXUnits: "fraction",
+          anchorYUnits: "fraction",
 
-        // Create a style for the bus with rotation
-        const busStyle = new ol.style.Style({
-          image: new ol.style.Icon({
-            rotateWithView: true,
-            anchor: [0.52, 0.5],
-            anchorXUnits: "fraction",
-            anchorYUnits: "fraction",
+          src: generateCustomSVG(
+            darkenColor(
+              lineToColor(parseInt(arrival.routeId.match(/:(.*?)_/)[1]), 1),
+              -100
+            ),
+            lineToColor(parseInt(arrival.routeId.match(/:(.*?)_/)[1]), 1)
+          ), // Generate dynamic SVG
+          scale: 0.5,
+          rotation: calculateDirection(
+            coordinates[prev],
+            coordinates[prev + 1]
+          ), // Convert degrees to radians
+        }),
+      });
 
-            src: generateCustomSVG(
-              darkenColor(
-                lineColorsObj[bus.route_number.replace(/\D/g, "")],
-                -100
-              ),
-              lineColorsObj[bus.route_number.replace(/\D/g, "")]
-            ), // Generate dynamic SVG
-            scale: 0.5,
-            rotation: (bus.cardinal_direction * Math.PI) / 180, // Convert degrees to radians
-          }),
-        });
+      marker.busId = bus.id;
+      marker.busNo = bus.label;
 
-        marker.busId = bus.bus_unit_id;
-        marker.busNo = bus.bus_name.replace("LJ LPP-", "");
+      marker.setStyle(busStyle);
 
-        marker.setStyle(busStyle);
-
-        tempMarkersSource.addFeature(marker);
-        busPreviusPosition[bus.bus_unit_id] = coordinates1;
-      } else {
-        try {
-          let coords = [...coordinates];
-          if (coords[0][0][0]) {
-            coords = coords.flat(); // Flatten the array if needed
-          }
-          markers.getSource().forEachFeature(function (feature) {
-            if (bus.bus_unit_id === feature.busId) {
-              let cordi = [
-                ...coords[
-                  findClosestPoint([bus.longitude, bus.latitude], coords)
-                ],
-              ];
-              cordi =
-                getDistance(cordi, [bus.longitude, bus.latitude]) > 10
-                  ? [bus.longitude, bus.latitude]
-                  : cordi;
-
-              cordi[0] > cordi[1] ? cordi.reverse() : cordi;
-
-              let newCoordinates = ol.proj.fromLonLat(cordi);
-
-              if (
-                findClosestPoint([bus.longitude, bus.latitude], coords) >
-                  findClosestPoint(
-                    ol.proj.toLonLat(feature.getGeometry().getCoordinates()),
-                    coords
-                  ) ||
-                !document.querySelector(".switch").selected
-              ) {
-                if (!document.querySelector(".switch").selected) {
-                  now = new Date().getTime();
-
-                  const animate = () => {
-                    const shouldContinue = moveMarker(
-                      feature,
-                      newCoordinates,
-                      (bus.cardinal_direction * Math.PI) / 180
-                    );
-
-                    // Re-render map for smooth animation
-                    map.render();
-
-                    if (shouldContinue) {
-                      requestAnimationFrame(animate); // Continue animation
-                    }
-                  };
-
-                  animate(); // Start animation loop
-                } else {
-                  feature.getGeometry().setCoordinates(coords);
-                }
-
-                busPreviusPosition[bus.bus_unit_id] = newCoordinates;
-              }
-
-              if (document.querySelector(".switch").selected) {
-                const spanText = arrivalsOnRoutes[
-                  bus.bus_unit_id.toLowerCase()
-                ].map((item) =>
-                  item === null ? null : item.match(/^(\d+)/)?.[1] || null
-                );
-                moveBus(
-                  feature,
-                  bus.ground_speed,
-                  stations.at(-1),
-                  spanText,
-                  arrivalsOnRoutes.stations
-                );
-              }
-            }
-          });
-        } catch (error) {
-          console.log(error);
+      tempMarkersSource.addFeature(marker);
+      busPreviusPosition[bus.id] = coordinates1;
+    } else {
+      try {
+        let coords = [...coordinates];
+        if (coords[0][0][0]) {
+          coords = coords.flat(); // Flatten the array if needed
         }
+        markers.getSource().forEachFeature(function (feature) {
+          if (bus.id === feature.busId) {
+            let cordi = [
+              ...coords[
+                findClosestPoint([bus.longitude, bus.latitude], coords)
+              ],
+            ];
+            cordi =
+              getDistance(cordi, [bus.longitude, bus.latitude]) > 10
+                ? [bus.longitude, bus.latitude]
+                : cordi;
+
+            cordi[0] > cordi[1] ? cordi.reverse() : cordi;
+
+            let newCoordinates = ol.proj.fromLonLat(cordi);
+
+            if (
+              findClosestPoint([bus.longitude, bus.latitude], coords) >
+                findClosestPoint(
+                  ol.proj.toLonLat(feature.getGeometry().getCoordinates()),
+                  coords
+                ) ||
+              !document.querySelector(".switch").selected
+            ) {
+              if (!document.querySelector(".switch").selected) {
+                now = new Date().getTime();
+                let prev = findClosestPoint(
+                  [bus.longitude, bus.latitude],
+                  coordinates
+                );
+                console.log(prev);
+
+                const animate = () => {
+                  const shouldContinue = moveMarker(
+                    feature,
+                    newCoordinates,
+                    calculateDirection(coordinates[prev], coordinates[prev + 1])
+                  );
+
+                  // Re-render map for smooth animation
+                  map.render();
+
+                  if (shouldContinue) {
+                    requestAnimationFrame(animate); // Continue animation
+                  }
+                };
+
+                animate(); // Start animation loop
+              } else {
+                feature.getGeometry().setCoordinates(coords);
+              }
+
+              busPreviusPosition[bus.id] = newCoordinates;
+            }
+
+            if (document.querySelector(".switch").selected) {
+              const spanText = arrivalsOnRoutes[bus.id.toLowerCase()].map(
+                (item) =>
+                  item === null ? null : item.match(/^(\d+)/)?.[1] || null
+              );
+              moveBus(
+                feature,
+                bus.ground_speed,
+                stations.at(-1),
+                spanText,
+                arrivalsOnRoutes.stations
+              );
+            }
+          }
+        });
+      } catch (error) {
+        console.log(error);
       }
     }
   }
 
   if (firsttim) {
-    console.log(coordinates);
+    console.log(arrival);
 
-    await generateRouteVector(
-      stations,
-      arrival.trip_id,
-      arrival.route_name,
-      station,
-      [...coordinates]
-    );
+    await generateRouteVector(arrival, station, [...coordinates]);
   } else {
     document.querySelector(".loader").style.backgroundSize = "0% 0%";
     setTimeout(() => {
@@ -352,14 +358,9 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
     }, 300);
   }
 }
-async function generateRouteVector(
-  data,
-  trip_id,
-  lno,
-  stationID,
-  coordinatesRoute
-) {
-  if (trip_id === undefined) return;
+async function generateRouteVector(arrival, stationID, coordinatesRoute) {
+  let color = lineToColor(parseInt(arrival.routeId.match(/:(.*?)_/)[1]), 1);
+  if (arrival.tripId === undefined) return;
   let coords1 = [...coordinates];
   if (coords1[0][0][0]) {
     coords1 = coords1.flat(); // Flatten the array if needed
@@ -376,12 +377,13 @@ async function generateRouteVector(
   const tempRouteSource = new ol.source.Vector();
 
   // Add station markers
-  data.forEach((station, index) => {
+  stations.forEach((station, index) => {
     let loca = [
       ...coords1[
         findClosestPoint([station.latitude, station.longitude], coords1)
       ],
     ];
+    loca = [station.latitude, station.longitude];
     loca = loca.reverse();
     // console.log(loca,coords1);
 
@@ -390,7 +392,7 @@ async function generateRouteVector(
       name: station.name,
       order: station.order_no,
       code: station.station_code,
-      color: lineColorsObj[lno.replace(/\D/g, "")],
+      color: color,
     });
 
     // Set styles for stations
@@ -401,11 +403,11 @@ async function generateRouteVector(
           fill: new ol.style.Fill({
             color:
               station.station_code == stationID
-                ? darkenColor(lineColorsObj[lno.replace(/\D/g, "")], -50)
-                : darkenColor(lineColorsObj[lno.replace(/\D/g, "")], 100),
+                ? darkenColor(color, -50)
+                : darkenColor(color, 100),
           }),
           stroke: new ol.style.Stroke({
-            color: lineColorsObj[lno.replace(/\D/g, "")], // Border color
+            color: color, // Border color
             width: 3, // Border width
           }),
         }),
@@ -463,7 +465,7 @@ async function generateRouteVector(
     routeFeature.setStyle(
       new ol.style.Style({
         stroke: new ol.style.Stroke({
-          color: lineColorsObj[lno.replace(/\D/g, "")],
+          color: color,
           width: 7,
         }),
       })
@@ -482,7 +484,7 @@ async function generateRouteVector(
       updateWhileInteracting: true,
       style: {},
     });
-    busVectorLayer.trip = trip_id;
+    busVectorLayer.trip = arrival.tripId;
     map.addLayer(busVectorLayer);
 
     busStationLayer = new ol.layer.Vector({
@@ -512,32 +514,19 @@ function generateCustomSVG(fillColor, borderColor) {
 
   return `data:image/svg+xml;base64,${btoa(svg)}`;
 }
-async function getCoordinates(trip_id, data) {
-  let coordinates = await fetchData(
-    "https://mestnipromet.cyou/api/v1/resources/buses/shape?trip_id=" + trip_id
+async function getCoordinates(data) {
+  let coords = "";
+  for (const i in data) {
+    coords += data[i].longitude + "," + data[i].latitude + ";";
+  }
+  coordinates = await fetchData(
+    "https://cors.proxy.prometko.si/https://router.project-osrm.org/route/v1/driving/" +
+      coords.substring(0, coords.length - 2) +
+      "?overview=full&geometries=geojson"
   );
 
-  if (!coordinates || coordinates.length == 0) {
-    let coords = "";
-    for (const i in data) {
-      coords += data[i].longitude + "," + data[i].latitude + ";";
-    }
-    coordinates = await (
-      await fetch(
-        "https://cors.proxy.prometko.si/https://router.project-osrm.org/route/v1/driving/" +
-          coords.substring(0, coords.length - 2) +
-          "?overview=full&geometries=geojson",
-        {
-          headers: {
-            apiKey: "D2F0C381-6072-45F9-A05E-513F1515DD6A",
-            Accept: "Travana",
-          },
-        }
-      )
-    ).json();
+  coordinates = coordinates.routes[0].geometry.coordinates;
 
-    coordinates = coordinates.routes[0].geometry.coordinates;
-  }
   return coordinates;
 }
 function moveMarker(marker, newCoord, dir) {
@@ -805,13 +794,17 @@ var agency = location.href.includes("arriva") ? "ARRIVA" : "LPP";
 async function fetchData(url, arrivaType) {
   let data;
   if (agency == "ARRIVA") {
-    data = await (
-      await fetch(url, {
-        headers: {
-          Authorization: "ApiKey bTl7H90FCtXPhsVTcxvyKWwIB8x4jc4J",
-        },
-      })
-    ).json();
+    if (url.includes("beta.brezavta.si")) {
+      data = await (await fetch(url)).json();
+    } else {
+      data = await (
+        await fetch(url, {
+          headers: {
+            Authorization: "ApiKey bTl7H90FCtXPhsVTcxvyKWwIB8x4jc4J",
+          },
+        })
+      ).json();
+    }
   } else {
     data = await (
       await fetch(url, {
