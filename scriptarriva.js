@@ -403,8 +403,6 @@ async function createStationItems(stations) {
             " m</span>";
           nearby[distance.toFixed(5)] = item;
         }
-        let buses = addElement("div", item, "buses");
-        item.appendChild(buses);
         const openStation = async () => {
           await stationClick(station);
           interval = setInterval(async () => {
@@ -530,9 +528,7 @@ function createFavourite(parent, search, stations) {
           " m</span>";
         nearby[distance.toFixed(5)] = item;
       }
-      let buses = addElement("div", item, "buses");
 
-      item.appendChild(buses);
       const openStation = async () => {
         await stationClick(station);
         interval = setInterval(async () => {
@@ -554,66 +550,6 @@ function createFavourite(parent, search, stations) {
 
   for (const stationDistance of sortedArray) {
     parent.appendChild(stationDistance);
-  }
-  if (search && agency == "LPP") {
-    for (const line of lines) {
-      if (
-        normalizeText(line.route_name + line.route_number).includes(
-          normalizeText(query.toLowerCase())
-        )
-      ) {
-        let arrivalItem = addElement("div", parent, "arrivalItem");
-        arrivalItem.style.order = line.route_number.replace(/\D/g, "");
-        let busNumberDiv = addElement("div", arrivalItem, "busNo2");
-
-        busNumberDiv.style.background = lineColors(line.route_number);
-
-        busNumberDiv.id = "bus_" + line.route_number;
-        busNumberDiv.textContent = line.route_number;
-        let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
-        addElement("md-ripple", arrivalItem);
-
-        let tripNameSpan = addElement("span", arrivalDataDiv);
-        tripNameSpan.textContent = line.route_name;
-        arrivalItem.addEventListener("click", () => {
-          let container = addElement(
-            "div",
-            document.querySelector(".mainSheet"),
-            "arrivalsOnStation"
-          );
-          container.classList.add("arrivalsScroll");
-          var stylesTransition = [
-            document.querySelector(".searchContain").style,
-            document.querySelector(".listOfStations").style,
-            document.querySelector(".favouriteStations").style,
-            document.getElementById("tabsFav").style,
-          ];
-          stylesTransition.forEach((style) => {
-            style.transform = "translateX(-100vw)";
-            style.opacity = "0";
-          });
-          let line2 = line;
-          line2.route_name = line.route_number;
-          minimizeSheet();
-          arrivalsOnStation(line2, 0);
-          arrivalsUpdateInterval = setInterval(() => {
-            arrivalsOnStation(line2, 0, container.scrollTop);
-          }, 10000);
-          loop(1, line, 60);
-          busUpdateInterval = setInterval(() => {
-            loop(0, line, 60);
-          }, 5000);
-          setTimeout(() => {
-            container.style.transform = "translateX(0px) translateY(0px)";
-            container.style.opacity = "1";
-          }, 100);
-        });
-        if (line.route_number[0] == "N") {
-          arrivalItem.style.order = line.route_number.replace(/\D/g, "") + 100;
-        }
-        arrivalItem, busNumberDiv, arrivalDataDiv, (tripNameSpan = null);
-      }
-    }
   }
 }
 async function searchRefresh() {
@@ -735,7 +671,7 @@ async function stationClick(stationa, noAnimation, ia) {
     window.history.pushState(
       null,
       document.title + " - " + station.name,
-      "/" + encodeURIComponent(station.name)
+      location.pathname
     );
     container = addElement(
       "div",
@@ -757,7 +693,7 @@ async function stationClick(stationa, noAnimation, ia) {
     let iks = addElement("md-icon-button", holder, "iks");
     iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
     iks.addEventListener("click", function () {
-      window.history.replaceState(null, document.title, "/");
+      window.history.replaceState(null, document.title, location.pathname);
       container.style.transform = "translateX(100vw)";
       document.querySelector(".infoBar").style.transform = "translateY(100%)";
       container.style.opacity = "0";
@@ -927,11 +863,14 @@ function showArrivals(data) {
       addElement("md-ripple", arrivalItem);
 
       let tripNameSpan = addElement("span", arrivalDataDiv);
-      tripNameSpan.textContent = arrivalData.headSign;
+      tripNameSpan.textContent = arrivalData.headSign.replace(
+        /([a-zA-Z])\-([a-zA-Z])/g,
+        "$1 - $2"
+      );
 
       let etaDiv = addElement("div", arrivalDataDiv, "eta");
       arrivalItem.addEventListener("click", () => {
-        showBusById(arrival, data.station.code_id, data.arrivals);
+        showBusById(arrivalData, /*data.station.code*/ null, data);
       });
       let o = 1;
       for (const arrival of arrivalList) {
@@ -1033,7 +972,6 @@ function isLessThanMinutes(timestamp1, timestamp2, min) {
 
   // Convert milliseconds to minutes
   let diffInMinutes = diff / (1000 * 60);
-  console.log(diffInMinutes);
   // Return true if the difference is less than 2 minutes
   return diffInMinutes < min;
 }
@@ -1105,11 +1043,7 @@ async function showLines(parent, station) {
 async function showLineTime(routeN, station_id, routeName, arrival) {
   let arrival2 = arrival;
   arrival2.route_name = routeN;
-  window.history.pushState(
-    null,
-    document.title,
-    "/urnik-linije-" + encodeURIComponent(routeN)
-  );
+  window.history.pushState(null, document.title, location.pathname);
   showBusById(arrival2);
   let container = addElement(
     "div",
@@ -1124,7 +1058,7 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
   let iks = addElement("md-icon-button", container, "iks");
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
-    window.history.replaceState(null, document.title, "/");
+    window.history.replaceState(null, document.title, location.pathname);
     container.style.transform = "translateX(100vw)";
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(0vw)";
@@ -1287,7 +1221,7 @@ const nextBusTemplate = (data, parent) => {
 };
 var busUpdateInterval, arrivalsUpdateInterval, intervalBusk;
 async function showBusById(arrival, station_id, arrivals) {
-  window.history.pushState(null, document.title, "/bus-" + arrival.route_name);
+  window.history.pushState(null, document.title, location.pathname);
   clearInterval(busUpdateInterval);
   document.querySelector(".bottomSheet").style.transform =
     "translate3d(-50%,60dvh, 0px)";
@@ -1320,7 +1254,7 @@ async function arrivalsOnStation(arrival, station_id, already) {
   let iks = addElement("md-icon-button", container, "iks");
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
-    window.history.replaceState(null, document.title, "/");
+    window.history.replaceState(null, document.title, location.pathname);
     container.style.transform = "translateX(100vw)";
     if (document.querySelector(".arrivalsHolder")) {
       document.querySelector(".arrivalsHolder").style.transform =

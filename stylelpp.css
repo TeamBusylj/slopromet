@@ -234,6 +234,7 @@ md-fab.centerMap,
   opacity: 0.8;
   font-weight: 300;
   display: flex;
+  align-items: center;
 }
 .stationDistance md-icon {
   margin-right: 5px;
