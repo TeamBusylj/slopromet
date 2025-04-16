@@ -379,7 +379,7 @@ async function createStationItems(stations) {
 
       if (distance < 5 || search) {
         let cornot = "";
-        if (station.code % 2 !== 0) {
+        if (station.code % 2 == 0) {
           cornot = '<md-icon class="center">adjust</md-icon>';
         }
         let fav = "";
@@ -504,7 +504,7 @@ function createFavourite(parent, search, stations) {
         station.longitude
       );
       let cornot = "";
-      if (station.code % 2 !== 0) {
+      if (station.code % 2 == 0) {
         cornot = '<md-icon class="center">adjust</md-icon>';
       }
       let fav = "";
@@ -585,13 +585,13 @@ async function oppositeStation(id) {
     i = clearElementContent(document.querySelector(".timeTScroll"));
     if (id % 2 === 0) {
       await stationClick(
-        stationList.findIndex((obj) => obj.code === String(parseInt(id) - 1)),
+        stationList.find((obj) => obj.code === String(parseInt(id) + 1)),
         1,
         1
       );
     } else {
       await stationClick(
-        stationList.findIndex((obj) => obj.code === String(parseInt(id) + 1)),
+        stationList.find((obj) => obj.code === String(parseInt(id) - 1)),
         1,
         1
       );
@@ -618,8 +618,7 @@ async function stationClick(stationa, noAnimation, ia) {
   setTimeout(() => {
     document.querySelector(".sheetContents").scrollTop = 0;
   }, 250);
-  document.querySelector(".directionsButton").style.opacity = "0";
-  document.querySelector(".refresh").style.opacity = "0";
+
   var notYet = false;
   var container;
 
@@ -639,10 +638,10 @@ async function stationClick(stationa, noAnimation, ia) {
       document.querySelector(".arrivalsHolder").style.transform =
         "translateX(0)";
       document.querySelector(".arrivalsHolder").style.opacity = "1";
-      showLines(document.querySelector(".timeTScroll"), station);
+      //showLines(document.querySelector(".timeTScroll"), station);
     }
     let cornot = "";
-    if (station.code % 2 !== 0)
+    if (station.code % 2 == 0)
       cornot = '<md-icon class="center">adjust</md-icon>';
     document.querySelector(".title span").innerHTML = station.name + cornot;
     document.querySelector(".titleHolder").innerHTML +=
@@ -714,9 +713,9 @@ async function stationClick(stationa, noAnimation, ia) {
       }, 500);
     });
 
-    let ttl = addElement("span", title);
+    let ttl = addElement("div", title);
     let cornot = "";
-    if (station.code % 2 !== 0)
+    if (station.code % 2 == 0)
       cornot = '<md-icon class="center">adjust</md-icon>';
     ttl.innerHTML = station.name + cornot;
     let hh = addElement("div", title, "titleHolder");
@@ -744,7 +743,7 @@ async function stationClick(stationa, noAnimation, ia) {
     if (station.code % 2 === 0) {
       if (
         stationList.findIndex(
-          (obj) => obj.code === String(parseInt(station.code) - 1)
+          (obj) => obj.code === String(parseInt(station.code) + 1)
         ) === -1
       ) {
         mapca.setAttribute("disabled", "");
@@ -752,7 +751,7 @@ async function stationClick(stationa, noAnimation, ia) {
     } else {
       if (
         stationList.findIndex(
-          (obj) => obj.code === String(parseInt(station.code) + 1)
+          (obj) => obj.code === String(parseInt(station.code) - 1)
         ) === -1
       ) {
         mapca.setAttribute("disabled", "");
@@ -796,7 +795,7 @@ async function stationClick(stationa, noAnimation, ia) {
 
       if (currentPanel2.id == "time-panel" && !notYet) {
         notYet = true;
-        showLines(timeTScroll, station);
+        //showLines(timeTScroll, station);
       }
       getLocation();
     });
@@ -863,9 +862,10 @@ function showArrivals(data, station_id) {
       addElement("md-ripple", arrivalItem);
 
       let tripNameSpan = addElement("span", arrivalDataDiv);
-      tripNameSpan.textContent = arrivalData.headSign.replace(
-        /([a-zA-Z])\-([a-zA-Z])/g,
-        "$1 - $2"
+      tripNameSpan.innerHTML = arrivalData.headSign.replace(
+        /(.+?)[-–]/g,
+        (_, word) =>
+          `<span style="white-space: nowrap;">${word}<md-icon>arrow_right</md-icon></span>`
       );
 
       let etaDiv = addElement("div", arrivalDataDiv, "eta");
@@ -893,12 +893,11 @@ function showArrivals(data, station_id) {
           arrivalTimeSpan.classList.add("arrivalGreen");
         }
         if (isLessThanMinutes(arrivalTimeRealtime, getFormattedDate(), 1)) {
-          arrivalTimeSpan.innerHTML = "PRIHOD";
-          arrivalTimeSpan.classList.add("arrivalRed");
-        } else if (
-          isLessThanMinutes(arrivalTimeRealtime, getFormattedDate(), 2)
-        ) {
-          arrivalTimeSpan.innerHTML += "KMALU";
+          arrivalTimeSpan.innerHTML =
+            arrival.stopIndex == 0 ? "ODHOD" : "PRIHOD";
+          arrivalTimeSpan.classList.add(
+            arrival.stopIndex == 0 ? "arrivalBlue" : "arrivalRed"
+          );
         } else {
           arrivalTimeSpan.innerHTML += minutesFromNow(arrivalTimeRealtime);
         }
@@ -1120,11 +1119,6 @@ const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
  * @param {HTMLElement} parent - The parent element to which the arrival items will be appended.
  */
 async function createInfoBar(parent, station_id) {
-  let info = await fetchData(
-    "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/messages?station-code=" +
-      station_id
-  );
-
   let infoBar = addElement("div", parent, "infoBar");
 
   let changeTime = addElement(
@@ -1149,11 +1143,16 @@ async function createInfoBar(parent, station_id) {
     absoluteTime = true;
     refresh();
   });
+  /*let info = await fetchData(
+    "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/messages?station-code=" +
+      station_id
+  );
   if (info.length !== 0 && false) {
     let infoTextC = addElement("div", infoBar, "infoTextContainer");
     let infoText = addElement("div", infoTextC, "infoText");
     infoText.innerHTML = decodeURIComponent(info.toString());
   }
+    */
   setTimeout(() => {
     infoBar.style.transform = "translateY(0)";
   }, 10);
@@ -1620,9 +1619,9 @@ async function getMyBusData(busId, arrivalsAll, routeId) {
         document.querySelector(".myBusDiv").style.transform =
           "translateY(-20px)";
         document.querySelector(".myBusDiv").style.opacity = "0";
-        clickedMyBus(busek, arrival.tripId);
+        clickedMyBus(busek, arrival.tripId, arrival);
         intervalBusk = setInterval(() => {
-          clickedMyBus(busek, arrival.tripId);
+          clickedMyBus(busek, arrival.tripId, arrival);
         }, 10000);
       });
     }
@@ -1698,7 +1697,11 @@ async function clickedMyBus(bus, tripId, arrival) {
   busNumberDiv.id = "bus_" + arrival.routeId.match(/:(.*?)_/)[1];
   busNumberDiv.textContent = arrival.routeId.match(/:(.*?)_/)[1];
   let tripNameSpan = addElement("span", arrivalItem);
-  tripNameSpan.textContent = arOnS[0].headSign;
+  tripNameSpan.innerHTML = arOnS[0].headSign.replace(
+    /(.+?)[-–]/g,
+    (_, word) =>
+      `<span style="white-space: nowrap;">${word}<md-icon>arrow_right</md-icon></span>`
+  );
   let arrivalDataDiv = addElement("div", myBusDiv, "arrivalsOnStation");
   showArrivalsMyBus(arOnS, arrivalDataDiv, arrival);
 
@@ -1780,7 +1783,8 @@ function showArrivalsMyBus(info, container, arrival) {
         "'>directions_bus</md-icon>";
       lnimg.classList.add("busOnStation");
       listArrivals[ar["tripId"]] = [];
-      listArrivals[ar["tripId"]][index] = "PRIHOD";
+      listArrivals[ar["tripId"]][index] =
+        ar["stopIndex"] == 0 ? "ODHOD" : "PRIHOD";
     }
 
     if (isLessThanMinutes(ar.realtimeArrival, ar.scheduledArrival, 60)) {

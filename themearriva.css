@@ -8,7 +8,7 @@
     --md-sys-color-surface-bright: #343a3b;
     --md-sys-color-surface-container-lowest: #090f10;
     --md-sys-color-surface-container-low: #161d1e;
-    --md-sys-color-surface-container: #1a2122;
+    --md-sys-color-surface-container: linear-gradient(329deg, #131819, #1c2324);
     --md-sys-color-surface-container-high: #252b2c;
     --md-sys-color-surface-container-highest: #2f3637;
     --md-sys-color-on-surface: #dde4e4;

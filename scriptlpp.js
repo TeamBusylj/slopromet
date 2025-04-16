@@ -777,8 +777,6 @@ async function stationClick(stationa, noAnimation, ia) {
   setTimeout(() => {
     document.querySelector(".sheetContents").scrollTop = 0;
   }, 250);
-  document.querySelector(".directionsButton").style.opacity = "0";
-  document.querySelector(".refresh").style.opacity = "0";
   var notYet = false;
   var container;
 
