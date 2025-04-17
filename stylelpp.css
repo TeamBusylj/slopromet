@@ -712,6 +712,7 @@ span.nextBusTitle {
   transition: all 0.5s;
   margin: 0 30px;
   width: 85%;
+  overscroll-behavior: none;
 }
 .myEtaHolder {
   display: flex;
