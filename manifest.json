@@ -1,20 +1,19 @@
 {
-    "theme_color": "#10150d",
-    "background_color": "#10150d",
-    "display": "standalone",
-    "orientation": "portrait",
-    "name": "SloPromet",
-    "short_name": "SloPromet",
-    "id": "slopromet",
-    "start_url": "/slopromet",
-    "dir": "ltr",
-    "lang": "sl",
-    "icons": [
-        
-        {
-          "src": "icons/icon-384x384.png",
-          "sizes": "384x384",
-          "type": "image/png"
-        }
-      ]
-  }
+  "theme_color": "#10150d",
+  "background_color": "#10150d",
+  "display": "standalone",
+  "orientation": "portrait",
+  "name": "SloPromet",
+  "short_name": "SloPromet",
+  "id": "slopromet",
+  "start_url": "/slopromet",
+  "dir": "ltr",
+  "lang": "sl",
+  "icons": [
+    {
+      "src": "assets/images/bus.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    }
+  ]
+}

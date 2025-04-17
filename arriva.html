@@ -3,14 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SloPromet</title>
+    <title>SloPromet - Arriva</title>
     <link rel="manifest" href="manifest.json" />
-    <link rel="stylesheet" href="stylelpp.css" />
-    <link rel="stylesheet" href="themearriva.css" />
+    <link rel="stylesheet" href="assets/css/stylelpp.css" />
+    <link rel="stylesheet" href="assets/css/themearriva.css" />
     <meta name="theme-color" content="#22282d" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net/" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="shortcut icon" href="assets/images/bus.png" type="image/x-icon">
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
@@ -58,8 +59,9 @@
       // Add other bootstrap parameters as needed, using camel case.
     });
   </script>
-  <script src="scriptarriva.js"></script>
-  <script src="helperarriva.js"></script>
+  <script src="assets/js/scriptarriva.js"></script>
+  <script src="assets/js/helperarriva.js"></script>
+  <script src="assets/js/skupna.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
   <script>
     function scrollWin() {
@@ -95,16 +97,16 @@
     </div>
     <div class="navigationBar">
       <div onclick="changeAgency('LPP')" id="lppTab" class="navigationTab">
-        <img src="./images/logos/lpp_logo.svg"></img>
+        <img src="assets/images/logos/lpp_logo.svg"></img>
         <md-ripple></md-ripple>LPP
       </div>
       <div id="arrivaTab" class="navigationTab">
-        <img class="selected" src="./images/logos/arriva_logo.svg"></img>
+        <img class="selected" src="assets/images/logos/arriva_logo.svg"></img>
         <md-ripple></md-ripple>ARRIVA
       </div>
     </div>
     <script src="OpenLayers-2.13.1/OpenLayers.js"></script>
-    <script src="./bundle.js" type="module"></script>
+    <script src="assets/js/bundle.js" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/ol@v10.4.0/dist/ol.js"></script>
     <link
       rel="stylesheet"
