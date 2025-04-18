@@ -852,9 +852,10 @@ img.googleLogo {
 .etaStation md-icon {
   font-size: 12px;
   animation: rotatingIcon 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  position: absolute;
-  right: -4px;
-  top: 6px;
+  position: relative;
+  right: 4px;
+  top: -8px;
+  width: fit-content;
 }
 .etaStation sub {
   margin-top: 0.5rem;

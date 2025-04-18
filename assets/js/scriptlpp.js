@@ -1518,7 +1518,7 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
 }
 async function createBusData(bus, busDataDiv) {
   let busAge = await (
-    await fetch("https://teambusylj.github.io/slopromet/busAge.json")
+    await fetch("https://teambusylj.github.io/slopromet/assets/js/busAge.json")
   ).json();
   const findYearByGarageNumber = (garageNumber) => {
     for (const year in busAge) {
