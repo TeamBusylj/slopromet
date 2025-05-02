@@ -1,29 +1,5 @@
 "use strict";
-window.addEventListener("load", async function () {
-  createBuses();
 
-  let sht = makeBottomSheet(null, 98);
-
-  let bava = "";
-  sht.innerHTML = `
-<div class="searchContain"> <md-filled-text-field class="search" value='${bava}' placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
- <md-circular-progress indeterminate id="loader"></md-circular-progress>
- <md-tabs class=tabs id=tabsFav><md-primary-tab id="favTab" aria-controls="fav-panel">Priljubljeno</md-primary-tab><md-primary-tab id="locationTab" aria-controls="location-panel">V bližini</md-primary-tab></md-tabs>
-  <md-list role="tabpanel" aria-labelledby="favTab" id="fav-panel" class="favouriteStations"></md-list>  
- <md-list role="tabpanel" aria-labelledby="locationTab" id="location-panel" class="listOfStations"></md-list>
-   `;
-
-  let search = this.document.querySelector(".search");
-  search.addEventListener("input", delayedSearch);
-  search.addEventListener("click", getAllLines);
-  search.addEventListener(`focus`, () => search.select());
-  busImageData = await fetch(
-    "https://mestnipromet.cyou/tracker/js/json/images.json"
-  );
-  absoluteTime = localStorage.getItem("time") ? true : false;
-
-  busImageData = await busImageData.json();
-});
 async function getAllLines() {
   if (agency == "LPP") {
     lines = await fetchData("https://lpp.ojpp.derp.si/api/route/routes");

@@ -372,7 +372,28 @@ async function centerMap() {
     duration: duration,
   });
 }
+window.addEventListener("load", async function () {
+  createBuses();
 
+  let sht = makeBottomSheet(null, 98);
+
+  let bava = "";
+  sht.innerHTML = `
+<div class="searchContain"> <md-filled-text-field class="search" value='${bava}' placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
+ <md-circular-progress indeterminate id="loader"></md-circular-progress>
+ <md-tabs class=tabs id=tabsFav><md-primary-tab id="favTab" aria-controls="fav-panel">Priljubljeno</md-primary-tab><md-primary-tab id="locationTab" aria-controls="location-panel">V bližini</md-primary-tab></md-tabs>
+  <md-list role="tabpanel" aria-labelledby="favTab" id="fav-panel" class="favouriteStations"></md-list>  
+ <md-list role="tabpanel" aria-labelledby="locationTab" id="location-panel" class="listOfStations"></md-list>
+   `;
+
+  let search = this.document.querySelector(".search");
+  search.addEventListener("input", delayedSearch);
+  search.addEventListener(`focus`, () => search.select());
+  absoluteTime = localStorage.getItem("time") ? true : false;
+  document
+    .querySelector("#" + agency.toLocaleLowerCase() + "Tab > img")
+    .classList.add("selected");
+});
 async function getLocation() {
   try {
     const position = await new Promise((resolve, reject) => {
@@ -1551,10 +1572,10 @@ function minToTime(min, yes) {
 
   return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
 }
-var agency = location.href.includes("arriva") ? "ARRIVA" : "LPP";
+var agency = localStorage.getItem("agency");
 async function fetchData(url, arrivaType) {
   let data;
-  if (agency == "ARRIVA") {
+  if (agency !== "LPP") {
     data = await (await fetch(url)).json();
   } else {
     data = await (await fetch(url)).json();
@@ -1563,9 +1584,10 @@ async function fetchData(url, arrivaType) {
   return data;
 }
 function changeAgency(agencyClicked) {
-  if (agencyClicked == "ARRIVA") {
-    agency = "ARRIVA";
-    localStorage.setItem("agency", "ARRIVA");
+  if (agency == agencyClicked) return;
+  if (agencyClicked !== "LPP") {
+    agency = agencyClicked;
+    localStorage.setItem("agency", agencyClicked);
     window.location.href = "./arriva.html";
   } else {
     agency = "LPP";

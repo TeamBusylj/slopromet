@@ -1,23 +1,4 @@
 "use strict";
-window.addEventListener("load", async function () {
-  createBuses();
-
-  let sht = makeBottomSheet(null, 98);
-
-  let bava = "";
-  sht.innerHTML = `
-<div class="searchContain"> <md-filled-text-field class="search" value='${bava}' placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
- <md-circular-progress indeterminate id="loader"></md-circular-progress>
- <md-tabs class=tabs id=tabsFav><md-primary-tab id="favTab" aria-controls="fav-panel">Priljubljeno</md-primary-tab><md-primary-tab id="locationTab" aria-controls="location-panel">V bližini</md-primary-tab></md-tabs>
-  <md-list role="tabpanel" aria-labelledby="favTab" id="fav-panel" class="favouriteStations"></md-list>  
- <md-list role="tabpanel" aria-labelledby="locationTab" id="location-panel" class="listOfStations"></md-list>
-   `;
-
-  let search = this.document.querySelector(".search");
-  search.addEventListener("input", delayedSearch);
-  search.addEventListener(`focus`, () => search.select());
-  absoluteTime = localStorage.getItem("time") ? true : false;
-});
 
 async function updateStations() {
   console.log(agency);
@@ -25,7 +6,7 @@ async function updateStations() {
   let stations = await fetchData("https://api.beta.brezavta.si/stops");
 
   stationList = stations.filter((station) => {
-    return station.background_color == "#004E96";
+    return station.gtfs_id.includes(agency);
   });
   createStationItems();
 }
@@ -489,31 +470,8 @@ function showArrivals(data, station_id) {
         if (minutesFromNow(arrival.arrival_realtime, 1) > 120) continue;
         arrivalsList.push(arrival.route_id);
         let arrivalItem = addElement("div", null, "arrivalItem");
-        let busHolder = addElement("div", arrivalItem, "stepIcon");
-        let busNumberDiv = addElement("div", busHolder, "busNo2");
 
-        busNumberDiv.style.background = lineToColor(
-          parseInt(arrival.route_short_name.split(" ")[0])
-        );
-
-        busNumberDiv.textContent = arrival.route_short_name.split(" ")[0];
-        let curve = addElement("div", busHolder, "connectingLine");
-        curve.style.background =
-          " linear-gradient(to bottom, #" +
-          adaptColors(arrival.route_color_background) +
-          " 15%,RGB(" +
-          darkenColor(
-            lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1),
-            5
-          ).join(",") +
-          ") 100%)";
-
-        let imgHolder = addElement("div", busHolder, "agencyLogo");
-        let imgLogo = addElement("img", imgHolder, "");
-        imgLogo.src =
-          "assets/images/logos_brezavta/" + arrival.agency_id + ".svg";
-        imgHolder.style.background =
-          "#" + adaptColors(arrival.route_color_background);
+        createBusNumber(arrival, arrivalItem);
         addElement("md-ripple", arrivalItem);
         let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
 
@@ -579,6 +537,44 @@ function showArrivals(data, station_id) {
     arrivalsScroll.innerHTML +=
       "<p><md-icon>no_transfer</md-icon>V naslednji uri ni predvidenih avtobusov.</p>";
   }
+}
+function createBusNumber(arrival, arrivalItem) {
+  if (agency !== "IJPP") {
+    let busNumberDiv = addElement("div", arrivalItem, "busNo2");
+
+    busNumberDiv.style.background = lineToColor(
+      parseInt(arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, ""))
+    );
+
+    busNumberDiv.id = "bus_" + arrival.route_short_name;
+    busNumberDiv.textContent = arrival.route_short_name;
+    return;
+  }
+  let busHolder = addElement("div", arrivalItem, "stepIcon");
+  let busNumberDiv = addElement("div", busHolder, "busNo2");
+
+  busNumberDiv.style.background = lineToColor(
+    parseInt(arrival.route_short_name.split(" ")[0])
+  );
+  console.log(arrival);
+
+  busNumberDiv.textContent = arrival.route_short_name.split(" ")[0];
+  let curve = addElement("div", busHolder, "connectingLine");
+  curve.style.background =
+    " linear-gradient(to bottom, #" +
+    adaptColors(arrival.route_color_background) +
+    " 15%,RGB(" +
+    darkenColor(
+      lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1),
+      5
+    ).join(",") +
+    ") 100%)";
+
+  let imgHolder = addElement("div", busHolder, "agencyLogo");
+  let imgLogo = addElement("img", imgHolder, "");
+  imgLogo.src = "assets/images/logos_brezavta/" + arrival.agency_id + ".svg";
+  imgHolder.style.background =
+    "#" + adaptColors(arrival.route_color_background);
 }
 function adaptColors(color) {
   return color.replace("0077BE", "fff").replace("FBB900", "00489a");
@@ -952,30 +948,7 @@ async function clickedMyBus(bus, tripId, arrival) {
 
   let arrivalItem = addElement("div", myBusDiv, "arrivalItem");
   arrivalItem.style.margin = "10px 0";
-  let busHolder = addElement("div", arrivalItem, "stepIcon");
-  let busNumberDiv = addElement("div", busHolder, "busNo2");
-
-  busNumberDiv.style.background = lineToColor(
-    parseInt(arrival.route_short_name.split(" ")[0])
-  );
-
-  busNumberDiv.textContent = arrival.route_short_name.split(" ")[0];
-  let curve = addElement("div", busHolder, "connectingLine");
-  curve.style.background =
-    " linear-gradient(to bottom, #" +
-    adaptColors(arrival.route_color_background) +
-    " 15%,RGB(" +
-    darkenColor(
-      lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1),
-      5
-    ).join(",") +
-    ") 100%)";
-
-  let imgHolder = addElement("div", busHolder, "agencyLogo");
-  let imgLogo = addElement("img", imgHolder, "");
-  imgLogo.src = "assets/images/logos_brezavta/" + arrival.agency_id + ".svg";
-  imgHolder.style.background =
-    "#" + adaptColors(arrival.route_color_background);
+  createBusNumber(arrival, arrivalItem);
   let tripNameSpan = addElement("span", arrivalItem);
   tripNameSpan.innerHTML = arOnS1.trip_headsign.replace(
     /(.+?)[-–]/g,
@@ -994,7 +967,10 @@ function showArrivalsMyBus(info, container, arrival) {
   holder.style.display = "flex";
   let color =
     "RGB(" +
-    lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1).join(",") +
+    lineToColor(
+      parseInt(arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, "")),
+      1
+    ).join(",") +
     ")";
   let arHolder = addElement("div", holder, "arOnRoute");
   var listArrivals = {};
@@ -1017,7 +993,12 @@ function showArrivalsMyBus(info, container, arrival) {
       lnimg.style.backgroundColor =
         "RGB(" +
         darkenColor(
-          lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1),
+          lineToColor(
+            parseInt(
+              arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, "")
+            ),
+            1
+          ),
           50
         ).join(",") +
         ")";
@@ -1047,7 +1028,12 @@ function showArrivalsMyBus(info, container, arrival) {
       lnimg.innerHTML =
         "<md-icon style='color:RGB(" +
         darkenColor(
-          lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1),
+          lineToColor(
+            parseInt(
+              arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, "")
+            ),
+            1
+          ),
           100
         ).join(",") +
         ")!important;background-color:" +
@@ -1068,7 +1054,12 @@ function showArrivalsMyBus(info, container, arrival) {
       lnimg.innerHTML =
         "<md-icon style='color:RGB(" +
         darkenColor(
-          lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1),
+          lineToColor(
+            parseInt(
+              arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, "")
+            ),
+            1
+          ),
           100
         ).join(",") +
         ")!important;background-color:" +
@@ -1087,7 +1078,12 @@ function showArrivalsMyBus(info, container, arrival) {
         lnimg.innerHTML =
           "<md-icon style='color:RGB(" +
           darkenColor(
-            lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1),
+            lineToColor(
+              parseInt(
+                arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, "")
+              ),
+              1
+            ),
             150
           ).join(",") +
           ")!important;background-color:" +

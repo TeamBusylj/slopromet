@@ -96,13 +96,17 @@
       <div id="popup-content"></div>
     </div>
     <div class="navigationBar">
-      <div id="lppTab" class="navigationTab">
-        <img class="selected" src="assets/images/logos/lpp_logo.svg"></img>
+      <div onclick="changeAgency('LPP')" id="lppTab" class="navigationTab">
+        <img src="assets/images/logos/lpp_logo.svg"></img>
         <md-ripple></md-ripple>LPP
       </div>
-      <div onclick="changeAgency('ARRIVA')" id="arrivaTab" class="navigationTab">
+      <div onclick="changeAgency('IJPP')" id="ijppTab" class="navigationTab">
         <img  src="assets/images/logos/arriva_logo.svg"></img>
-        <md-ripple></md-ripple>ARRIVA
+        <md-ripple></md-ripple>IJPP
+      </div>
+      <div onclick="changeAgency('MARPROM')" id="arrivaTab" class="navigationTab">
+        <img  src="assets/images/logos/marprom.svg"></img>
+        <md-ripple></md-ripple>MARPROM
       </div>
     </div>
     <script src="OpenLayers-2.13.1/OpenLayers.js"></script>

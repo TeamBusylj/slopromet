@@ -14,7 +14,12 @@ async function loop(firsttim, arrival, station, arOnSt) {
       .querySelector(".loader")
       .style.setProperty(
         "--_color",
-        lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1)
+        lineToColor(
+          parseInt(
+            arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, "")
+          ),
+          1
+        )
       );
   }
 
@@ -66,10 +71,23 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
 
           src: generateCustomSVG(
             darkenColor(
-              lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1),
+              lineToColor(
+                parseInt(
+                  arrival.route_short_name
+                    .split(" ")[0]
+                    .replace(/[^\d]/g, "")
+                    .replace(/[^\d]/g, "")
+                ),
+                1
+              ),
               -100
             ),
-            lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1)
+            lineToColor(
+              parseInt(
+                arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, "")
+              ),
+              1
+            )
           ), // Generate dynamic SVG
           scale: 0.5,
           rotation: calculateDirection(
@@ -162,7 +180,10 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
   }
 }
 async function generateRouteVector(arrival, stationID, coordinatesRoute) {
-  let color = lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1);
+  let color = lineToColor(
+    parseInt(arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, "")),
+    1
+  );
   if (arrival.trip_id === undefined) return;
   let coords1 = [...coordinates];
   if (coords1[0][0][0]) {
