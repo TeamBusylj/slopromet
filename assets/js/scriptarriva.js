@@ -360,20 +360,22 @@ async function stationClick(stationa, noAnimation, ia) {
 
     let ttl = addElement("div", title);
     let cornot = "";
-    if (station.code % 2 == 0)
+    if (station.gtfs_id.match(/\d+/)[0] % 2 == 0)
       cornot = '<md-icon class="center">adjust</md-icon>';
     ttl.innerHTML = station.name + cornot;
     let hh = addElement("div", title, "titleHolder");
     fav = addElement("md-icon-button", hh, "favi");
-    fav.innerHTML = favList.includes(station.code)
+    fav.innerHTML = favList.includes(station.gtfs_id.match(/\d+/)[0])
       ? "<md-icon class=iconFill>favorite</md-icon>"
       : "<md-icon>favorite</md-icon>";
     fav.addEventListener("click", function () {
-      if (favList.includes(station.code)) {
-        favList = favList.filter((item) => item !== station.code);
+      if (favList.includes(station.gtfs_id.match(/\d+/)[0])) {
+        favList = favList.filter(
+          (item) => item !== station.gtfs_id.match(/\d+/)[0]
+        );
         fav.innerHTML = "<md-icon>favorite</md-icon>";
       } else {
-        favList.push(station.code);
+        favList.push(station.gtfs_id.match(/\d+/)[0]);
 
         fav.innerHTML = "<md-icon class=iconFill>favorite</md-icon>";
       }
@@ -383,12 +385,14 @@ async function stationClick(stationa, noAnimation, ia) {
     mapca = addElement("md-icon-button", hh, "mapca");
     mapca.innerHTML = "<md-icon>swap_calls</md-icon>";
     mapca.addEventListener("click", function () {
-      oppositeStation(station.code);
+      oppositeStation(station.gtfs_id.match(/\d+/)[0]);
     });
-    if (station.code % 2 === 0) {
+    if (station.gtfs_id.match(/\d+/)[0] % 2 === 0) {
       if (
         stationList.findIndex(
-          (obj) => obj.code === String(parseInt(station.code) + 1)
+          (obj) =>
+            obj.gtfs_id.match(/\d+/)[0] ===
+            String(parseInt(station.gtfs_id.match(/\d+/)[0]) + 1)
         ) === -1
       ) {
         mapca.setAttribute("disabled", "");
@@ -396,7 +400,9 @@ async function stationClick(stationa, noAnimation, ia) {
     } else {
       if (
         stationList.findIndex(
-          (obj) => obj.code === String(parseInt(station.code) - 1)
+          (obj) =>
+            obj.gtfs_id.match(/\d+/)[0] ===
+            String(parseInt(station.gtfs_id.match(/\d+/)[0]) - 1)
         ) === -1
       ) {
         mapca.setAttribute("disabled", "");
