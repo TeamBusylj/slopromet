@@ -373,8 +373,10 @@ async function centerMap() {
   });
 }
 window.addEventListener("load", async function () {
-  createBuses();
+  await loadJS();
+  console.log("loaded");
 
+  createBuses();
   let sht = makeBottomSheet(null, 98);
 
   let bava = "";
@@ -393,7 +395,52 @@ window.addEventListener("load", async function () {
   document
     .querySelector("#" + agency.toLocaleLowerCase() + "Tab > img")
     .classList.add("selected");
+  document.body.classList.add(agency.toLocaleLowerCase());
+  document.body.style.opacity = "1";
 });
+function loadJS() {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    const script2 = document.createElement("script");
+    script.id = "script1";
+    script2.id = "script2";
+    script.type = "text/javascript";
+    script2.type = "text/javascript";
+
+    script.src =
+      agency === "LPP" ? "assets/js/scriptlpp.js" : "assets/js/scriptBA.js";
+    script2.src =
+      agency === "LPP" ? "assets/js/helper.js" : "assets/js/helperBA.js";
+
+    let loaded = 0;
+    const onLoad = () => {
+      loaded++;
+      if (loaded === 2) resolve();
+    };
+
+    script.onload = onLoad;
+    script2.onload = onLoad;
+    script.onerror = reject;
+    script2.onerror = reject;
+
+    document.head.appendChild(script);
+    document.head.appendChild(script2);
+  });
+}
+function changeAgency(agencyClicked) {
+  if (agency == agencyClicked) return;
+  document.body.style.opacity = "0";
+  if (agencyClicked !== "LPP") {
+    agency = agencyClicked;
+    localStorage.setItem("agency", agencyClicked);
+  } else {
+    agency = "LPP";
+    localStorage.setItem("agency", "LPP");
+  }
+  setTimeout(() => {
+    location.reload();
+  }, 200);
+}
 async function getLocation() {
   try {
     const position = await new Promise((resolve, reject) => {
@@ -424,7 +471,6 @@ function debounce(func, delay) {
   };
 }
 
-const delayedSearch = debounce(searchRefresh, 300);
 async function createBuses() {
   await getLocation();
   currentPanel = document.querySelector(".favouriteStations");
@@ -530,18 +576,6 @@ function getDirections() {
   );
   getLocation();
   container.classList.add("arrivalsScroll");
-  var stylesTransition = [
-    document.querySelector(".searchContain").style,
-    document.querySelector(".listOfStations").style,
-    document.querySelector(".favouriteStations").style,
-    document.getElementById("tabsFav").style,
-    document.querySelector(".refresh").style,
-    document.querySelector(".directionsButton").style,
-  ];
-  stylesTransition.forEach((style) => {
-    style.transform = "translateX(-100vw)";
-    style.opacity = "0";
-  });
   setTimeout(() => {
     container.style.transform = "translateX(0vw)";
     container.style.opacity = "1";
@@ -551,18 +585,6 @@ function getDirections() {
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
     container.style.transform = "translateX(100vw)";
-    var stylesTransition = [
-      document.querySelector(".searchContain").style,
-      document.querySelector(".listOfStations").style,
-      document.querySelector(".favouriteStations").style,
-      document.getElementById("tabsFav").style,
-      document.querySelector(".refresh").style,
-      document.querySelector(".directionsButton").style,
-    ];
-    stylesTransition.forEach((style) => {
-      style.transform = "translateX(0vw)";
-      style.opacity = "1";
-    });
     setTimeout(() => {
       container.remove();
     }, 500);
@@ -1583,18 +1605,7 @@ async function fetchData(url, arrivaType) {
   }
   return data;
 }
-function changeAgency(agencyClicked) {
-  if (agency == agencyClicked) return;
-  if (agencyClicked !== "LPP") {
-    agency = agencyClicked;
-    localStorage.setItem("agency", agencyClicked);
-    window.location.href = "./arriva.html";
-  } else {
-    agency = "LPP";
-    localStorage.setItem("agency", "LPP");
-    window.location.href = "./index.html";
-  }
-}
+
 /**
  * Given a bus index (e.g. "201" or "N201"), returns a CSS gradient string
  * that represents the line color. The direction of the gradient is determined

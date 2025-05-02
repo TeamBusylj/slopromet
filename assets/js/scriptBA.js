@@ -6,7 +6,10 @@ async function updateStations() {
   let stations = await fetchData("https://api.beta.brezavta.si/stops");
 
   stationList = stations.filter((station) => {
-    return station.gtfs_id.includes(agency);
+    return (
+      (station.gtfs_id.includes(agency) && station.type == "BUS") ||
+      (station.type == "RAIL" && agency == "SŽ")
+    );
   });
   createStationItems();
 }
@@ -60,7 +63,7 @@ async function createStationItems() {
         )
           continue;
         let cornot = "";
-        if (station.gtfs_id.match(/\d+/)[0] % 2 == 0) {
+        if (station.gtfs_id.match(/\d+/)[0] % 2 == 0 && agency !== "SŽ") {
           cornot = '<md-icon class="center">adjust</md-icon>';
         }
         let fav = "";
@@ -147,7 +150,7 @@ function createFavourite(parent, search, query) {
         station.lon
       );
       let cornot = "";
-      if (station.gtfs_id.match(/\d+/)[0] % 2 == 0) {
+      if (station.gtfs_id.match(/\d+/)[0] % 2 == 0 && agency !== "SŽ") {
         cornot = '<md-icon class="center">adjust</md-icon>';
       }
       let fav = "";
@@ -267,7 +270,7 @@ async function stationClick(stationa, noAnimation, ia) {
       //showLines(document.querySelector(".timeTScroll"), station);
     }
     let cornot = "";
-    if (station.code % 2 == 0)
+    if (station.code % 2 == 0 && agency !== "SŽ")
       cornot = '<md-icon class="center">adjust</md-icon>';
     //document.querySelector(".title span").innerHTML = station.name + cornot;
     document.querySelector(".titleHolder").innerHTML +=
@@ -530,7 +533,9 @@ function showArrivals(data, station_id) {
       } else {
         arrivalTimeSpan.innerHTML += minutesFromNow(arrivalTimeRealtime);
       }
-
+      if (!isFutureTime(arrivalTimeRealtime)) {
+        arrivalTimeSpan.innerHTML += "NA POSTAJI";
+      }
       arrivalTimeSpan = null;
     }
   } else {
@@ -539,7 +544,7 @@ function showArrivals(data, station_id) {
   }
 }
 function createBusNumber(arrival, arrivalItem) {
-  if (agency !== "IJPP") {
+  if (agency !== "IJPP" && agency !== "SŽ") {
     let busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
     busNumberDiv.style.background = lineToColor(
@@ -763,6 +768,7 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
     }
   });
 }
+const delayedSearch = debounce(searchRefresh, 300);
 function hoursDay(what) {
   const now = new Date();
   const hoursFromMidnight = now.getHours() + now.getMinutes() / 60;
@@ -936,7 +942,9 @@ async function getMyBusData(busId, arrivalsAll, routeId) {
 }
 async function clickedMyBus(bus, tripId, arrival) {
   let arOnS1 = await fetchData(
-    `https://api.beta.brezavta.si/trips/${encodeURIComponent(tripId)}`
+    `https://api.beta.brezavta.si/trips/${encodeURIComponent(
+      tripId
+    )}?date=${new Date().toISOString().slice(0, 10).replace(/-/g, "")}`
   );
   let arOnS = arOnS1.stop_times;
 

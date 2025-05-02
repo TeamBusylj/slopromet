@@ -384,6 +384,7 @@ async function oppositeStation(id) {
   }, 300);
 }
 var arrivalsScroll;
+const delayedSearch = debounce(searchRefresh, 300);
 async function stationClick(stationa, noAnimation, ia) {
   if (document.querySelector(".arrivalsOnStation")) return;
   let station = stationa ? stationa : isArrivalsOpen;

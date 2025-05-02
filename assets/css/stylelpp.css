@@ -75,6 +75,7 @@ body {
   margin: 0;
   overscroll-behavior: none;
   overflow: hidden;
+  background: black;
 }
 
 .station {
@@ -189,8 +190,6 @@ md-fab.centerMap,
   width: 100%;
   height: 67dvh;
   position: relative;
-  opacity: 0;
-  transition: 0.4s;
 }
 .ol-control {
   background: none !important;
@@ -1225,6 +1224,8 @@ div#popup {
 }
 body {
   --transDur: 0.3s;
+  opacity: 0;
+  transition: 0.2s;
 }
 
 @keyframes scaleupy {
