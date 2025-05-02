@@ -1555,22 +1555,9 @@ var agency = location.href.includes("arriva") ? "ARRIVA" : "LPP";
 async function fetchData(url, arrivaType) {
   let data;
   if (agency == "ARRIVA") {
-    data = await (
-      await fetch(url, {
-        headers: {
-          Authorization: "ApiKey bTl7H90FCtXPhsVTcxvyKWwIB8x4jc4J",
-        },
-      })
-    ).json();
+    data = await (await fetch(url)).json();
   } else {
-    data = await (
-      await fetch(url, {
-        headers: {
-          apiKey: "D2F0C381-6072-45F9-A05E-513F1515DD6A",
-          Accept: "Travana",
-        },
-      })
-    ).json();
+    data = await (await fetch(url)).json();
     data = data.data;
   }
   return data;

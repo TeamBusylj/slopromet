@@ -18,7 +18,7 @@ async function loop(firsttim, arrival, station, arOnSt) {
   }
   // Fetch bus data
   let response = await fetchData(
-    "https://cors.proxy.prometko.si/https://data.lpp.si/api/bus/buses-on-route?route-group-number=" +
+    "https://lpp.ojpp.derp.si/api/bus/buses-on-route?route-group-number=" +
       arrival.route_name
   );
 
@@ -44,7 +44,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
   tempMarkersSource = new ol.source.Vector();
   if (firsttim) {
     stations = await fetchData(
-      "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/stations-on-route?trip-id=" +
+      "https://lpp.ojpp.derp.si/api/route/stations-on-route?trip-id=" +
         arrival.trip_id
     );
     coordinates = await getCoordinates(arrival.trip_id, stations);

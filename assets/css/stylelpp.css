@@ -268,7 +268,7 @@ md-list.favouriteStations {
   overscroll-behavior: none;
   overflow-x: hidden;
   overflow-y: scroll;
-  height: calc(100dvh - 180px);
+  height: calc(100dvh - 240px);
   position: relative;
   padding-bottom: 50px;
   margin-top: 10px;
@@ -300,7 +300,7 @@ md-list.favouriteStations {
   position: absolute;
   top: 40px;
   z-index: 3;
-  height: calc(100dvh - 50px);
+  height: calc(100dvh - 110px);
   left: 0;
   width: 100%;
   overscroll-behavior: none;
@@ -707,7 +707,7 @@ span.nextBusTitle {
   padding: 8px 0;
 }
 .myBusDiv {
-  height: calc(100dvh - 55px);
+  height: calc(100dvh - 155px);
   box-sizing: border-box;
   transition: all 0.5s;
   padding: 0 30px;
@@ -1087,19 +1087,39 @@ span.pac-item-query {
   flex-basis: 100px;
 }
 .agencyLogo {
-  height: 20px;
+  height: 25px;
+  padding: 5px;
   border-radius: 1000px;
+  box-sizing: border-box;
+}
+.arrivalItem .stepIcon {
+  flex-direction: column-reverse;
+  font-size: 0.7rem;
+}
+.arrivalItem .stepIcon .agencyLogo {
+  height: 30px;
+  width: 30px;
+}
+.stepIcon .busNo2 {
+  height: fit-content;
+  aspect-ratio: 1 / 0.6;
 }
 .stepIcon {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 0px;
+  z-index: 0;
 }
 .connectingLine {
+  margin: -1.5px 0 -1px 0;
   height: 15px;
-  width: 1px;
-  border-left: 3px dotted var(--md-sys-color-on-surface);
+  width: 17px;
+  -webkit-mask: url("/assets/images/curve.svg") no-repeat center;
+  -webkit-mask-size: contain;
+  mask: url("/assets/images/curve.svg") no-repeat center;
+  mask-size: contain;
+  background: linear-gradient(to bottom, red, blue);
 }
 
 .routeDiv {

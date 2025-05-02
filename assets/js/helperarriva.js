@@ -14,15 +14,15 @@ async function loop(firsttim, arrival, station, arOnSt) {
       .querySelector(".loader")
       .style.setProperty(
         "--_color",
-        lineToColor(parseInt(arrival.routeId.match(/:(.*?)_/)[1]), 1)
+        lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1)
       );
   }
-  console.log(arrival.routeId);
 
   // Fetch bus data
   let response = await fetchData(
-    "https://arriva-mtb-prod.lit-transit.com/mtbp/service/ui/eta/vehicles-on-pattern/" +
-      encodeURIComponent(arrival.patternId)
+    `https://api.beta.brezavta.si/trips/${encodeURIComponent(
+      arrival.trip_id
+    )}/vehicles`
   );
 
   let tempBusObject = response;
@@ -37,34 +37,25 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
   tempMarkersSource = new ol.source.Vector();
   if (firsttim) {
     stations = await fetchData(
-      `https://arriva-mtb-prod.lit-transit.com/mtbp/service/api/v1/otp/trips/${encodeURIComponent(
-        arrival.tripId
-      )}/stop-times?locale=sl-si`
+      `https://api.beta.brezavta.si/trips/${encodeURIComponent(
+        arrival.trip_id
+      )}`
     );
-    stations = stations.stopTimeList;
-    stations.forEach((item) => {
-      const match = stationList.find((data) => data.id === item.stopId);
-      if (match) {
-        item.latitude = match.latitude;
-        item.longitude = match.longitude;
-        item.name = match.name;
-      }
-    });
-    coordinates = await getCoordinates(stations);
+    stations = stations.stop_times;
+    coordinates = await getCoordinates(arrival.trip_id);
   }
 
   for (const i in busObject) {
     const bus = busObject[i];
 
-    if (!buses.includes(bus.id)) {
-      buses.push(bus.id);
-      const coordinates1 = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
+    if (!buses.includes(bus.vehicle.id)) {
+      const coordinates1 = ol.proj.fromLonLat([bus.lon, bus.lat]); // Convert to EPSG:3857
 
       // Create a feature for the bus
       const marker = new ol.Feature({
         geometry: new ol.geom.Point(coordinates1),
       });
-      let prev = findClosestPoint([bus.longitude, bus.latitude], coordinates);
+      let prev = findClosestPoint([bus.lon, bus.lat], coordinates);
       // Create a style for the bus with rotation
       const busStyle = new ol.style.Style({
         image: new ol.style.Icon({
@@ -75,10 +66,10 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
 
           src: generateCustomSVG(
             darkenColor(
-              lineToColor(parseInt(arrival.routeId.match(/:(.*?)_/)[1]), 1),
+              lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1),
               -100
             ),
-            lineToColor(parseInt(arrival.routeId.match(/:(.*?)_/)[1]), 1)
+            lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1)
           ), // Generate dynamic SVG
           scale: 0.5,
           rotation: calculateDirection(
@@ -88,13 +79,13 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
         }),
       });
 
-      marker.busId = bus.id;
-      marker.busNo = bus.label;
+      marker.busId = bus.vehicle.id;
+      marker.busNo = bus.vehicle.plate;
 
       marker.setStyle(busStyle);
 
       tempMarkersSource.addFeature(marker);
-      busPreviusPosition[bus.id] = coordinates1;
+      busPreviusPosition[bus.vehicle.id] = coordinates1;
     } else {
       try {
         let coords = [...coordinates];
@@ -102,15 +93,13 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
           coords = coords.flat(); // Flatten the array if needed
         }
         markers.getSource().forEachFeature(function (feature) {
-          if (bus.id === feature.busId) {
+          if (bus.vehicle.id === feature.busId) {
             let cordi = [
-              ...coords[
-                findClosestPoint([bus.longitude, bus.latitude], coords)
-              ],
+              ...coords[findClosestPoint([bus.lon, bus.lat], coords)],
             ];
             cordi =
-              getDistance(cordi, [bus.longitude, bus.latitude]) > 10
-                ? [bus.longitude, bus.latitude]
+              getDistance(cordi, [bus.lon, bus.lat]) > 10
+                ? [bus.lon, bus.lat]
                 : cordi;
 
             cordi[0] > cordi[1] ? cordi.reverse() : cordi;
@@ -118,7 +107,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
             let newCoordinates = ol.proj.fromLonLat(cordi);
 
             if (
-              findClosestPoint([bus.longitude, bus.latitude], coords) >
+              findClosestPoint([bus.lon, bus.lat], coords) >
                 findClosestPoint(
                   ol.proj.toLonLat(feature.getGeometry().getCoordinates()),
                   coords
@@ -127,10 +116,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
             ) {
               if (!document.querySelector(".switch").selected) {
                 now = new Date().getTime();
-                let prev = findClosestPoint(
-                  [bus.longitude, bus.latitude],
-                  coordinates
-                );
+                let prev = findClosestPoint([bus.lon, bus.lat], coordinates);
                 console.log(prev);
 
                 const animate = () => {
@@ -153,7 +139,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
                 feature.getGeometry().setCoordinates(coords);
               }
 
-              busPreviusPosition[bus.id] = newCoordinates;
+              busPreviusPosition[bus.vehicle.id] = newCoordinates;
             }
           }
         });
@@ -176,8 +162,8 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
   }
 }
 async function generateRouteVector(arrival, stationID, coordinatesRoute) {
-  let color = lineToColor(parseInt(arrival.routeId.match(/:(.*?)_/)[1]), 1);
-  if (arrival.tripId === undefined) return;
+  let color = lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1);
+  if (arrival.trip_id === undefined) return;
   let coords1 = [...coordinates];
   if (coords1[0][0][0]) {
     coords1 = coords1.flat(); // Flatten the array if needed
@@ -194,21 +180,21 @@ async function generateRouteVector(arrival, stationID, coordinatesRoute) {
   const tempRouteSource = new ol.source.Vector();
 
   // Add station markers
-  stations.forEach((station, index) => {
+
+  stations.forEach((station1, index) => {
+    let station = station1.stop;
     let loca = [
-      ...coords1[
-        findClosestPoint([station.latitude, station.longitude], coords1)
-      ],
+      ...coords1[findClosestPoint([station.lat, station.lon], coords1)],
     ];
-    loca = [station.latitude, station.longitude];
+    loca = [station.lat, station.lon];
     loca = loca.reverse();
     // console.log(loca,coords1);
 
     const stationFeature = new ol.Feature({
       geometry: new ol.geom.Point(ol.proj.fromLonLat(loca)),
       name: station.name,
-      order: station.order_no,
-      code: station.station_code,
+      order: station.sequence,
+      code: station.gtfs_id,
       color: color,
     });
 
@@ -219,7 +205,7 @@ async function generateRouteVector(arrival, stationID, coordinatesRoute) {
           radius: 6, // Adjust size as needed
           fill: new ol.style.Fill({
             color:
-              station.station_code == stationID
+              station.gtfs_id == stationID
                 ? darkenColor(color, -50)
                 : darkenColor(color, 100),
           }),
@@ -322,18 +308,11 @@ async function generateRouteVector(arrival, stationID, coordinatesRoute) {
   }, 100);
 }
 
-async function getCoordinates(data) {
-  let coords = "";
-  for (const i in data) {
-    coords += data[i].longitude + "," + data[i].latitude + ";";
-  }
-  coordinates = await fetchData(
-    "https://cors.proxy.prometko.si/https://router.project-osrm.org/route/v1/driving/" +
-      coords.substring(0, coords.length - 2) +
-      "?overview=full&geometries=geojson"
+async function getCoordinates(tripid) {
+  let data = await fetchData(
+    `https://api.beta.brezavta.si/trips/${encodeURIComponent(tripid)}/geometry`
   );
+  data = data.coordinates;
 
-  coordinates = coordinates.routes[0].geometry.coordinates;
-
-  return coordinates;
+  return data;
 }

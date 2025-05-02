@@ -26,9 +26,7 @@ window.addEventListener("load", async function () {
 });
 async function getAllLines() {
   if (agency == "LPP") {
-    lines = await fetchData(
-      "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/routes"
-    );
+    lines = await fetchData("https://lpp.ojpp.derp.si/api/route/routes");
   }
 }
 
@@ -36,7 +34,7 @@ async function updateStations() {
   console.log(agency);
 
   let stations = await fetchData(
-    "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/station-details?show-subroutes=1"
+    "https://lpp.ojpp.derp.si/api/station/station-details?show-subroutes=1"
   );
   stationList = stations;
   createStationItems();
@@ -737,7 +735,7 @@ function showArrivals(arrivalsScroll2, data) {
 }
 async function showLines(parent, station) {
   let data = await fetchData(
-    "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/routes-on-station?station-code=" +
+    "https://lpp.ojpp.derp.si/api/station/routes-on-station?station-code=" +
       station.ref_id
   );
 
@@ -801,7 +799,7 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
     }, 500);
   });
   let data1 = await fetchData(
-    `https://cors.proxy.prometko.si/https://data.lpp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN.replace(
+    `https://lpp.ojpp.derp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN.replace(
       /\D/g,
       ""
     )}&previous-hours=${hoursDay(0)}&next-hours=${hoursDay(1)}`
@@ -852,8 +850,7 @@ const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
  */
 async function createInfoBar(parent, station_id) {
   let info = await fetchData(
-    "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/messages?station-code=" +
-      station_id
+    "https://lpp.ojpp.derp.si/api/station/messages?station-code=" + station_id
   );
 
   let infoBar = addElement("div", parent, "infoBar");
@@ -975,7 +972,7 @@ async function showBusById(arrival, station_id, arrivals) {
 }
 async function arrivalsOnStation(arrival, station_id, already) {
   let info = await fetchData(
-    "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/arrivals-on-route?trip-id=" +
+    "https://lpp.ojpp.derp.si/api/route/arrivals-on-route?trip-id=" +
       arrival.trip_id
   );
   let container = document.querySelector(".arrivalsOnStation");
@@ -1290,8 +1287,7 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
 }
 async function clickedMyBus(bus, tripId) {
   let arOnS = await fetchData(
-    "https://cors.proxy.prometko.si/https://data.lpp.si/api/route/arrivals-on-route?trip-id=" +
-      tripId
+    "https://lpp.ojpp.derp.si/api/route/arrivals-on-route?trip-id=" + tripId
   );
   let busId = bus.bus_unit_id;
   let busData = busObject.find((el) => el.bus_unit_id === busId);
