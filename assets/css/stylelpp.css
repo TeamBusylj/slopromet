@@ -1099,7 +1099,9 @@ span.pac-item-query {
 .arrivalItem .stepIcon {
   flex-direction: column;
   font-size: 0.7rem;
-  filter: url("#goo");
+  filter: url(#goo);
+  will-change: filter;
+  transform: translateZ(0);
   gap: 7px;
 }
 img.agenImg {
@@ -1138,7 +1140,6 @@ img.agenImg {
 .stepIcon .busNo2 {
   height: 15px;
   width: 30px;
-
   transform: scale(0) translate(0px, -80px);
 }
 @keyframes goeey {
