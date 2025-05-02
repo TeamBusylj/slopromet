@@ -555,31 +555,23 @@ function createBusNumber(arrival, arrivalItem) {
     busNumberDiv.textContent = arrival.route_short_name;
     return;
   }
-  let busHolder = addElement("div", arrivalItem, "stepIcon");
-  let busNumberDiv = addElement("div", busHolder, "busNo2");
+  let busHolder = addElement("div", arrivalItem, "busGoeey");
+  let gooeyHolder = addElement("div", busHolder, "stepIcon");
+  let textHolder = addElement("div", busHolder, "textGoeey");
 
-  busNumberDiv.style.background = lineToColor(
-    parseInt(arrival.route_short_name.split(" ")[0])
-  );
-  console.log(arrival);
-
-  busNumberDiv.textContent = arrival.route_short_name.split(" ")[0];
-  let curve = addElement("div", busHolder, "connectingLine");
-  curve.style.background =
-    " linear-gradient(to bottom, #" +
-    adaptColors(arrival.route_color_background) +
-    " 15%,RGB(" +
-    darkenColor(
-      lineToColor(parseInt(arrival.route_short_name.split(" ")[0]), 1),
-      5
-    ).join(",") +
-    ") 100%)";
-
-  let imgHolder = addElement("div", busHolder, "agencyLogo");
-  let imgLogo = addElement("img", imgHolder, "");
+  let imgHolder = addElement("div", gooeyHolder, "agencyLogo");
+  let imgLogo = addElement("img", textHolder, "agenImg");
   imgLogo.src = "assets/images/logos_brezavta/" + arrival.agency_id + ".svg";
   imgHolder.style.background =
     "#" + adaptColors(arrival.route_color_background);
+  let busNumberDiv = addElement("div", gooeyHolder, "busNo2");
+
+  busNumberDiv.style.background =
+    "#" + adaptColors(arrival.route_color_background);
+  console.log(arrival);
+
+  textHolder.innerHTML += "<span>" + arrival.route_short_name.split(" ")[0];
+  +"</span>";
 }
 function adaptColors(color) {
   return color.replace("0077BE", "fff").replace("FBB900", "00489a");
