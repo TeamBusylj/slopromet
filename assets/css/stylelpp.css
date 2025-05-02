@@ -1115,9 +1115,11 @@ span.pac-item-query {
   margin: -1.5px 0 -1px 0;
   height: 15px;
   width: 17px;
-  -webkit-mask: url("/assets/images/curve.svg") no-repeat center;
+  -webkit-mask: url("https://teambusylj.github.io/slopromet/assets/images/curve.svg")
+    no-repeat center;
   -webkit-mask-size: contain;
-  mask: url("/assets/images/curve.svg") no-repeat center;
+  mask: url("https://teambusylj.github.io/slopromet/assets/images/curve.svg")
+    no-repeat center;
   mask-size: contain;
   background: linear-gradient(to bottom, red, blue);
 }
