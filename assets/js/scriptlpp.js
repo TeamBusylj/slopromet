@@ -1207,7 +1207,7 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
         clearInterval(intervalBusk);
         intervalBusk = null;
         let busek = busObject.find(
-          (el) => el.bus_unit_id == arrival.vehicle_id.toUpperCase()
+          (el) => el.bus_id == arrival.vehicle_id.toUpperCase()
         );
         document.querySelector(".myBusDiv").style.transform =
           "translateY(-20px)";
@@ -1247,9 +1247,11 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
     holder.style.transform = "translateX(0px) translateY(0px)";
   }, 10);
   if (arrivals || busId) {
+    console.log(busId ? busId : arrivals[0].vehicle_id.toUpperCase());
+
     let bus = busObject.find(
       (el) =>
-        el.bus_unit_id == (busId ? busId : arrivals[0].vehicle_id.toUpperCase())
+        el.bus_id == (busId ? busId : arrivals[0].vehicle_id.toUpperCase())
     );
     console.log(arrivals);
 
@@ -1266,8 +1268,11 @@ async function clickedMyBus(bus, tripId) {
   let arOnS = await fetchData(
     "https://lpp.ojpp.derp.si/api/route/arrivals-on-route?trip-id=" + tripId
   );
-  let busId = bus.bus_unit_id;
-  let busData = busObject.find((el) => el.bus_unit_id === busId);
+  console.log(bus);
+
+  let busId = bus.bus_id;
+  let busData = busObject.find((el) => el.bus_id === busId);
+  console.log(busData);
 
   let myBusDiv = document.querySelector(".myBusDiv");
   let scrollPosition = myBusDiv.scrollTop;
@@ -1278,9 +1283,9 @@ async function clickedMyBus(bus, tripId) {
   let arrivalItem = addElement("div", myBusDiv, "arrivalItem");
   arrivalItem.style.margin = "10px 0";
   let busNumberDiv = addElement("div", arrivalItem, "busNo2");
-  busNumberDiv.style.background = lineColors(busData.route_number);
-  busNumberDiv.id = "bus_" + busData.route_number;
-  busNumberDiv.textContent = busData.route_number;
+  busNumberDiv.style.background = lineColors(busData.line_number);
+  busNumberDiv.id = "bus_" + busData.line_number;
+  busNumberDiv.textContent = busData.line_number;
   let tripNameSpan = addElement("span", arrivalItem);
   const tripName = arOnS.find((station) => station?.arrivals?.length > 0)
     ?.arrivals[0]?.trip_name;
@@ -1309,7 +1314,7 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
 
     lineStation.style.backgroundColor =
       "RGB(" +
-      lineColorsObj[arrival.route_number.replace(/\D/g, "")].join(",") +
+      lineColorsObj[arrival.line_number.replace(/\D/g, "")].join(",") +
       ")";
     let lnimg = addElement("div", lineStation, "lineStationImg");
 
@@ -1319,20 +1324,20 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
         : lineStation.parentNode.classList.add("half-hidden");
       lnimg.style.backgroundColor =
         "RGB(" +
-        lineColorsObj[arrival.route_number.replace(/\D/g, "")].join(",") +
+        lineColorsObj[arrival.line_number.replace(/\D/g, "")].join(",") +
         ")";
     } else {
       lnimg.style.backgroundColor =
         "RGB(" +
         darkenColor(
-          lineColorsObj[arrival.route_number.replace(/\D/g, "")],
+          lineColorsObj[arrival.line_number.replace(/\D/g, "")],
           50
         ).join(",") +
         ")";
 
       lnimg.style.borderColor =
         "RGB(" +
-        lineColorsObj[arrival.route_number.replace(/\D/g, "")].join(",") +
+        lineColorsObj[arrival.line_number.replace(/\D/g, "")].join(",") +
         ")";
     }
     let nameStation = addElement("div", arDiv, "nameStation");
@@ -1396,11 +1401,11 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
       lnimg.innerHTML =
         "<md-icon style='color:RGB(" +
         darkenColor(
-          lineColorsObj[arrival.route_number.replace(/\D/g, "")],
+          lineColorsObj[arrival.line_number.replace(/\D/g, "")],
           100
         ).join(",") +
         ")!important;background-color:RGB(" +
-        lineColorsObj[arrival.route_number.replace(/\D/g, "")].join(",") +
+        lineColorsObj[arrival.line_number.replace(/\D/g, "")].join(",") +
         ")'>directions_bus</md-icon>";
       lnimg.classList.add("busOnStation");
     }
@@ -1414,11 +1419,11 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
         lnimg.innerHTML =
           "<md-icon style='color:RGB(" +
           darkenColor(
-            lineColorsObj[arrival.route_number.replace(/\D/g, "")],
+            lineColorsObj[arrival.line_number.replace(/\D/g, "")],
             150
           ).join(",") +
           ")!important;background-color:RGB(" +
-          lineColorsObj[arrival.route_number.replace(/\D/g, "")].join(",") +
+          lineColorsObj[arrival.line_number.replace(/\D/g, "")].join(",") +
           ")'>directions_bus</md-icon>";
         lnimg.classList.add("busBetween");
       }
@@ -1501,16 +1506,21 @@ async function createBusData(bus, busDataDiv) {
     }
     return null; // če ni najdeno
   };
+  let date = new Intl.DateTimeFormat("sl-SI", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone: "Europe/Ljubljana",
+  }).format(new Date(bus.timestamp));
 
   busDataDiv.innerHTML = `<table class="busDataTable">
   <tr><td>Ime:</td><td>${bus.bus_name}</td></tr>
    <tr><td>Model:</td><td>${bus.model}</td></tr>
    <tr><td>Leto:</td><td>${findYearByGarageNumber(bus.no)}</td></tr>
    <tr><td>Vrsta:</td><td>${bus.type}</td></tr>
-   <tr><td>Hitrost:</td><td>${bus.ground_speed} km/h</td></tr>
-   <tr><td>Zabeležen:</td><td>${bus.bus_timestamp.toLocaleString("sl-SI", {
-     timeZone: "Europe/Ljubljana",
-   })}</td></tr>
+   <tr><td>Odometer:</td><td>${Math.floor(bus.odometer)} km</td></tr>
+   <tr><td>Hitrost:</td><td>${bus.speed} km/h</td></tr>
+   <tr><td>Zabeležen:</td><td>ob ${date}</td></tr>
   `;
   if (bus.hasImage) {
     let holder = addElement("div", busDataDiv, "busImgHolder");

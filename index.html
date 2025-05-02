@@ -124,13 +124,12 @@
     ></script>
     <svg width="0" height="0">
       <filter id="goo">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="10" />
-        <feColorMatrix type="matrix"
+        <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+        <feColorMatrix in="blur" type="matrix"
           values="1 0 0 0 0  
                   0 1 0 0 0  
                   0 0 1 0 0  
-                  0 0 0 18 -7"/>
-        
+                  0 0 0 18 -7" result="goo" />
       </filter>
     </svg>
   </body>

@@ -397,6 +397,14 @@ window.addEventListener("load", async function () {
     .classList.add("selected");
   document.body.classList.add(agency.toLocaleLowerCase());
   document.body.style.opacity = "1";
+  if (agency == "LPP") {
+    busImageData = await fetch(
+      "https://mestnipromet.cyou/tracker/js/json/images.json"
+    );
+    absoluteTime = localStorage.getItem("time") ? true : false;
+
+    busImageData = await busImageData.json();
+  }
 });
 function loadJS() {
   return new Promise((resolve, reject) => {

@@ -18,11 +18,12 @@ async function loop(firsttim, arrival, station, arOnSt) {
   }
   // Fetch bus data
   let response = await fetchData(
-    "https://lpp.ojpp.derp.si/api/bus/buses-on-route?route-group-number=" +
-      arrival.route_name
+    "https://mestnipromet.cyou/api/v1/resources/buses/info"
   );
 
-  let tempBusObject = response;
+  let tempBusObject = response.filter((bus) => {
+    return bus.line_number == arrival.route_name;
+  });
 
   for (const i in tempBusObject) {
     for (const j in busImageData) {
@@ -53,8 +54,8 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
     const bus = busObject[i];
 
     if (bus.trip_id == arrival.trip_id) {
-      if (!buses.includes(bus.bus_unit_id)) {
-        buses.push(bus.bus_unit_id);
+      if (!buses.includes(bus.bus_id)) {
+        buses.push(bus.bus_id);
         const coordinates1 = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
 
         // Create a feature for the bus
@@ -72,23 +73,23 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
 
             src: generateCustomSVG(
               darkenColor(
-                lineColorsObj[bus.route_number.replace(/\D/g, "")],
+                lineColorsObj[bus.line_number.replace(/\D/g, "")],
                 -100
               ),
-              lineColorsObj[bus.route_number.replace(/\D/g, "")]
+              lineColorsObj[bus.line_number.replace(/\D/g, "")]
             ), // Generate dynamic SVG
             scale: 0.5,
-            rotation: (bus.cardinal_direction * Math.PI) / 180, // Convert degrees to radians
+            rotation: (bus.direction * Math.PI) / 180, // Convert degrees to radians
           }),
         });
 
-        marker.busId = bus.bus_unit_id;
+        marker.busId = bus.bus_id;
         marker.busNo = bus.bus_name.replace("LJ LPP-", "");
 
         marker.setStyle(busStyle);
 
         tempMarkersSource.addFeature(marker);
-        busPreviusPosition[bus.bus_unit_id] = coordinates1;
+        busPreviusPosition[bus.bus_id] = coordinates1;
       } else {
         try {
           let coords = [...coordinates];
@@ -96,7 +97,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
             coords = coords.flat(); // Flatten the array if needed
           }
           markers.getSource().forEachFeature(function (feature) {
-            if (bus.bus_unit_id === feature.busId) {
+            if (bus.bus_id === feature.busId) {
               let cordi = [
                 ...coords[
                   findClosestPoint([bus.longitude, bus.latitude], coords)
@@ -126,7 +127,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
                     const shouldContinue = moveMarker(
                       feature,
                       newCoordinates,
-                      (bus.cardinal_direction * Math.PI) / 180
+                      (bus.direction * Math.PI) / 180
                     );
 
                     // Re-render map for smooth animation
@@ -142,7 +143,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
                   feature.getGeometry().setCoordinates(coords);
                 }
 
-                busPreviusPosition[bus.bus_unit_id] = newCoordinates;
+                busPreviusPosition[bus.bus_id] = newCoordinates;
               }
             }
           });

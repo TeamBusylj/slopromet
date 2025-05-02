@@ -444,7 +444,7 @@ async function stationClick(stationa, noAnimation, ia) {
   }
   isArrivalsOpen = station;
 
-  showArrivals(data, station.gtfs_id);
+  showArrivals(data, station.gtfs_id, noAnimation);
 }
 /**
  * Displays the arrivals of buses on the provided element.
@@ -460,13 +460,16 @@ async function stationClick(stationa, noAnimation, ia) {
  * @param {Array} data.data.arrivals - An array of bus arrival objects.
  */
 
-function showArrivals(data, station_id) {
+function showArrivals(data, station_id, noAnimation) {
   let arrivalsScroll = document.getElementById("arrivals-panel");
   clearElementContent(arrivalsScroll);
   arrivalsScroll = null;
   arrivalsScroll = document.getElementById("arrivals-panel");
   let arrivalsList = [];
   if (Object.keys(data).length > 0) {
+    let i = 0;
+    const getDelayFromNumber = (n, scale = 10) =>
+      Math.min(Math.pow(n / scale, 2) * 0.1, 5);
     for (const arrival of data) {
       let etaDiv;
       if (!arrivalsList.includes(arrival.route_id)) {
@@ -474,7 +477,7 @@ function showArrivals(data, station_id) {
         arrivalsList.push(arrival.route_id);
         let arrivalItem = addElement("div", null, "arrivalItem");
 
-        createBusNumber(arrival, arrivalItem);
+        createBusNumber(arrival, arrivalItem, "0." + i + "5", noAnimation);
         addElement("md-ripple", arrivalItem);
         let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
 
@@ -507,10 +510,6 @@ function showArrivals(data, station_id) {
       if (order > 120) continue;
 
       let arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
-      let arItem = etaDiv.parentNode.parentNode;
-      if (arItem.style.order > order || arItem.style.order == "") {
-        arItem.style.order = order;
-      }
 
       if (arrival.realtime) {
         arrivalTimeSpan.innerHTML =
@@ -537,13 +536,14 @@ function showArrivals(data, station_id) {
         arrivalTimeSpan.innerHTML += "NA POSTAJI";
       }
       arrivalTimeSpan = null;
+      i++;
     }
   } else {
     arrivalsScroll.innerHTML +=
       "<p><md-icon>no_transfer</md-icon>V naslednji uri ni predvidenih avtobusov.</p>";
   }
 }
-function createBusNumber(arrival, arrivalItem) {
+function createBusNumber(arrival, arrivalItem, delay, noAnimation) {
   if (agency !== "IJPP" && agency !== "SŽ") {
     let busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
@@ -566,12 +566,21 @@ function createBusNumber(arrival, arrivalItem) {
     "#" + adaptColors(arrival.route_color_background);
   let busNumberDiv = addElement("div", gooeyHolder, "busNo2");
 
-  busNumberDiv.style.background =
-    "#" + adaptColors(arrival.route_color_background);
+  busNumberDiv.style.background = lineToColor(
+    parseInt(arrival.route_short_name.split(" ")[0])
+  );
   console.log(arrival);
-
-  textHolder.innerHTML += "<span>" + arrival.route_short_name.split(" ")[0];
-  +"</span>";
+  let txtNum = addElement("span", textHolder);
+  txtNum.innerHTML += arrival.route_short_name.split(" ")[0];
+  setTimeout(() => {
+    if (noAnimation) {
+      txtNum.style.animation = `goeey 0s forwards`;
+      busNumberDiv.style.animation = `goeey 0s forwards`;
+    } else {
+      txtNum.style.animation = `goeey 1s ${delay}s cubic-bezier(0.73, 0.01, 0.29, 1.21) forwards`;
+      busNumberDiv.style.animation = `goeey 1s ${delay}s cubic-bezier(0.73, 0.01, 0.29, 1.21) forwards`;
+    }
+  }, 1);
 }
 function adaptColors(color) {
   return color.replace("0077BE", "fff").replace("FBB900", "00489a");
@@ -948,7 +957,7 @@ async function clickedMyBus(bus, tripId, arrival) {
 
   let arrivalItem = addElement("div", myBusDiv, "arrivalItem");
   arrivalItem.style.margin = "10px 0";
-  createBusNumber(arrival, arrivalItem);
+  createBusNumber(arrival, arrivalItem, 0);
   let tripNameSpan = addElement("span", arrivalItem);
   tripNameSpan.innerHTML = arOnS1.trip_headsign.replace(
     /(.+?)[-–]/g,

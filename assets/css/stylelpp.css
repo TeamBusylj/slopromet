@@ -453,8 +453,13 @@ img.busImgElement {
   display: flex;
   flex-direction: row;
   gap: 15px;
+  z-index: 2;
 }
-
+.myBusDiv .arrivalItem span {
+  font-size: 1.2rem;
+  color: var(--md-sys-color-on-surface);
+  font-weight: 400;
+}
 .arrivalData {
   gap: 5px;
   display: flex;
@@ -693,6 +698,7 @@ span.nextBusTitle {
   padding-bottom: 100px;
   margin-top: 10px;
   overscroll-behavior: none;
+  position: relative;
 }
 .arrivalsOnStation {
   flex-direction: column !important;
@@ -1094,7 +1100,7 @@ span.pac-item-query {
   flex-direction: column;
   font-size: 0.7rem;
   filter: url("#goo");
-  gap: 5px;
+  gap: 7px;
 }
 img.agenImg {
   width: 35px;
@@ -1111,15 +1117,15 @@ img.agenImg {
   display: flex;
   font-size: 0.7rem;
   justify-content: center;
-  animation: goeey 0.7s cubic-bezier(0.5, -0.02, 0.18, 1.38) forwards;
-  transform: scale(0.8) translate(-20px, -60px);
+  transform: scale(0) translate(0px, -80px);
+  transform-origin: top;
 }
 .textGoeey {
   position: absolute;
   top: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 7px;
   left: 50%;
   transform: translateX(-50%);
   align-items: center;
@@ -1130,18 +1136,19 @@ img.agenImg {
   width: 35px;
 }
 .stepIcon .busNo2 {
-  height: fit-content;
-  aspect-ratio: 1 / 0.6;
-  width: 25px;
-  animation: goeey 0.7s cubic-bezier(0.5, -0.02, 0.18, 1.38) forwards;
-  transform: scale(0.8) translate(-20px, -60px);
+  height: 15px;
+  width: 30px;
+
+  transform: scale(0) translate(0px, -80px);
 }
 @keyframes goeey {
   0% {
-    transform: scale(0.8) translate(-20px, -60px);
+    font-size: 0rem;
+    transform: scale(0) translate(0px, -80px);
   }
   100% {
-    transform: scale(1) translate(0px, 2px);
+    font-size: 0.7rem;
+    transform: scale(1) translate(0px, 0px);
   }
 }
 .stepIcon {
