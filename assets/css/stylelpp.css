@@ -1104,6 +1104,11 @@ span.pac-item-query {
   transform: translateZ(0);
   gap: 7px;
 }
+.busGoeey.goeeyEffectSafari {
+  position: relative;
+  width: 55px;
+  margin: 0 -10px;
+}
 img.agenImg {
   width: 35px;
   box-sizing: border-box;
@@ -1113,13 +1118,13 @@ img.agenImg {
   position: relative;
 }
 .textGoeey span {
-  height: 25px;
-  width: 35px;
+  position: relative;
+  top: -30px;
   align-items: center;
   display: flex;
-  font-size: 0.7rem;
+  font-size: 0rem;
   justify-content: center;
-  transform: scale(0) translate(0px, -80px);
+  transform: translate(0px, 4px);
   transform-origin: top;
 }
 .textGoeey {
@@ -1138,18 +1143,30 @@ img.agenImg {
   width: 35px;
 }
 .stepIcon .busNo2 {
-  height: 15px;
-  width: 30px;
-  transform: scale(0) translate(0px, -80px);
+  height: 0px;
+  width: 0px;
+  top: -30px;
 }
 @keyframes goeey {
   0% {
+    height: 0px;
+    width: 0px;
+    top: -30px;
+  }
+  100% {
+    height: 15px;
+    width: 30px;
+    top: 0px;
+  }
+}
+@keyframes goeey2 {
+  0% {
     font-size: 0rem;
-    transform: scale(0) translate(0px, -80px);
+    top: -30px;
   }
   100% {
     font-size: 0.7rem;
-    transform: scale(1) translate(0px, 0px);
+    top: 0px;
   }
 }
 .stepIcon {

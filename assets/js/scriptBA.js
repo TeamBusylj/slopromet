@@ -527,13 +527,16 @@ function showArrivals(data, station_id, noAnimation) {
       ) {
         arrivalTimeSpan.innerHTML = arrival.stopIndex == 0 ? "ODHOD" : "PRIHOD";
         arrivalTimeSpan.classList.add(
-          arrival.stopIndex == 0 ? "arrivalBlue" : "arrivalRed"
+          arrival.sequence == 0 ? "arrivalBlue" : "arrivalRed"
         );
       } else {
         arrivalTimeSpan.innerHTML += minutesFromNow(arrivalTimeRealtime);
       }
       if (!isFutureTime(arrivalTimeRealtime)) {
-        arrivalTimeSpan.innerHTML += "NA POSTAJI";
+        arrivalTimeSpan.innerHTML = "NA POSTAJI";
+        arrivalTimeSpan.classList.add(
+          arrival.sequence == 0 ? "arrivalBlue" : "arrivalRed"
+        );
       }
       arrivalTimeSpan = null;
       i++;
@@ -557,6 +560,10 @@ function createBusNumber(arrival, arrivalItem, delay, noAnimation) {
   }
   let busHolder = addElement("div", arrivalItem, "busGoeey");
   let gooeyHolder = addElement("div", busHolder, "stepIcon");
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+  if (isSafari) busHolder.classList.add("goeeyEffectSafari");
+
   let textHolder = addElement("div", busHolder, "textGoeey");
 
   let imgHolder = addElement("div", gooeyHolder, "agencyLogo");
@@ -574,10 +581,10 @@ function createBusNumber(arrival, arrivalItem, delay, noAnimation) {
   txtNum.innerHTML += arrival.route_short_name.split(" ")[0];
   setTimeout(() => {
     if (noAnimation) {
-      txtNum.style.animation = `goeey 0s forwards`;
+      txtNum.style.animation = `goeey2 0s forwards`;
       busNumberDiv.style.animation = `goeey 0s forwards`;
     } else {
-      txtNum.style.animation = `goeey 1s ${delay}s cubic-bezier(0.73, 0.01, 0.29, 1.21) forwards`;
+      txtNum.style.animation = `goeey2 1s ${delay}s cubic-bezier(0.73, 0.01, 0.29, 1.21) forwards`;
       busNumberDiv.style.animation = `goeey 1s ${delay}s cubic-bezier(0.73, 0.01, 0.29, 1.21) forwards`;
     }
   }, 1);
