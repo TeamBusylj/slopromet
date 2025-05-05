@@ -1368,3 +1368,38 @@ body {
   overscroll-behavior: none;
   align-items: center;
 }
+span.tripName {
+  align-items: center;
+  justify-content: left;
+  display: flex;
+}
+md-icon.alert,
+.alert .title md-icon {
+  color: #ffbb00;
+  margin-left: 5px;
+  font-size: 1.2rem;
+}
+.alert .title md-icon {
+  margin-right: 5px;
+  margin-left: 0px;
+}
+.alert {
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+}
+.alert span.title {
+  margin: 0;
+  background: none;
+  font-weight: bold;
+  width: 100%;
+  text-align: left;
+  font-size: 1.2rem !important;
+}
+.alert span.body {
+  margin: 10px 0 0 0;
+
+  width: 100%;
+  text-align: left;
+  font-size: 1rem;
+}
