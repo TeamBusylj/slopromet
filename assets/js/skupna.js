@@ -478,7 +478,42 @@ function debounce(func, delay) {
     }, delay);
   };
 }
+function showStationOnMap(latitude, longitude, name) {
+  const stationFeature = new ol.Feature({
+    geometry: new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude])),
+    name: name,
+    color: lineColorsObj[1],
+  });
 
+  // Set styles for stations
+  stationFeature.setStyle(
+    new ol.style.Style({
+      image: new ol.style.Circle({
+        radius: 6, // Adjust size as needed
+        fill: new ol.style.Fill({
+          color: darkenColor(lineColorsObj[1], 100),
+        }),
+        stroke: new ol.style.Stroke({
+          color: lineColorsObj[1], // Border color
+          width: 3, // Border width
+        }),
+      }),
+    })
+  );
+  const tempStationSource = new ol.source.Vector();
+  tempStationSource.addFeature(stationFeature);
+  busStationLayer = new ol.layer.Vector({
+    source: tempStationSource,
+    updateWhileInteracting: true,
+    style: {},
+  });
+  map.addLayer(busStationLayer);
+  map.getView().animate({
+    center: ol.proj.fromLonLat([longitude, latitude]),
+    duration: 1000,
+    zoom: 16,
+  });
+}
 async function createBuses() {
   await getLocation();
   currentPanel = document.querySelector(".favouriteStations");

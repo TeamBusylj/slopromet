@@ -448,11 +448,13 @@ async function stationClick(stationa, noAnimation, ia) {
     );
     arrivalsScroll.style.transform = "translateX(0px) translateY(0px)";
     arrivalsScroll.style.opacity = "1";
+    showStationOnMap(stationa.lat, stationa.lon, stationa.name);
   }
   isArrivalsOpen = station;
 
   showArrivals(data, station.gtfs_id, noAnimation);
 }
+
 /**
  * Displays the arrivals of buses on the provided element.
  *
