@@ -253,46 +253,52 @@ async function makeMap() {
   const content = document.getElementById("popup-content");
   var popup = new ol.Overlay({
     element: container,
-    autoPan: true,
+    positioning: "bottom-left", // controls anchor position+
     autoPanAnimation: {
       duration: 250,
     },
   });
   map.addOverlay(popup);
 
-  /* Add a pointermove handler to the map to render the popup.*/
-  map.on("click", function (evt) {
-    /*
-      
-          
-          */
-  });
   map.on("singleclick", function (evt) {
     var feature = map.forEachFeatureAtPixel(evt.pixel, function (feat, layer) {
       return feat;
     });
 
     if (feature && feature.get("name")) {
-      var coordinate = evt.coordinate; //default projection is EPSG:3857 you may want to use ol.proj.transform
-
-      container.style.background = "RGB(" + feature.get("color") + ")";
+      var coordinate = feature.getGeometry().getCoordinates(); //default projection is EPSG:3857 you may want to use ol.proj.transform
+      fetch("assets/images/bubble.svg")
+        .then((r) => r.text())
+        .then((svg) => {
+          document.querySelector("#bubbleImg").innerHTML = svg;
+          document.querySelectorAll("#bubbleImg .st0")[0].style.fill =
+            "RGB(" + feature.get("color") + ")";
+          document.querySelectorAll("#bubbleImg .st0")[1].style.fill =
+            "RGB(" + feature.get("color") + ")";
+        });
+      document.getElementById("pop").style.background =
+        "RGB(" + feature.get("color") + ")";
       container.style.display = "none";
-
+      container.style.filter =
+        "drop-shadow(2px -2px 3px RGB(" +
+        darkenColor(feature.get("color"), 50) +
+        "))";
       content.innerHTML =
         "<md-ripple></md-ripple><md-icon>directions_bus</md-icon>" +
         feature.get("name");
       popup.setPosition(coordinate);
-      setTimeout(() => {
-        container.style.display = "block";
-        map.getView().animate({
-          center: coordinate,
-          duration: 500,
-        });
-      }, 1);
+
+      container.style.display = "block";
+      map.getView().animate({
+        center: coordinate,
+        duration: 500,
+      });
+
       container.onclick = async function () {
         clearInterval(interval);
         clearInterval(arrivalsUpdateInterval);
         clearInterval(busUpdateInterval);
+        map.removeOverlay(popup);
         if (document.querySelector(".arrivalsHolder"))
           document.querySelector(".arrivalsHolder").remove();
         let aos = document.querySelector(".arrivalsOnStation");
@@ -337,8 +343,6 @@ async function makeMap() {
         clearMap();
       };
     }
-
-    popup.setPosition(coordinate);
   });
   map.once("postrender", function (event) {
     document.querySelector("#map").style.opacity = "1";
@@ -404,6 +408,7 @@ window.addEventListener("load", async function () {
     absoluteTime = localStorage.getItem("time") ? true : false;
 
     busImageData = await busImageData.json();
+    lines = await fetchData("https://lpp.ojpp.derp.si/api/route/routes");
   }
 });
 function loadJS() {
@@ -449,6 +454,12 @@ function changeAgency(agencyClicked) {
     location.reload();
   }, 200);
 }
+function moveFAB(down = -50) {
+  document.querySelector(".directionsButton").style.transform =
+    document.querySelector(
+      ".refresh"
+    ).style.transform = `translateY(${down}px)`;
+}
 async function getLocation() {
   try {
     const position = await new Promise((resolve, reject) => {
@@ -478,41 +489,49 @@ function debounce(func, delay) {
     }, delay);
   };
 }
+let popup2;
 function showStationOnMap(latitude, longitude, name) {
-  const stationFeature = new ol.Feature({
-    geometry: new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude])),
-    name: name,
-    color: lineColorsObj[1],
-  });
+  let coordinate = ol.proj.fromLonLat([longitude, latitude]);
 
-  // Set styles for stations
-  stationFeature.setStyle(
-    new ol.style.Style({
-      image: new ol.style.Circle({
-        radius: 6, // Adjust size as needed
-        fill: new ol.style.Fill({
-          color: darkenColor(lineColorsObj[1], 100),
-        }),
-        stroke: new ol.style.Stroke({
-          color: lineColorsObj[1], // Border color
-          width: 3, // Border width
-        }),
-      }),
-    })
-  );
-  const tempStationSource = new ol.source.Vector();
-  tempStationSource.addFeature(stationFeature);
-  busStationLayer = new ol.layer.Vector({
-    source: tempStationSource,
-    updateWhileInteracting: true,
-    style: {},
-  });
-  map.addLayer(busStationLayer);
   map.getView().animate({
     center: ol.proj.fromLonLat([longitude, latitude]),
     duration: 1000,
     zoom: 16,
   });
+
+  var container = document.getElementById("popup2");
+  const content = document.getElementById("popup-content2");
+  popup2 = new ol.Overlay({
+    element: container,
+    positioning: "bottom-left", // controls anchor position+
+    autoPanAnimation: {
+      duration: 1000,
+    },
+  });
+  let color = getComputedStyle(document.body).getPropertyValue(
+    "--md-sys-color-primary"
+  );
+  map.addOverlay(popup2);
+  fetch("assets/images/bubble.svg")
+    .then((r) => r.text())
+    .then((svg) => {
+      document.querySelector("#bubbleImg2").innerHTML = svg;
+      document.querySelectorAll("#bubbleImg2 .st0")[0].style.fill = color;
+      document.querySelectorAll("#bubbleImg2 .st0")[1].style.fill = color;
+    });
+  document.getElementById("pop2").style.background = color;
+  container.style.display = "none";
+  container.style.filter =
+    "drop-shadow(2px -2px 3px RGB(" + darkenColor(hexToRgb(color), 50) + "))";
+  content.innerHTML = "<md-icon>directions_bus</md-icon>" + name;
+  popup2.setPosition(coordinate);
+  setTimeout(() => {
+    container.style.display = "block";
+    map.getView().animate({
+      center: coordinate,
+      duration: 500,
+    });
+  }, 1000);
 }
 async function createBuses() {
   await getLocation();
@@ -1673,6 +1692,12 @@ const lineColors = (i) => {
 };
 const darkenColor = (rgbArray, amount) =>
   rgbArray.map((channel) => Math.max(0, channel - amount));
+function hexToRgb(hex) {
+  const [, r, g, b] = hex
+    .match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i)
+    .map((x) => parseInt(x, 16));
+  return [r, g, b];
+}
 function moveMarker(marker, newCoord, dir) {
   const duration = 2000; // Duration of the animation in milliseconds
   const start = +new Date();

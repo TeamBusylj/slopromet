@@ -1,11 +1,5 @@
 "use strict";
 
-async function getAllLines() {
-  if (agency == "LPP") {
-    lines = await fetchData("https://lpp.ojpp.derp.si/api/route/routes");
-  }
-}
-
 async function updateStations() {
   console.log(agency);
 
@@ -383,21 +377,21 @@ async function oppositeStation(id) {
     }, 1);
   }, 300);
 }
-var arrivalsScroll;
+
 const delayedSearch = debounce(searchRefresh, 300);
 async function stationClick(stationa, noAnimation, ia) {
   if (document.querySelector(".arrivalsOnStation")) return;
+  var arrivalsScroll;
+  moveFAB();
   let station = stationa ? stationa : isArrivalsOpen;
-
+  station = stationList[station];
   var stylesTransition = [
     document.querySelector(".searchContain").style,
     document.querySelector(".listOfStations").style,
     document.querySelector(".favouriteStations").style,
     document.getElementById("tabsFav").style,
   ];
-  setTimeout(() => {
-    document.querySelector(".sheetContents").scrollTop = 0;
-  }, 250);
+
   var notYet = false;
   var container;
 
@@ -405,40 +399,38 @@ async function stationClick(stationa, noAnimation, ia) {
   var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
   var mapca;
   var fav;
+
   if (noAnimation) {
     data = await fetchData(
       "https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
-        stationList[station].ref_id
+        station.ref_id
     );
     if (ia) {
       document.querySelector(".arrivalsHolder").style.transform =
         "translateX(0)";
       document.querySelector(".arrivalsHolder").style.opacity = "1";
-      showLines(document.querySelector(".timeTScroll"), stationList[station]);
+      showLines(document.querySelector(".timeTScroll"), station);
     }
     let cornot = "";
-    if (stationList[station].ref_id % 2 !== 0)
+    if (station.ref_id % 2 !== 0)
       cornot = '<md-icon class="center">adjust</md-icon>';
-    document.querySelector(".title span").innerHTML =
-      stationList[station].name + cornot;
+    document.querySelector(".title span").innerHTML = station.name + cornot;
     document.querySelector(".titleHolder").innerHTML +=
       "<div class=none></div>";
     document.querySelector(".mapca").addEventListener("click", function () {
-      oppositeStation(stationList[station].ref_id);
+      oppositeStation(station.ref_id);
     });
     let favi = document.querySelector(".favi");
-    favi.innerHTML = favList.includes(stationList[station].ref_id)
+    favi.innerHTML = favList.includes(station.ref_id)
       ? "<md-icon class=iconFill>favorite</md-icon>"
       : "<md-icon>favorite</md-icon>";
 
     favi.addEventListener("click", function () {
-      if (favList.includes(stationList[station].ref_id)) {
-        favList = favList.filter(
-          (item) => item !== stationList[station].ref_id
-        );
+      if (favList.includes(station.ref_id)) {
+        favList = favList.filter((item) => item !== station.ref_id);
         favi.innerHTML = "<md-icon>favorite</md-icon>";
       } else {
-        favList.push(stationList[station].ref_id);
+        favList.push(station.ref_id);
 
         favi.innerHTML = "<md-icon class=iconFill>favorite</md-icon>";
       }
@@ -448,7 +440,7 @@ async function stationClick(stationa, noAnimation, ia) {
   } else {
     window.history.pushState(
       null,
-      document.title + " - " + stationList[station].name,
+      document.title + " - " + station.name,
       location.pathname
     );
     container = addElement(
@@ -456,10 +448,7 @@ async function stationClick(stationa, noAnimation, ia) {
       document.querySelector(".mainSheet"),
       "arrivalsHolder"
     );
-    createInfoBar(
-      document.querySelector(".mainSheet"),
-      stationList[station].ref_id
-    );
+    createInfoBar(document.querySelector(".mainSheet"), station.ref_id);
     stylesTransition.forEach((style) => {
       style.transform = "translateX(-100vw)";
       style.opacity = "0";
@@ -493,26 +482,25 @@ async function stationClick(stationa, noAnimation, ia) {
           .classList.remove("hideStations");
         document.querySelector(".infoBar").remove();
       }, 500);
+      moveFAB(0);
     });
 
     let ttl = addElement("span", title);
     let cornot = "";
-    if (stationList[station].ref_id % 2 !== 0)
+    if (station.ref_id % 2 !== 0)
       cornot = '<md-icon class="center">adjust</md-icon>';
-    ttl.innerHTML = stationList[station].name + cornot;
+    ttl.innerHTML = station.name + cornot;
     let hh = addElement("div", title, "titleHolder");
     fav = addElement("md-icon-button", hh, "favi");
-    fav.innerHTML = favList.includes(stationList[station].ref_id)
+    fav.innerHTML = favList.includes(station.ref_id)
       ? "<md-icon class=iconFill>favorite</md-icon>"
       : "<md-icon>favorite</md-icon>";
     fav.addEventListener("click", function () {
-      if (favList.includes(stationList[station].ref_id)) {
-        favList = favList.filter(
-          (item) => item !== stationList[station].ref_id
-        );
+      if (favList.includes(station.ref_id)) {
+        favList = favList.filter((item) => item !== station.ref_id);
         fav.innerHTML = "<md-icon>favorite</md-icon>";
       } else {
-        favList.push(stationList[station].ref_id);
+        favList.push(station.ref_id);
 
         fav.innerHTML = "<md-icon class=iconFill>favorite</md-icon>";
       }
@@ -522,13 +510,12 @@ async function stationClick(stationa, noAnimation, ia) {
     mapca = addElement("md-icon-button", hh, "mapca");
     mapca.innerHTML = "<md-icon>swap_calls</md-icon>";
     mapca.addEventListener("click", function () {
-      oppositeStation(stationList[station].ref_id);
+      oppositeStation(station.ref_id);
     });
-    if (stationList[station].ref_id % 2 === 0) {
+    if (station.ref_id % 2 === 0) {
       if (
         stationList.findIndex(
-          (obj) =>
-            obj.ref_id === String(parseInt(stationList[station].ref_id) - 1)
+          (obj) => obj.ref_id === String(parseInt(station.ref_id) - 1)
         ) === -1
       ) {
         mapca.setAttribute("disabled", "");
@@ -536,8 +523,7 @@ async function stationClick(stationa, noAnimation, ia) {
     } else {
       if (
         stationList.findIndex(
-          (obj) =>
-            obj.ref_id === String(parseInt(stationList[station].ref_id) + 1)
+          (obj) => obj.ref_id === String(parseInt(station.ref_id) + 1)
         ) === -1
       ) {
         mapca.setAttribute("disabled", "");
@@ -581,13 +567,13 @@ async function stationClick(stationa, noAnimation, ia) {
 
       if (currentPanel2.id == "time-panel" && !notYet) {
         notYet = true;
-        showLines(timeTScroll, stationList[station]);
+        showLines(timeTScroll, station);
       }
       getLocation();
     });
     data = await fetchData(
       "https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
-        stationList[station].ref_id
+        station.ref_id
     );
     let getMyBus = addElement("md-filled-tonal-button", null, "getMyBus");
     container.insertBefore(getMyBus, arrivalsScroll);
@@ -599,12 +585,17 @@ async function stationClick(stationa, noAnimation, ia) {
       getMyBusData();
     };
     getMyBus.addEventListener("click", clickedMyBus);
-    arrivalsScroll.style.transform = "translateX(0px) translateY(0px)";
-    arrivalsScroll.style.opacity = "1";
+    setTimeout(() => {
+      let ars = document.getElementById("arrivals-panel");
+      ars.style.transform = "translateX(0px) translateY(0px)";
+      ars.style.opacity = "1";
+    }, 1);
+
+    showStationOnMap(station.latitude, station.longitude, station.name);
   }
   isArrivalsOpen = station;
 
-  showArrivals(arrivalsScroll, data);
+  showArrivals(data);
 }
 /**
  * Displays the arrivals of buses on the provided element.
@@ -620,7 +611,7 @@ async function stationClick(stationa, noAnimation, ia) {
  * @param {Array} data.data.arrivals - An array of bus arrival objects.
  */
 
-function showArrivals(arrivalsScroll2, data) {
+function showArrivals(data) {
   let arrivalsScroll = document.getElementById("arrivals-panel");
   clearElementContent(arrivalsScroll);
   arrivalsScroll = null;
@@ -1176,6 +1167,7 @@ window.onpopstate = function (event) {
 };
 
 async function getMyBusData(busId, arrivalsAll, tripId) {
+  map.removeOverlay(popup2);
   const arrivals = arrivalsAll
     ? arrivalsAll.filter((element) => element.trip_id == tripId)
     : null;

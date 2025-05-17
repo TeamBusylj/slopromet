@@ -41,7 +41,6 @@ md-primary-tab {
 }
 
 .buses {
-  gap: 10px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(35px, 35px));
   gap: min(2vw, 10px);
@@ -395,11 +394,7 @@ img.busImgElement {
   color: var(--md-sys-color-on-error-container);
 }
 .arrivalGreen {
-  background: linear-gradient(
-    163deg,
-    var(--md-sys-color-surface-container-highest),
-    #00000021
-  );
+  color: var(--md-sys-color-surface-tint);
 }
 .arrivalTime md-icon {
   animation: rotatingIcon 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -464,6 +459,7 @@ img.busImgElement {
   gap: 5px;
   display: flex;
   flex-direction: column;
+  max-width: 80%;
 }
 .buses .busNo {
   height: 25px;
@@ -647,9 +643,9 @@ span.nextBusTitle {
 }
 .infoBar {
   position: fixed;
-  bottom: 15px;
+  bottom: 73px;
   z-index: 4;
-  background: var(--md-sys-color-surface);
+  background: var(--md-sys-color-surface-container);
   width: 100%;
   height: fit-content;
   display: flex;
@@ -1106,9 +1102,10 @@ span.pac-item-query {
 }
 .busGoeey.goeeyEffectSafari {
   position: relative;
-  width: 55px;
-  margin: 0 -10px;
+  width: 80px;
+  margin: 0 -22px;
 }
+
 img.agenImg {
   width: 35px;
   box-sizing: border-box;
@@ -1225,28 +1222,46 @@ img.agenImg {
   opacity: 0.8;
   text-align: right;
 }
-div#popup-content {
+div#popup-content,
+div#popup-content2 {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 5px;
 }
-div#popup {
+#popup,
+#popup2 {
+  height: fit-content;
+  width: fit-content;
+  animation: popup 0.8s cubic-bezier(0.69, 0, 0, 1.82);
+  transform-origin: 0% 140%;
+  padding-bottom: 15px;
+  padding-left: 3px;
+}
+#pop,
+#pop2 {
   cursor: pointer;
-  transform: translate(-50%, -50%);
-  position: absolute;
+  transform: translate(0%, 0%);
+
   background: var(--md-sys-color-secondary);
   padding: 10px;
   border-radius: 25px;
-  animation: popup 0.4s cubic-bezier(0.69, 0, 0.3, 1);
-  transform-origin: center center;
+  transform-origin: 0% 100%;
+}
+.bubbleImg {
+  position: absolute;
+  width: 30px;
+  left: -7px;
+  bottom: -10px;
 }
 @keyframes popup {
   from {
-    transform: translate(-50%, -50%) scale(0);
+    scale: 0;
+    transform: translate(0%, 0%) rotate(-30deg);
   }
   to {
-    transform: translate(-50%, -50%) scale(1);
+    scale: 1;
+    transform: translate(0%, 0%) rotate(0deg);
   }
 }
 .navigationBar {
@@ -1402,4 +1417,10 @@ md-icon.alert,
   width: 100%;
   text-align: left;
   font-size: 1rem;
+}
+md-icon.favorite {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  opacity: 0.5;
 }

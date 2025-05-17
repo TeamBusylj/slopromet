@@ -243,7 +243,7 @@ async function oppositeStation(id) {
 var arrivalsScroll;
 async function stationClick(stationa, noAnimation, ia) {
   if (document.querySelector(".arrivalsOnStation")) return;
-
+  moveFAB();
   let station = stationa ? stationa : isArrivalsOpen;
   var stylesTransition = [
     document.querySelector(".searchContain").style,
@@ -251,9 +251,6 @@ async function stationClick(stationa, noAnimation, ia) {
     document.querySelector(".favouriteStations").style,
     document.getElementById("tabsFav").style,
   ];
-  setTimeout(() => {
-    document.querySelector(".sheetContents").scrollTop = 0;
-  }, 250);
 
   var notYet = false;
   var container;
@@ -347,6 +344,7 @@ async function stationClick(stationa, noAnimation, ia) {
           .classList.remove("hideStations");
         document.querySelector(".infoBar").remove();
       }, 500);
+      moveFAB(0);
     });
 
     let ttl = addElement("div", title);
@@ -446,8 +444,11 @@ async function stationClick(stationa, noAnimation, ia) {
         station.gtfs_id
       )}/arrivals?current=true`
     );
-    arrivalsScroll.style.transform = "translateX(0px) translateY(0px)";
-    arrivalsScroll.style.opacity = "1";
+    setTimeout(() => {
+      let ars = document.getElementById("arrivals-panel");
+      ars.style.transform = "translateX(0px) translateY(0px)";
+      ars.style.opacity = "1";
+    }, 1);
     showStationOnMap(stationa.lat, stationa.lon, stationa.name);
   }
   isArrivalsOpen = station;
@@ -485,6 +486,7 @@ function showArrivals(data, station_id, noAnimation) {
     let i = 0;
     const getDelayFromNumber = (n, scale = 10) =>
       Math.min(Math.pow(n / scale, 2) * 0.1, 5);
+    let favos = localStorage.getItem("favoriteBuses") || "[]";
     for (const arrival of data) {
       let etaDiv;
       if (!arrivalsList.includes(arrival.trip_headsign)) {
@@ -515,6 +517,14 @@ function showArrivals(data, station_id, noAnimation) {
           "eta"
         );
         etaDiv.id = "arrival_" + makeIdFriendly(arrival.trip_headsign);
+        let favorite = addElement("md-icon", arrivalItem, "favorite");
+
+        favoriteLine(
+          arrival.route_short_name.split(" ")[0],
+          favorite,
+          arrivalItem,
+          favos
+        );
       } else {
         etaDiv = document.querySelector(
           "#arrival_" + makeIdFriendly(arrival.trip_headsign)
@@ -565,6 +575,44 @@ function showArrivals(data, station_id, noAnimation) {
       "<p><md-icon>no_transfer</md-icon>V naslednji uri ni predvidenih avtobusov.</p>";
   }
 }
+function favoriteLine(lineName, button, arrivalItem, favos = []) {
+  button.innerHTML = "star";
+  if (!localStorage.getItem("favoriteBuses"))
+    localStorage.setItem("favoriteBuses", "[]");
+  if (favos.includes(lineName)) {
+    button.classList.add("iconFill");
+    const order =
+      JSON.parse(favos).indexOf(lineName) - JSON.parse(favos).length;
+    arrivalItem.style.order = order;
+  }
+
+  button.addEventListener("click", (e) => {
+    e.stopPropagation();
+    let order = JSON.parse(localStorage.getItem("favoriteBuses")).length + 1;
+    if (localStorage.favoriteBuses.includes(lineName)) {
+      localStorage.setItem(
+        "favoriteBuses",
+        JSON.stringify(
+          JSON.parse(localStorage.getItem("favoriteBuses")).filter(
+            (bus) => bus !== lineName
+          )
+        )
+      );
+      button.classList.remove("iconFill");
+      return;
+    } else {
+      localStorage.setItem(
+        "favoriteBuses",
+        JSON.stringify([
+          ...JSON.parse(localStorage.getItem("favoriteBuses")),
+          lineName,
+        ])
+      );
+      button.classList.add("iconFill");
+      arrivalItem.style.order = order;
+    }
+  });
+}
 function createBusNumber(arrival, arrivalItem, delay, noAnimation) {
   if (agency !== "IJPP" && agency !== "SŽ") {
     let busNumberDiv = addElement("div", arrivalItem, "busNo2");
@@ -581,7 +629,7 @@ function createBusNumber(arrival, arrivalItem, delay, noAnimation) {
   let gooeyHolder = addElement("div", busHolder, "stepIcon");
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-  if (isSafari) busHolder.classList.add("goeeyEffectSafari");
+  if (true) busHolder.classList.add("goeeyEffectSafari");
 
   let textHolder = addElement("div", busHolder, "textGoeey");
 
@@ -880,6 +928,7 @@ window.onpopstate = function (event) {
 };
 
 async function getMyBusData(busId, arrivalsAll, routeId) {
+  map.removeOverlay(popup2);
   const arrivals = arrivalsAll
     ? arrivalsAll.filter((element) => element.trip_headsign == routeId)
     : null;

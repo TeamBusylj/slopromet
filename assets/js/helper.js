@@ -114,34 +114,29 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
 
               if (
                 findClosestPoint([bus.longitude, bus.latitude], coords) >
-                  findClosestPoint(
-                    ol.proj.toLonLat(feature.getGeometry().getCoordinates()),
-                    coords
-                  ) ||
-                !document.querySelector(".switch").selected
+                findClosestPoint(
+                  ol.proj.toLonLat(feature.getGeometry().getCoordinates()),
+                  coords
+                )
               ) {
-                if (!document.querySelector(".switch").selected) {
-                  now = new Date().getTime();
+                now = new Date().getTime();
 
-                  const animate = () => {
-                    const shouldContinue = moveMarker(
-                      feature,
-                      newCoordinates,
-                      (bus.direction * Math.PI) / 180
-                    );
+                const animate = () => {
+                  const shouldContinue = moveMarker(
+                    feature,
+                    newCoordinates,
+                    (bus.direction * Math.PI) / 180
+                  );
 
-                    // Re-render map for smooth animation
-                    map.render();
+                  // Re-render map for smooth animation
+                  map.render();
 
-                    if (shouldContinue) {
-                      requestAnimationFrame(animate); // Continue animation
-                    }
-                  };
+                  if (shouldContinue) {
+                    requestAnimationFrame(animate); // Continue animation
+                  }
+                };
 
-                  animate(); // Start animation loop
-                } else {
-                  feature.getGeometry().setCoordinates(coords);
-                }
+                animate(); // Start animation loop
 
                 busPreviusPosition[bus.bus_id] = newCoordinates;
               }
@@ -215,7 +210,7 @@ async function generateRouteVector(
     stationFeature.setStyle(
       new ol.style.Style({
         image: new ol.style.Circle({
-          radius: 6, // Adjust size as needed
+          radius: 7, // Adjust size as needed
           fill: new ol.style.Fill({
             color:
               station.station_code == stationID
