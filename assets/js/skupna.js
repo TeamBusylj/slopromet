@@ -325,7 +325,7 @@ async function makeMap() {
         }, 500);
 
         interval = setInterval(async () => {
-          await stationClick(isArrivalsOpen, true);
+          await stationClick(null, true);
         }, 10000);
 
         setTimeout(() => {
@@ -586,7 +586,7 @@ async function refresh() {
     let arH = document.querySelector(".arrivalsScroll");
     arH.style.transform = "translateX(0px) translateY(-20px)";
     arH.style.opacity = "0";
-    await stationClick(isArrivalsOpen, true);
+    await stationClick(null, true);
     arH = document.querySelector(".arrivalsScroll");
     arH.style.transform = "translateX(0px) translateY(0px)";
     arH.style.opacity = "1";

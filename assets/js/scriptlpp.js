@@ -383,8 +383,7 @@ async function stationClick(stationa, noAnimation, ia) {
   if (document.querySelector(".arrivalsOnStation")) return;
   var arrivalsScroll;
   moveFAB();
-  let station = stationa ? stationa : isArrivalsOpen;
-  station = stationList[station];
+  let station = stationa ? stationList[stationa] : isArrivalsOpen;
   var stylesTransition = [
     document.querySelector(".searchContain").style,
     document.querySelector(".listOfStations").style,
@@ -399,6 +398,7 @@ async function stationClick(stationa, noAnimation, ia) {
   var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
   var mapca;
   var fav;
+  console.log(stationa);
 
   if (noAnimation) {
     data = await fetchData(
