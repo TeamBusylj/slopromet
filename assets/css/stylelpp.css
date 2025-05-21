@@ -440,7 +440,8 @@ img.busImgElement {
 .arrivalItem {
   background: var(--md-sys-color-surface-container);
   margin: 10px;
-  width: 90%;
+  width: 100%;
+  box-sizing: border-box;
   border-radius: 25px;
   align-items: center;
   padding: 19px;

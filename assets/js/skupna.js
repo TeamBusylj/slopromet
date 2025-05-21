@@ -248,9 +248,18 @@ async function makeMap() {
 
     updateWhileInteracting: true,
   });
+  const container = addElement("div", document.body, "ol-popup");
+  container.id = "popup";
 
-  var container = document.getElementById("popup");
-  const content = document.getElementById("popup-content");
+  const pop = addElement("div", container);
+  pop.id = "pop";
+
+  const content = addElement("div", pop);
+  content.id = "popup-content";
+
+  const bubbleImg = addElement("div", container, "bubbleImg");
+  bubbleImg.id = "bubbleImg";
+
   var popup = new ol.Overlay({
     element: container,
     positioning: "bottom-left", // controls anchor position+
@@ -270,14 +279,13 @@ async function makeMap() {
       fetch("assets/images/bubble.svg")
         .then((r) => r.text())
         .then((svg) => {
-          document.querySelector("#bubbleImg").innerHTML = svg;
-          document.querySelectorAll("#bubbleImg .st0")[0].style.fill =
+          bubbleImg.innerHTML = svg;
+          bubbleImg.querySelectorAll(".st0")[0].style.fill =
             "RGB(" + feature.get("color") + ")";
-          document.querySelectorAll("#bubbleImg .st0")[1].style.fill =
+          bubbleImg.querySelectorAll(".st0")[1].style.fill =
             "RGB(" + feature.get("color") + ")";
         });
-      document.getElementById("pop").style.background =
-        "RGB(" + feature.get("color") + ")";
+      pop.style.background = "RGB(" + feature.get("color") + ")";
       container.style.display = "none";
       container.style.filter =
         "drop-shadow(2px -2px 3px RGB(" +
@@ -498,9 +506,18 @@ function showStationOnMap(latitude, longitude, name) {
     duration: 1000,
     zoom: 16,
   });
+  const container = addElement("div", document.body, "ol-popup");
+  container.id = "popup";
 
-  var container = document.getElementById("popup2");
-  const content = document.getElementById("popup-content2");
+  const pop = addElement("div", container);
+  pop.id = "pop";
+
+  const content = addElement("div", pop);
+  content.id = "popup-content";
+
+  const bubbleImg = addElement("div", container, "bubbleImg");
+  bubbleImg.id = "bubbleImg";
+
   popup2 = new ol.Overlay({
     element: container,
     positioning: "bottom-left", // controls anchor position+
@@ -515,11 +532,11 @@ function showStationOnMap(latitude, longitude, name) {
   fetch("assets/images/bubble.svg")
     .then((r) => r.text())
     .then((svg) => {
-      document.querySelector("#bubbleImg2").innerHTML = svg;
-      document.querySelectorAll("#bubbleImg2 .st0")[0].style.fill = color;
-      document.querySelectorAll("#bubbleImg2 .st0")[1].style.fill = color;
+      bubbleImg.innerHTML = svg;
+      bubbleImg.querySelectorAll(".st0")[0].style.fill = color;
+      bubbleImg.querySelectorAll(".st0")[1].style.fill = color;
     });
-  document.getElementById("pop2").style.background = color;
+  pop.style.background = color;
   container.style.display = "none";
   container.style.filter =
     "drop-shadow(2px -2px 3px RGB(" + darkenColor(hexToRgb(color), 50) + "))";
