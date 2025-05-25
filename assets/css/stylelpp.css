@@ -106,7 +106,7 @@ body {
   top: 40px;
   width: 100%;
   z-index: 2;
-  transition: all 0.5s;
+  transition: all 0.6s cubic-bezier(0.39, 1.29, 0.35, 0.98);
   transform: translateX(0);
   background: var(--md-sys-color-surface);
   padding: 0 30px;
@@ -259,7 +259,7 @@ md-list.favouriteStations {
   overflow-y: scroll;
   height: 100%;
   width: 100%;
-  transition: all 0.5s;
+  transition: all 0.6s cubic-bezier(0.39, 1.29, 0.35, 0.98);
   transform: translateY(-20px);
   opacity: 0;
   padding: 0 40px;
@@ -294,7 +294,7 @@ md-list.favouriteStations {
 }
 .arrivalsHolder {
   transform: translateX(100dvh);
-  transition: all 0.5s;
+  transition: all 0.6s cubic-bezier(0.39, 1.29, 0.35, 0.98);
   position: absolute;
   top: 40px;
   z-index: 3;
@@ -304,7 +304,6 @@ md-list.favouriteStations {
   overscroll-behavior: none;
   overflow-x: hidden;
   overflow-y: scroll;
-  opacity: 0;
 }
 md-list-item.stationItem {
   background: var(--md-sys-color-surface-container);
@@ -450,6 +449,19 @@ img.busImgElement {
   flex-direction: row;
   gap: 15px;
   z-index: 2;
+  transform: translateX(50px);
+  opacity: 0;
+  animation: arrivalItemShow 0.5s cubic-bezier(0.38, 1.21, 0.27, 1.17) forwards;
+}
+@keyframes arrivalItemShow {
+  0% {
+    transform: translateX(50px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 .myBusDiv .arrivalItem span {
   font-size: 1.2rem;
@@ -474,7 +486,7 @@ md-tabs.tabs {
   position: sticky;
   top: 38px;
 
-  transition: all 0.5s;
+  transition: all 0.6s cubic-bezier(0.39, 1.29, 0.35, 0.98);
 }
 md-tabs::part(divider) {
 }
@@ -600,9 +612,8 @@ span.nextBusTitle {
   color: var(--md-sys-color-on-surface);
   flex-direction: column;
   align-items: center;
-  transform: translateX(0) translateY(-20px);
-  opacity: 0;
-  transition: all 0.3s;
+
+  transition: all 0.3s cubic-bezier(0.38, 1.21, 0.22, 1);
   padding-bottom: 50px;
 }
 
@@ -627,7 +638,7 @@ span.nextBusTitle {
     var(--_g) 0 100%;
   background-size: 40% 40%;
   animation: l38 1s infinite, showLoader 0.3s;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.38, 1.21, 0.22, 1);
 }
 @keyframes l38 {
   100% {
@@ -650,7 +661,7 @@ span.nextBusTitle {
   width: 100%;
   height: fit-content;
   display: flex;
-  transition: all 0.5s;
+  transition: all 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
   border-top: 1px var(--md-sys-color-outline-variant, #cac4d0) solid;
   overflow: hidden;
   white-space: nowrap;
@@ -683,7 +694,7 @@ span.nextBusTitle {
   position: absolute;
   top: 40px;
   left: 0;
-  transition: all 0.5s;
+  transition: all 0.6s cubic-bezier(0.38, 1.21, 0.22, 1);
   width: 100%;
   transform: translateX(100vw);
   margin: 0;
@@ -711,7 +722,7 @@ span.nextBusTitle {
 .myBusDiv {
   height: calc(100dvh - 155px);
   box-sizing: border-box;
-  transition: all 0.5s;
+  transition: all 0.6s cubic-bezier(0.38, 1.21, 0.27, 1.17);
   padding: 0 30px;
   width: 100%;
   overscroll-behavior: none;
@@ -767,7 +778,7 @@ tr {
   top: 40px !important;
   height: calc(100dvh - 55px);
 
-  transition: all 0.5s !important;
+  transition: all 0.6s !important;
   transform: translateX(0);
   overscroll-behavior: none;
 }
@@ -952,7 +963,7 @@ md-fab.refresh,
   bottom: 90px;
   z-index: 100;
   right: 25px;
-  transition: all 0.5s;
+  transition: all 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
 }
 md-fab.refresh {
   bottom: 155px;
@@ -962,7 +973,7 @@ md-fab.refresh {
   overflow-x: hidden;
   align-items: normal;
   height: calc(100dvh - 55px);
-  transition: transform 0.5s !important;
+  transition: transform 0.5s cubic-bezier(0.38, 1.21, 0.22, 1) !important;
   overscroll-behavior: none;
   position: absolute;
   top: 40px;
@@ -1053,7 +1064,7 @@ b {
 .panel {
   opacity: 0;
   transform: translateY(-20px);
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.38, 1.21, 0.22, 1);
 }
 .pac-container {
   background: var(--md-sys-color-surface-container-highest);
@@ -1355,23 +1366,11 @@ body {
 }
 
 .sheetContents:not(.not-selectable) {
-  transition: all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1);
+  transition: all var(--transDur) cubic-bezier(0.38, 1.21, 0.22, 1);
 }
 .sheetContents {
   height: 100dvh;
   overflow: hidden;
-}
-.bottomSheetScrim {
-  position: absolute;
-  height: 100vh;
-  overscroll-behavior: none;
-  width: 100vw;
-  top: 0;
-  transition: all var(--transDur) ease-out;
-
-  background-color: black;
-  opacity: 0;
-  z-index: 98;
 }
 
 .mainSheet {

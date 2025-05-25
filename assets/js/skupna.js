@@ -1121,7 +1121,7 @@ function makeBottomSheet(title, height) {
     const y = touchPosition(event).pageY;
     var deltaY = dragPosition - y;
     if (sheetHeight == 98 && deltaY > 0) return;
-    if (sheetHeight < 40 && deltaY < 0) {
+    if (sheetHeight < 35 && deltaY < 0) {
       deltaY = deltaY / formatNumber(y);
     }
     const deltaHeight = (deltaY / window.innerHeight) * 100;
@@ -1164,7 +1164,7 @@ function makeBottomSheet(title, height) {
     }
 
     bottomSheet.style.transition =
-      "all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1)";
+      "all var(--transDur) cubic-bezier(0.38, 1.21, 0.22, 1)";
     setTimeout(() => {
       bottomSheet.style.transition = "";
       bottomSheet.style.willChange = "";
@@ -1187,7 +1187,7 @@ function makeBottomSheet(title, height) {
 
   let mainContent = addElement("main", sheetContents, "mainSheet");
   bottomSheet.style.transition =
-    "all var(--transDur) cubic-bezier(0.05, 0.7, 0.1, 1)";
+    "all var(--transDur) cubic-bezier(0.38, 1.21, 0.22, 1)";
   setTimeout(() => {
     bottomSheet.style.transition = "";
   }, 400);

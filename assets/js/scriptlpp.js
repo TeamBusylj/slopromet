@@ -154,7 +154,6 @@ async function createStationItems(o) {
           ];
           stylesTransition.forEach((style) => {
             style.transform = "translateX(-100vw)";
-            style.opacity = "0";
           });
           let line2 = line;
           line2.route_name = line.route_number;
@@ -265,7 +264,7 @@ function createFavourite(parent, search, query) {
           await stationClick(null, true);
         }, 10000);
       };
-      item.addEventListener("click", openStation);
+      item.addEventListener("touchend", openStation);
       item = null;
       buses = null;
       textHolder = null;
@@ -316,7 +315,6 @@ function createFavourite(parent, search, query) {
           ];
           stylesTransition.forEach((style) => {
             style.transform = "translateX(-100vw)";
-            style.opacity = "0";
           });
           let line2 = line;
           line2.route_name = line.route_number;
@@ -332,7 +330,7 @@ function createFavourite(parent, search, query) {
           setTimeout(() => {
             container.style.transform = "translateX(0px) translateY(0px)";
             container.style.opacity = "1";
-          }, 100);
+          }, 10);
         });
         if (line.route_number[0] == "N") {
           arrivalItem.style.order = line.route_number.replace(/\D/g, "") + 100;
@@ -451,11 +449,9 @@ async function stationClick(stationa, noAnimation, ia) {
     createInfoBar(document.querySelector(".mainSheet"), station.ref_id);
     stylesTransition.forEach((style) => {
       style.transform = "translateX(-100vw)";
-      style.opacity = "0";
     });
     setTimeout(() => {
       container.style.transform = "translateX(0)";
-      container.style.opacity = "1";
     }, 0);
 
     const title = addElement("h1", container, "title");
@@ -466,13 +462,9 @@ async function stationClick(stationa, noAnimation, ia) {
       window.history.replaceState(null, document.title, location.pathname);
       container.style.transform = "translateX(100vw)";
       document.querySelector(".infoBar").style.transform = "translateY(100%)";
-      container.style.opacity = "0";
       isArrivalsOpen = false;
       stylesTransition.forEach((style) => {
         style.transform = "translateX(0vw)";
-      });
-      stylesTransition.forEach((style) => {
-        style.opacity = "1";
       });
       clearInterval(interval);
       setTimeout(() => {
@@ -560,10 +552,9 @@ async function stationClick(stationa, noAnimation, ia) {
       const root = event.target.getRootNode();
       currentPanel2 = root.querySelector(`#${panelId}`);
       currentPanel2.style.display = "flex";
-      setTimeout(() => {
-        currentPanel2.style.transform = "translateX(0px) translateY(0px)";
-        currentPanel2.style.opacity = "1";
-      }, 1);
+
+      currentPanel2.style.transform = "translateX(0px) translateY(0px)";
+      currentPanel2.style.opacity = "1";
 
       if (currentPanel2.id == "time-panel" && !notYet) {
         notYet = true;
@@ -581,15 +572,9 @@ async function stationClick(stationa, noAnimation, ia) {
     getMyBus.style.display = "none";
     const clickedMyBus = () => {
       container.style.transform = "translateX(-100vw)";
-      container.style.opacity = "0";
       getMyBusData();
     };
     getMyBus.addEventListener("click", clickedMyBus);
-    setTimeout(() => {
-      let ars = document.getElementById("arrivals-panel");
-      ars.style.transform = "translateX(0px) translateY(0px)";
-      ars.style.opacity = "1";
-    }, 1);
 
     showStationOnMap(station.latitude, station.longitude, station.name);
   }
@@ -618,8 +603,14 @@ function showArrivals(data) {
   arrivalsScroll = document.getElementById("arrivals-panel");
   if (data.arrivals.length > 0) {
     let busTemplate = addElement("div", arrivalsScroll, "busTemplate");
-    nextBusTemplate(data, busTemplate);
+
     let listOfArrivals = [];
+    console.log(data.arrivals);
+    data.arrivals.sort((a, b) => {
+      return parseInt(a.route_name) - parseInt(b.route_name);
+    });
+    nextBusTemplate(data, busTemplate);
+    let i = 0;
     for (const arrival of data.arrivals) {
       if (listOfArrivals.includes(arrival.trip_id)) {
         let arrivalTimeSpan = addElement(
@@ -648,6 +639,8 @@ function showArrivals(data) {
         arrivalTimeSpan = null;
       } else {
         let arrivalItem = addElement("div", arrivalsScroll, "arrivalItem");
+        arrivalItem.style.animationDelay = "0.2" + i * 2 + "s";
+        i++;
         arrivalItem.style.order = arrival.route_name.replace(/\D/g, "");
         let busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
@@ -683,7 +676,7 @@ function showArrivals(data) {
           arrivalTimeSpan.classList.add("arrivalYellow");
         }
         if (arrival.depot) arrivalTimeSpan.innerHTML += "G";
-        arrivalItem.addEventListener("click", () => {
+        arrivalItem.addEventListener("touchend", () => {
           showBusById(arrival, data.station.code_id, data.arrivals);
         });
 
@@ -870,7 +863,7 @@ const nextBusTemplate = (data, parent) => {
 
     let arrivalItem = addElement("div", parent, "arrivalItem");
     addElement("md-ripple", arrivalItem);
-
+    arrivalItem.style.animationDelay = "0.19s";
     //arrivalItem.innerHTML = `<md-icon>${icon}</md-icon>`;
     arrivalItem.style.order = arrival.type === 2 ? 0 : arrival.eta_min;
     let busNumberDiv = addElement("div", arrivalItem, "busNo2");
@@ -932,7 +925,6 @@ async function showBusById(arrival, station_id, arrivals) {
   if (arrivals) {
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(-100vw)";
-    document.querySelector(".arrivalsHolder").style.opacity = "0";
     console.log("clicked");
 
     getMyBusData(null, arrivals, arrival.trip_id);
@@ -966,7 +958,6 @@ async function arrivalsOnStation(arrival, station_id, already) {
       ];
       stylesTransition.forEach((style) => {
         style.transform = "translateX(0vw)";
-        style.opacity = "1";
       });
     }
 
@@ -1225,7 +1216,6 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
     clearInterval(intervalBusk);
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(0vw)";
-    document.querySelector(".arrivalsHolder").style.opacity = "1";
     clearMap();
     setTimeout(() => {
       clearElementContent(holder);
