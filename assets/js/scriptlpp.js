@@ -2,11 +2,19 @@
 
 async function updateStations() {
   console.log(agency);
+  let url =
+    "https://lpp.ojpp.derp.si/api/station/station-details?show-subroutes=1";
 
-  let stations = await fetchData(
-    "https://lpp.ojpp.derp.si/api/station/station-details?show-subroutes=1"
-  );
-  stationList = stations;
+  if (localStorage.getItem("stationList")) {
+    stationList = JSON.parse(localStorage.getItem("stationList"));
+    setTimeout(async () => {
+      stationList = await fetchData(url);
+      localStorage.setItem("stationList", JSON.stringify(stationList));
+    }, 1000);
+  } else {
+    stationList = await fetchData(url);
+    localStorage.setItem("stationList", JSON.stringify(stationList));
+  }
   createStationItems();
 }
 var isArrivalsOpen = false;
@@ -264,7 +272,7 @@ function createFavourite(parent, search, query) {
           await stationClick(null, true);
         }, 10000);
       };
-      item.addEventListener("touchend", openStation);
+      item.addEventListener("click", openStation);
       item = null;
       buses = null;
       textHolder = null;
@@ -526,7 +534,7 @@ async function stationClick(stationa, noAnimation, ia) {
     tabs.innerHTML = `<md-primary-tab id="arrivalsTab" aria-controls="arrivals-panel">Prihodi</md-primary-tab>
    <md-primary-tab id="timeTab" aria-controls="time-panel">Urnik</md-primary-tab>`;
     arrivalsScroll = addElement("div", container, "arrivalsScroll");
-
+    makeSkeleton(arrivalsScroll);
     arrivalsScroll.setAttribute("role", "tabpanel");
     arrivalsScroll.setAttribute("aria-labelledby", "arrivalsTab");
     arrivalsScroll.setAttribute("id", "arrivals-panel");
@@ -563,7 +571,7 @@ async function stationClick(stationa, noAnimation, ia) {
       getLocation();
     });
     data = await fetchData(
-      "https://cors.proxy.prometko.si/https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
+      "https://lpp.ojpp.derp.si/api/station/arrival?station-code=" +
         station.ref_id
     );
     let getMyBus = addElement("md-filled-tonal-button", null, "getMyBus");
@@ -581,6 +589,13 @@ async function stationClick(stationa, noAnimation, ia) {
   isArrivalsOpen = station;
 
   showArrivals(data);
+}
+function makeSkeleton(container) {
+  for (let i = 0; i < 5; i++) {
+    let arrivalItem = addElement("div", container, "arrivalItem");
+    arrivalItem.style.height = "100px";
+    arrivalItem.style.animationDelay = "0.2" + i * 2 + "s";
+  }
 }
 /**
  * Displays the arrivals of buses on the provided element.
@@ -639,7 +654,7 @@ function showArrivals(data) {
         arrivalTimeSpan = null;
       } else {
         let arrivalItem = addElement("div", arrivalsScroll, "arrivalItem");
-        arrivalItem.style.animationDelay = "0.2" + i * 2 + "s";
+        arrivalItem.style.animationDelay = "0.0" + i * 2 + "s";
         i++;
         arrivalItem.style.order = arrival.route_name.replace(/\D/g, "");
         let busNumberDiv = addElement("div", arrivalItem, "busNo2");
@@ -676,7 +691,7 @@ function showArrivals(data) {
           arrivalTimeSpan.classList.add("arrivalYellow");
         }
         if (arrival.depot) arrivalTimeSpan.innerHTML += "G";
-        arrivalItem.addEventListener("touchend", () => {
+        arrivalItem.addEventListener("click", () => {
           showBusById(arrival, data.station.code_id, data.arrivals);
         });
 
@@ -863,7 +878,7 @@ const nextBusTemplate = (data, parent) => {
 
     let arrivalItem = addElement("div", parent, "arrivalItem");
     addElement("md-ripple", arrivalItem);
-    arrivalItem.style.animationDelay = "0.19s";
+    arrivalItem.style.animationDelay = "0";
     //arrivalItem.innerHTML = `<md-icon>${icon}</md-icon>`;
     arrivalItem.style.order = arrival.type === 2 ? 0 : arrival.eta_min;
     let busNumberDiv = addElement("div", arrivalItem, "busNo2");
