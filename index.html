@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SloPromet - LPP</title>
+    <title>SloPromet</title>
     <link rel="manifest" href="manifest.json" />
     <link rel="stylesheet" href="assets/css/stylelpp.css" />
     <link rel="stylesheet" href="assets/css/themelpp.css" />
@@ -21,20 +21,12 @@
     />
     <!-- CSS -->
     <link
+      preload="none"
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/ol@v10.5.0/ol.css"
     />
-
-    <!-- UMD JavaScript build -->
-    <script src="https://cdn.jsdelivr.net/npm/ol@v10.5.0/dist/ol.js"></script>
   </head>
   <script src="assets/js/skupna.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-  <script>
-    function scrollWin() {
-      window.scrollTo(0, 0);
-    }
-  </script>
   <body>
     <div id="map">
       <md-fab
@@ -81,7 +73,7 @@
         <md-ripple></md-ripple>SŽ
       </div>
     </div>
-    <script src="assets/js/bundle.js" type="module"></script>
+    <script async src="assets/js/bundle.js" type="module"></script>
 
     <script
       async

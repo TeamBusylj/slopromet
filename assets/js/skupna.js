@@ -287,10 +287,6 @@ async function makeMap() {
         });
       pop.style.background = "RGB(" + feature.get("color") + ")";
       container.style.display = "none";
-      container.style.filter =
-        "drop-shadow(2px -2px 3px RGB(" +
-        darkenColor(feature.get("color"), 50) +
-        "))";
       content.innerHTML =
         "<md-ripple></md-ripple><md-icon>directions_bus</md-icon>" +
         feature.get("name");
@@ -312,10 +308,10 @@ async function makeMap() {
         let aos = document.querySelector(".arrivalsOnStation");
         let lnt = document.querySelector(".lineTimes");
         if (aos) {
-          aos.style.transform = "translateX(-100vw)";
+          aos.style.transform = "translateX(-100vw) translateZ(1px)";
         }
         if (lnt) {
-          lnt.style.transform = "translateX(-100vw)";
+          lnt.style.transform = "translateX(-100vw) translateZ(1px)";
         }
 
         setTimeout(() => {
@@ -362,7 +358,7 @@ async function makeMap() {
 
     if (feature && feature.busId) {
       document.querySelector(".arrivalsOnStation").style.transform =
-        "translateX(-100vw)";
+        "translateX(-100vw) translateZ(1px)";
       document.querySelector(".arrivalsOnStation").style.opacity = "0";
       console.log("clicked");
 
@@ -388,7 +384,6 @@ window.addEventListener("load", async function () {
   await loadJS();
   console.log("loaded");
 
-  createBuses();
   let sht = makeBottomSheet(null, 98);
 
   let bava = "";
@@ -418,6 +413,11 @@ window.addEventListener("load", async function () {
     busImageData = await busImageData.json();
     lines = await fetchData("https://lpp.ojpp.derp.si/api/route/routes");
   }
+  createBuses();
+  const script = document.createElement("script");
+  script.src = "https://cdn.jsdelivr.net/npm/ol@v10.5.0/dist/ol.js";
+  script.onload = makeMap;
+  document.head.appendChild(script);
 });
 function loadJS() {
   return new Promise((resolve, reject) => {
@@ -538,8 +538,7 @@ function showStationOnMap(latitude, longitude, name) {
     });
   pop.style.background = color;
   container.style.display = "none";
-  container.style.filter =
-    "drop-shadow(2px -2px 3px RGB(" + darkenColor(hexToRgb(color), 50) + "))";
+
   content.innerHTML = "<md-icon>directions_bus</md-icon>" + name;
   popup2.setPosition(coordinate);
   setTimeout(() => {
@@ -563,10 +562,6 @@ async function createBuses() {
     e.style.transform = "translateX(0px) translateY(0px)";
     e.style.opacity = "1";
   }, 10);
-
-  setTimeout(async () => {
-    await makeMap();
-  }, 0);
 }
 const changeTabs = (event) => {
   let o =
@@ -656,14 +651,14 @@ function getDirections() {
   getLocation();
   container.classList.add("arrivalsScroll");
   setTimeout(() => {
-    container.style.transform = "translateX(0vw)";
+    container.style.transform = "translateX(0vw) translateZ(1px)";
     container.style.opacity = "1";
   }, 1);
 
   let iks = addElement("md-icon-button", container, "iks");
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
-    container.style.transform = "translateX(100vw)";
+    container.style.transform = "translateX(100vw) translateZ(1px)";
     setTimeout(() => {
       container.remove();
     }, 500);
@@ -1058,7 +1053,7 @@ function makeBottomSheet(title, height) {
 
     bottomSheet.style.transform = `translate3d(-50%,${
       100 - sheetHeight
-    }dvh, 0)`;
+    }dvh, 1px)`;
   };
 
   const touchPosition = (event) => (event.touches ? event.touches[0] : event);
@@ -1238,7 +1233,7 @@ function clearMap() {
       markers.getSource().removeFeature(feature);
     });
   buses = [];
-  document.getElementById("popup").style.display = "none";
+  document.getElementById("popup").remove();
 }
 const lineColorsObj = {
   1: [201, 51, 54],
@@ -1792,46 +1787,4 @@ function findClosestPoint(busCoord, routeCoords) {
     }
   });
   return closestIndex;
-}
-function fetchGMAPS() {
-  ((g) => {
-    var h,
-      a,
-      k,
-      p = "The Google Maps JavaScript API",
-      c = "google",
-      l = "importLibrary",
-      q = "__ib__",
-      m = document,
-      b = window;
-    b = b[c] || (b[c] = {});
-    var d = b.maps || (b.maps = {}),
-      r = new Set(),
-      e = new URLSearchParams(),
-      u = () =>
-        h ||
-        (h = new Promise(async (f, n) => {
-          await (a = m.createElement("script"));
-          e.set("libraries", [...r] + "");
-          for (k in g)
-            e.set(
-              k.replace(/[A-Z]/g, (t) => "_" + t[0].toLowerCase()),
-              g[k]
-            );
-          e.set("callback", c + ".maps." + q);
-          a.src = `https://maps.${c}apis.com/maps/api/js?` + e;
-          d[q] = f;
-          a.onerror = () => (h = n(Error(p + " could not load.")));
-          a.nonce = m.querySelector("script[nonce]")?.nonce || "";
-          m.head.append(a);
-        }));
-    d[l]
-      ? console.warn(p + " only loads once. Ignoring:", g)
-      : (d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)));
-  })({
-    key: "AIzaSyCGnbK8F2HvhjqRrKo3xogo4Co7bitNwYA",
-    v: "weekly",
-    // Use the 'v' parameter to indicate the version to use (weekly, beta, alpha, etc.).
-    // Add other bootstrap parameters as needed, using camel case.
-  });
 }

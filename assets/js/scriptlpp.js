@@ -161,7 +161,7 @@ async function createStationItems(o) {
             document.getElementById("tabsFav").style,
           ];
           stylesTransition.forEach((style) => {
-            style.transform = "translateX(-100vw)";
+            style.transform = "translateX(-100vw) translateZ(1px)";
           });
           let line2 = line;
           line2.route_name = line.route_number;
@@ -322,7 +322,7 @@ function createFavourite(parent, search, query) {
             document.getElementById("tabsFav").style,
           ];
           stylesTransition.forEach((style) => {
-            style.transform = "translateX(-100vw)";
+            style.transform = "translateX(-100vw) translateZ(1px)";
           });
           let line2 = line;
           line2.route_name = line.route_number;
@@ -413,7 +413,7 @@ async function stationClick(stationa, noAnimation, ia) {
     );
     if (ia) {
       document.querySelector(".arrivalsHolder").style.transform =
-        "translateX(0)";
+        "translateX(0) translateZ(1px)";
       document.querySelector(".arrivalsHolder").style.opacity = "1";
       showLines(document.querySelector(".timeTScroll"), station);
     }
@@ -456,10 +456,10 @@ async function stationClick(stationa, noAnimation, ia) {
     );
     createInfoBar(document.querySelector(".mainSheet"), station.ref_id);
     stylesTransition.forEach((style) => {
-      style.transform = "translateX(-100vw)";
+      style.transform = "translateX(-100vw) translateZ(1px)";
     });
     setTimeout(() => {
-      container.style.transform = "translateX(0)";
+      container.style.transform = "translateX(0) translateZ(1px)";
     }, 0);
 
     const title = addElement("h1", container, "title");
@@ -468,11 +468,11 @@ async function stationClick(stationa, noAnimation, ia) {
     iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
     iks.addEventListener("click", function () {
       window.history.replaceState(null, document.title, location.pathname);
-      container.style.transform = "translateX(100vw)";
+      container.style.transform = "translateX(100vw) translateZ(1px)";
       document.querySelector(".infoBar").style.transform = "translateY(100%)";
       isArrivalsOpen = false;
       stylesTransition.forEach((style) => {
-        style.transform = "translateX(0vw)";
+        style.transform = "translateX(0vw) translateZ(1px)";
       });
       clearInterval(interval);
       setTimeout(() => {
@@ -483,6 +483,7 @@ async function stationClick(stationa, noAnimation, ia) {
         document.querySelector(".infoBar").remove();
       }, 500);
       moveFAB(0);
+      document.getElementById("popup").remove();
     });
 
     let ttl = addElement("span", title);
@@ -579,7 +580,7 @@ async function stationClick(stationa, noAnimation, ia) {
     getMyBus.innerHTML = "Moja vožnja";
     getMyBus.style.display = "none";
     const clickedMyBus = () => {
-      container.style.transform = "translateX(-100vw)";
+      container.style.transform = "translateX(-100vw) translateZ(1px)";
       getMyBusData();
     };
     getMyBus.addEventListener("click", clickedMyBus);
@@ -761,14 +762,14 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
   container.style.opacity = "1";
   container.classList.add("arrivalsScroll");
   document.querySelector(".arrivalsHolder").style.transform =
-    "translateX(-100vw)";
+    "translateX(-100vw) translateZ(1px)";
   let iks = addElement("md-icon-button", container, "iks");
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
     window.history.replaceState(null, document.title, location.pathname);
-    container.style.transform = "translateX(100vw)";
+    container.style.transform = "translateX(100vw) translateZ(1px)";
     document.querySelector(".arrivalsHolder").style.transform =
-      "translateX(0vw)";
+      "translateX(0vw) translateZ(1px)";
     clearMap();
     setTimeout(() => {
       container.remove();
@@ -939,7 +940,7 @@ async function showBusById(arrival, station_id, arrivals) {
   }, 5000);
   if (arrivals) {
     document.querySelector(".arrivalsHolder").style.transform =
-      "translateX(-100vw)";
+      "translateX(-100vw) translateZ(1px)";
     console.log("clicked");
 
     getMyBusData(null, arrivals, arrival.trip_id);
@@ -960,10 +961,10 @@ async function arrivalsOnStation(arrival, station_id, already) {
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
     window.history.replaceState(null, document.title, location.pathname);
-    container.style.transform = "translateX(100vw)";
+    container.style.transform = "translateX(100vw) translateZ(1px)";
     if (document.querySelector(".arrivalsHolder")) {
       document.querySelector(".arrivalsHolder").style.transform =
-        "translateX(0vw)";
+        "translateX(0vw) translateZ(1px)";
     } else {
       var stylesTransition = [
         document.querySelector(".searchContain").style,
@@ -972,7 +973,7 @@ async function arrivalsOnStation(arrival, station_id, already) {
         document.getElementById("tabsFav").style,
       ];
       stylesTransition.forEach((style) => {
-        style.transform = "translateX(0vw)";
+        style.transform = "translateX(0vw) translateZ(1px)";
       });
     }
 
@@ -1227,10 +1228,10 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
 
   iks.addEventListener("click", function () {
-    holder.style.transform = "translateX(100vw)";
+    holder.style.transform = "translateX(100vw) translateZ(1px)";
     clearInterval(intervalBusk);
     document.querySelector(".arrivalsHolder").style.transform =
-      "translateX(0vw)";
+      "translateX(0vw) translateZ(1px)";
     clearMap();
     setTimeout(() => {
       clearElementContent(holder);
