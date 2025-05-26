@@ -105,7 +105,7 @@ async function createStationItems(o) {
         const openStation = async () => {
           await stationClick(station);
           interval = setInterval(async () => {
-            await stationClick(null, true);
+            await stationClick(null, true, null, true);
           }, 10000);
         };
         item.addEventListener("click", openStation);
@@ -269,7 +269,7 @@ function createFavourite(parent, search, query) {
       const openStation = async () => {
         await stationClick(station);
         interval = setInterval(async () => {
-          await stationClick(null, true);
+          await stationClick(null, true, null, true);
         }, 10000);
       };
       item.addEventListener("click", openStation);
@@ -385,7 +385,7 @@ async function oppositeStation(id) {
 }
 
 const delayedSearch = debounce(searchRefresh, 300);
-async function stationClick(stationa, noAnimation, ia) {
+async function stationClick(stationa, noAnimation, ia, repeated) {
   if (document.querySelector(".arrivalsOnStation")) return;
   var arrivalsScroll;
   moveFAB();
@@ -589,7 +589,7 @@ async function stationClick(stationa, noAnimation, ia) {
   }
   isArrivalsOpen = station;
 
-  showArrivals(data);
+  showArrivals(data, repeated);
 }
 function makeSkeleton(container) {
   for (let i = 0; i < 5; i++) {
@@ -612,7 +612,7 @@ function makeSkeleton(container) {
  * @param {Array} data.data.arrivals - An array of bus arrival objects.
  */
 
-function showArrivals(data) {
+function showArrivals(data, repeated) {
   let arrivalsScroll = document.getElementById("arrivals-panel");
   clearElementContent(arrivalsScroll);
   arrivalsScroll = null;
@@ -655,8 +655,14 @@ function showArrivals(data) {
         arrivalTimeSpan = null;
       } else {
         let arrivalItem = addElement("div", arrivalsScroll, "arrivalItem");
+        if (repeated) {
+          arrivalItem.style.opacity = "1";
+          arrivalItem.style.transform = "translateX(0)";
+          arrivalItem.style.animationDuration = "0s";
+        }
         arrivalItem.style.animationDelay = "0.0" + i * 2 + "s";
         i++;
+
         arrivalItem.style.order = arrival.route_name.replace(/\D/g, "");
         let busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
