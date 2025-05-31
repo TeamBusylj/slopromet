@@ -483,7 +483,9 @@ async function stationClick(stationa, noAnimation, ia, repeated) {
         document.querySelector(".infoBar").remove();
       }, 500);
       moveFAB(0);
-      document.getElementById("popup").remove();
+      try {
+        document.getElementById("popup").remove();
+      } catch {}
     });
 
     let ttl = addElement("span", title);
@@ -621,11 +623,10 @@ function showArrivals(data, repeated) {
     let busTemplate = addElement("div", arrivalsScroll, "busTemplate");
 
     let listOfArrivals = [];
-    console.log(data.arrivals);
+    nextBusTemplate(data, busTemplate);
     data.arrivals.sort((a, b) => {
       return parseInt(a.route_name) - parseInt(b.route_name);
     });
-    nextBusTemplate(data, busTemplate);
     let i = 0;
     for (const arrival of data.arrivals) {
       if (listOfArrivals.includes(arrival.trip_id)) {
@@ -660,10 +661,9 @@ function showArrivals(data, repeated) {
           arrivalItem.style.transform = "translateX(0)";
           arrivalItem.style.animationDuration = "0s";
         }
-        arrivalItem.style.animationDelay = "0.0" + i * 2 + "s";
+        arrivalItem.style.animationDelay = "0." + i + "s";
         i++;
 
-        arrivalItem.style.order = arrival.route_name.replace(/\D/g, "");
         let busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
         busNumberDiv.style.background = lineColors(arrival.route_name);
@@ -725,9 +725,10 @@ async function showLines(parent, station) {
   parent.style.transform = "translateX(0px) translateY(0px)";
   parent.style.opacity = "1";
 
-  data.forEach((arrival) => {
+  data.forEach((arrival, i) => {
     if (!arrival.is_garage) {
       let arrivalItem = addElement("div", parent, "arrivalItem");
+      arrivalItem.style.animationDelay = "0." + i + "s";
       arrivalItem.style.order =
         arrival.route_number[0] == "N"
           ? arrival.route_number.replace(/\D/g, "") + 100

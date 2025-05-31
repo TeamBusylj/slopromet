@@ -1,5 +1,5 @@
 "use strict";
-
+var routesStations;
 async function updateStations() {
   console.log(agency);
 
@@ -11,6 +11,11 @@ async function updateStations() {
       (station.type == "RAIL" && agency == "SŽ")
     );
   });
+  routesStations = await (
+    await fetch(
+      "https://teambusylj.github.io/slopromet/assets/assets/stop_to_routes.json"
+    )
+  ).json();
   createStationItems();
 }
 var isArrivalsOpen = false;
@@ -311,6 +316,7 @@ async function stationClick(stationa, noAnimation, ia) {
       "arrivalsHolder"
     );
     createInfoBar(document.querySelector(".mainSheet"), station.code);
+
     stylesTransition.forEach((style) => {
       style.transform = "translateX(-100vw)";
       style.opacity = "0";
@@ -401,11 +407,12 @@ async function stationClick(stationa, noAnimation, ia) {
     var tabs = addElement("md-tabs", container, "tabs");
     tabs.innerHTML = `<md-primary-tab id="arrivalsTab" aria-controls="arrivals-panel">Prihodi</md-primary-tab>
    <md-primary-tab id="timeTab" aria-controls="time-panel">Urnik</md-primary-tab>`;
-    arrivalsScroll = addElement("div", container, "arrivalsScroll");
+    arrivalsScroll = addElement("div", null, "arrivalsScroll");
 
     arrivalsScroll.setAttribute("role", "tabpanel");
     arrivalsScroll.setAttribute("aria-labelledby", "arrivalsTab");
     arrivalsScroll.setAttribute("id", "arrivals-panel");
+
     let currentPanel2 = document.querySelector(".arrivalsScroll");
     if (document.querySelector(".timeTScroll"))
       document.querySelector(".timeTScroll").remove();
@@ -444,6 +451,8 @@ async function stationClick(stationa, noAnimation, ia) {
         station.gtfs_id
       )}/arrivals?current=true`
     );
+    //createSearchBar(container, data, station.gtfs_id);
+    container.appendChild(arrivalsScroll);
     setTimeout(() => {
       let ars = document.getElementById("arrivals-panel");
       ars.style.transform = "translateX(0px) translateY(0px)";
@@ -489,9 +498,9 @@ function showArrivals(data, station_id, noAnimation) {
     let favos = localStorage.getItem("favoriteBuses") || "[]";
     for (const arrival of data) {
       let etaDiv;
-      if (!arrivalsList.includes(arrival.trip_headsign)) {
+      if (!arrivalsList.includes(arrival.route_short_name)) {
         if (minutesFromNow(arrival.arrival_realtime, 1) > 120) continue;
-        arrivalsList.push(arrival.trip_headsign);
+        arrivalsList.push(arrival.route_short_name);
         let arrivalItem = addElement("div", null, "arrivalItem");
 
         createBusNumber(arrival, arrivalItem, "0." + i + "5", noAnimation);
@@ -575,6 +584,15 @@ function showArrivals(data, station_id, noAnimation) {
       "<p><md-icon>no_transfer</md-icon>V naslednji uri ni predvidenih avtobusov.</p>";
   }
 }
+function createSearchBar(parent, data, station) {
+  let searchInput = addElement("md-filled-text-field", parent, "search");
+
+  searchInput.placeholder = "Išči izstopno postajo";
+  searchInput.addEventListener("input", (e) => {
+    data.filter((arrival) => {});
+    showArrivals(data, station);
+  });
+}
 function favoriteLine(lineName, button, arrivalItem, favos = []) {
   button.innerHTML = "star";
   if (!localStorage.getItem("favoriteBuses"))
@@ -627,33 +645,18 @@ function createBusNumber(arrival, arrivalItem, delay, noAnimation) {
   }
   let busHolder = addElement("div", arrivalItem, "busGoeey");
   let gooeyHolder = addElement("div", busHolder, "stepIcon");
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-  if (true) busHolder.classList.add("goeeyEffectSafari");
-
-  let textHolder = addElement("div", busHolder, "textGoeey");
 
   let imgHolder = addElement("div", gooeyHolder, "agencyLogo");
-  let imgLogo = addElement("img", textHolder, "agenImg");
+  let imgLogo = addElement("img", imgHolder, "agenImg");
   imgLogo.src = "assets/images/logos_brezavta/" + arrival.agency_id + ".svg";
   imgHolder.style.background =
     "#" + adaptColors(arrival.route_color_background);
   let busNumberDiv = addElement("div", gooeyHolder, "busNo2");
 
   busNumberDiv.style.background = lineToColor(
-    parseInt(arrival.route_short_name.split(" ")[0])
+    parseInt(Math.max(...arrival.route_short_name.match(/\d+/g).map(Number)))
   );
-  let txtNum = addElement("span", textHolder);
-  txtNum.innerHTML += arrival.route_short_name.split(" ")[0];
-  setTimeout(() => {
-    if (noAnimation) {
-      txtNum.style.animation = `goeey2 0s forwards`;
-      busNumberDiv.style.animation = `goeey 0s forwards`;
-    } else {
-      txtNum.style.animation = `goeey2 1s ${delay}s cubic-bezier(0.73, 0.01, 0.29, 1.21) forwards`;
-      busNumberDiv.style.animation = `goeey 1s ${delay}s cubic-bezier(0.73, 0.01, 0.29, 1.21) forwards`;
-    }
-  }, 1);
+  busNumberDiv.innerHTML += arrival.route_short_name;
 }
 function adaptColors(color) {
   return color.replace("0077BE", "fff").replace("FBB900", "00489a");

@@ -1115,77 +1115,40 @@ span.pac-item-query {
 .arrivalItem .stepIcon {
   flex-direction: column;
   font-size: 0.7rem;
-  filter: url(#goo);
   will-change: filter;
   transform: translateZ(0);
-  gap: 7px;
-}
-.busGoeey.goeeyEffectSafari {
-  position: relative;
-  width: 80px;
-  margin: 0 -22px;
+  gap: 5px;
 }
 
 img.agenImg {
-  width: 35px;
+  width: 37px;
   box-sizing: border-box;
   padding: 5px;
 }
 .busGoeey {
   position: relative;
 }
-.textGoeey span {
-  position: relative;
-  top: -30px;
-  align-items: center;
-  display: flex;
-  font-size: 0rem;
-  justify-content: center;
-  transform: translate(0px, 4px);
-  transform-origin: top;
-}
-.textGoeey {
-  position: absolute;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  left: 50%;
-  transform: translateX(-50%);
-  align-items: center;
-  justify-content: center;
-}
+
 .arrivalItem .stepIcon .agencyLogo {
-  height: 35px;
-  width: 35px;
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px 15px 3px 3px;
 }
 .stepIcon .busNo2 {
-  height: 0px;
-  width: 0px;
-  top: -30px;
+  height: min-content;
+
+  width: 40px;
+  text-align: center;
+  padding: 7px;
+  top: 0px;
+  aspect-ratio: unset;
+  box-sizing: border-box;
+  border-radius: 3px 3px 16px 15px;
 }
-@keyframes goeey {
-  0% {
-    height: 0px;
-    width: 0px;
-    top: -30px;
-  }
-  100% {
-    height: 15px;
-    width: 30px;
-    top: 0px;
-  }
-}
-@keyframes goeey2 {
-  0% {
-    font-size: 0rem;
-    top: -30px;
-  }
-  100% {
-    font-size: 0.7rem;
-    top: 0px;
-  }
-}
+
 .stepIcon {
   display: flex;
   flex-direction: column;
@@ -1325,7 +1288,6 @@ div#popup-content2 {
 }
 body {
   --transDur: 0.3s;
-  opacity: 0;
   transition: 0.2s;
 }
 

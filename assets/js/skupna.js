@@ -403,7 +403,6 @@ window.addEventListener("load", async function () {
     .querySelector("#" + agency.toLocaleLowerCase() + "Tab > img")
     .classList.add("selected");
   document.body.classList.add(agency.toLocaleLowerCase());
-  document.body.style.opacity = "1";
   if (agency == "LPP") {
     busImageData = await fetch(
       "https://mestnipromet.cyou/tracker/js/json/images.json"
@@ -1186,12 +1185,9 @@ function makeBottomSheet(title, height) {
   setTimeout(() => {
     bottomSheet.style.transition = "";
   }, 400);
-  if (height) setSheetHeight(height);
-  else {
-    setSheetHeight(
-      Math.min(sheetContents.offsetHeight, 50, (720 / window.innerHeight) * 100)
-    );
-  }
+
+  minimizeSheet(98);
+
   sheetContents.appendChild(document.querySelector(".refresh"));
   sheetContents.appendChild(document.querySelector(".directionsButton"));
   return mainContent;
@@ -1233,7 +1229,9 @@ function clearMap() {
       markers.getSource().removeFeature(feature);
     });
   buses = [];
-  document.getElementById("popup").remove();
+  try {
+    document.getElementById("popup").remove();
+  } catch {}
 }
 const lineColorsObj = {
   1: [201, 51, 54],

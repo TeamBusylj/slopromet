@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>GTFS Stop to Routes JSON Exporter</title>
+  </head>
+  <body>
+    <h2>Upload trips.txt and stop_times.txt</h2>
+    <input type="file" id="tripsFile" accept=".txt" />
+    <input type="file" id="stopTimesFile" accept=".txt" />
+    <button onclick="processGTFS()">Generate & Download</button>
+
+    <script>
+      function parseCSV(text) {
+        const lines = text.trim().split("\n");
+        const headers = lines[0].split(",");
+        return lines.slice(1).map((line) => {
+          const values = line.split(",");
+          return Object.fromEntries(
+            headers.map((h, i) => [h.trim(), values[i]?.trim()])
+          );
+        });
+      }
+
+      function downloadJSON(obj, filename) {
+        const blob = new Blob([JSON.stringify(obj)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function processGTFS() {
+        const tripsInput = document.getElementById("tripsFile").files[0];
+        const stopTimesInput =
+          document.getElementById("stopTimesFile").files[0];
+        if (!tripsInput || !stopTimesInput) {
+          alert("Please upload both files.");
+          return;
+        }
+
+        Promise.all([tripsInput.text(), stopTimesInput.text()]).then(
+          ([tripsText, stopTimesText]) => {
+            const trips = parseCSV(tripsText);
+            const stopTimes = parseCSV(stopTimesText);
+
+            const tripToRoute = {};
+            for (const row of trips) {
+              tripToRoute[row.trip_id] = row.route_id;
+            }
+
+            const stopToRoutes = {};
+            for (const row of stopTimes) {
+              const routeId = tripToRoute[row.trip_id];
+              const stopId = row.stop_id;
+              if (!routeId || !stopId) continue;
+
+              if (!stopToRoutes[stopId]) stopToRoutes[stopId] = new Set();
+              stopToRoutes[stopId].add(routeId);
+            }
+
+            const output = {};
+            for (const stopId in stopToRoutes) {
+              output[stopId] = Array.from(stopToRoutes[stopId]);
+            }
+
+            downloadJSON(output, "stop_to_routes.json");
+          }
+        );
+      }
+    </script>
+  </body>
+</html>
