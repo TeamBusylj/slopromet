@@ -13,7 +13,7 @@ async function updateStations() {
   });
   routesStations = await (
     await fetch(
-      "https://teambusylj.github.io/slopromet/assets/assets/stop_to_routes.json"
+      "https://teambusylj.github.io/slopromet/assets/stop_to_routes.json"
     )
   ).json();
   createStationItems();
@@ -587,10 +587,38 @@ function showArrivals(data, station_id, noAnimation) {
 function createSearchBar(parent, data, station) {
   let searchInput = addElement("md-filled-text-field", parent, "search");
 
-  searchInput.placeholder = "Išči izstopno postajo";
-  searchInput.addEventListener("input", (e) => {
-    data.filter((arrival) => {});
-    showArrivals(data, station);
+  searchInput.addEventListener("input", () => {
+    const query = searchInput.value.trim().toLowerCase();
+    if (!query) {
+      return;
+    }
+
+    // 1. Find matching stops by name
+    const matchingStopIds = stationList
+      .filter((station) => station.name.toLowerCase().includes(query))
+      .map((station) => {
+        const gtfsParts = station.gtfs_id.split(":");
+        return gtfsParts[1]; // just the number part
+      });
+
+    // 2. Collect matching route IDs
+    const matchingRoutes = new Set();
+    for (const stopId of matchingStopIds) {
+      const routeList = routesStations[stopId];
+      if (routeList) {
+        for (const routeId of routeList) {
+          matchingRoutes.add(routeId);
+        }
+      }
+    }
+
+    // 3. Filter data by route_id (after removing prefix)
+    const filtered = data.filter((entry) => {
+      const plainRouteId = entry.route_id.split(":")[1]; // remove the prefix
+      return matchingRoutes.has(plainRouteId);
+    });
+
+    showArrivals(filtered, station);
   });
 }
 function favoriteLine(lineName, button, arrivalItem, favos = []) {
