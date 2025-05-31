@@ -211,10 +211,6 @@ function createFavourite(parent, search, query) {
     parent.appendChild(stationDistance);
   }
 }
-async function searchRefresh() {
-  let query = document.querySelector(".search").value;
-  createStationItems();
-}
 
 var interval;
 
@@ -451,7 +447,7 @@ async function stationClick(stationa, noAnimation, ia) {
         station.gtfs_id
       )}/arrivals?current=true`
     );
-    //createSearchBar(container, data, station.gtfs_id);
+    createSearchBar(container, data, station.gtfs_id);
     container.appendChild(arrivalsScroll);
     setTimeout(() => {
       let ars = document.getElementById("arrivals-panel");
@@ -461,8 +457,14 @@ async function stationClick(stationa, noAnimation, ia) {
     showStationOnMap(stationa.lat, stationa.lon, stationa.name);
   }
   isArrivalsOpen = station;
+  let searchInput = document.querySelector("#searchRoutes");
+  console.log(searchInput.value);
 
-  showArrivals(data, station.gtfs_id, noAnimation);
+  if (searchInput.value !== "") {
+    showFilteredArrivals(searchInput.value, station.gtfs_id, data, true);
+  } else {
+    showArrivals(data, station.gtfs_id, noAnimation);
+  }
 }
 
 /**
@@ -479,7 +481,7 @@ async function stationClick(stationa, noAnimation, ia) {
  * @param {Array} data.data.arrivals - An array of bus arrival objects.
  */
 
-function showArrivals(data, station_id, noAnimation) {
+function showArrivals(data, station_id, noAnimation, stationRoute) {
   let arrivalsScroll = document.getElementById("arrivals-panel");
   clearElementContent(arrivalsScroll);
   arrivalsScroll = null;
@@ -502,16 +504,33 @@ function showArrivals(data, station_id, noAnimation) {
         if (minutesFromNow(arrival.arrival_realtime, 1) > 120) continue;
         arrivalsList.push(arrival.route_short_name);
         let arrivalItem = addElement("div", null, "arrivalItem");
+        if (noAnimation) {
+          arrivalItem.style.opacity = "1";
+          arrivalItem.style.transform = "translateX(0)";
+          arrivalItem.style.animationDuration = "0s";
+        }
+        if (favos.includes(arrival.route_short_name.split(" ")[0])) {
+          arrivalItem.style.animationDelay = "0s";
+        } else {
+          arrivalItem.style.animationDelay = "0." + (i + 1) + "s";
+        }
 
         createBusNumber(arrival, arrivalItem, "0." + i + "5", noAnimation);
         addElement("md-ripple", arrivalItem);
         let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
-
+        let queryHeadSign;
+        if (stationRoute) {
+          queryHeadSign = `${
+            stationRoute[arrival.route_id.split(":")[1]]
+          }<md-icon class=arrow>arrow_right</md-icon>`;
+        } else {
+          queryHeadSign = "";
+        }
         let tripNameSpan = addElement("span", arrivalDataDiv, "tripName");
         tripNameSpan.innerHTML = arrival.trip_headsign.replace(
           /(.+?)[-–]/g,
           (_, word) =>
-            `<span style="white-space: nowrap;">${word}<md-icon>arrow_right</md-icon></span>`
+            `${word}<md-icon class=arrow>arrow_right</md-icon>` + queryHeadSign
         );
         if (arrival.alerts.length > 0) {
           addElement("md-icon", tripNameSpan, "alert").innerHTML = "warning";
@@ -539,7 +558,6 @@ function showArrivals(data, station_id, noAnimation) {
           "#arrival_" + makeIdFriendly(arrival.trip_headsign)
         );
       }
-      if (!etaDiv) console.log(arrival.route_short_name.split(" ")[0]);
 
       let arrivalTimeRealtime = arrival.arrival_realtime;
 
@@ -586,40 +604,49 @@ function showArrivals(data, station_id, noAnimation) {
 }
 function createSearchBar(parent, data, station) {
   let searchInput = addElement("md-filled-text-field", parent, "search");
+  searchInput.placeholder = "Išči izstopno postajo";
+  searchInput.id = "searchRoutes";
+  searchInput.innerHTML = "<md-icon slot=leading-icon>search</md-icon>";
+  const debouncedShowArrivals = debounce(showFilteredArrivals, 500);
 
   searchInput.addEventListener("input", () => {
-    const query = searchInput.value.trim().toLowerCase();
-    if (!query) {
-      return;
-    }
+    debouncedShowArrivals(searchInput.value, station, data);
+  });
+}
+function showFilteredArrivals(value, station, data, noAnimation) {
+  console.log("Filtering arrivals with value:", value);
 
-    // 1. Find matching stops by name
-    const matchingStopIds = stationList
-      .filter((station) => station.name.toLowerCase().includes(query))
-      .map((station) => {
-        const gtfsParts = station.gtfs_id.split(":");
-        return gtfsParts[1]; // just the number part
-      });
+  const query = value.trim().toLowerCase();
+  if (!query) return;
 
-    // 2. Collect matching route IDs
-    const matchingRoutes = new Set();
-    for (const stopId of matchingStopIds) {
-      const routeList = routesStations[stopId];
-      if (routeList) {
-        for (const routeId of routeList) {
-          matchingRoutes.add(routeId);
-        }
+  // 1. Find all matching stations by name
+  const matchingStops = stationList.filter((s) =>
+    s.name.toLowerCase().includes(query)
+  );
+
+  // 2. Map of route_id → first matching station name
+  const routeToStationName = {};
+
+  for (const stop of matchingStops) {
+    const stopId = stop.gtfs_id.split(":")[1];
+    const routes = routesStations[stopId];
+    if (!routes) continue;
+
+    for (const routeId of routes) {
+      if (!routeToStationName[routeId]) {
+        routeToStationName[routeId] = stop.name; // first match only
       }
     }
+  }
 
-    // 3. Filter data by route_id (after removing prefix)
-    const filtered = data.filter((entry) => {
-      const plainRouteId = entry.route_id.split(":")[1]; // remove the prefix
-      return matchingRoutes.has(plainRouteId);
-    });
-
-    showArrivals(filtered, station);
+  // 3. Filter data based on route_id (normalized), and attach station name
+  const filtered = data.filter((entry) => {
+    const plainRouteId = entry.route_id.split(":")[1];
+    return routeToStationName.hasOwnProperty(plainRouteId);
   });
+
+  // 4. Call showArrivals with the route→station mapping
+  showArrivals(filtered, station, noAnimation, routeToStationName);
 }
 function favoriteLine(lineName, button, arrivalItem, favos = []) {
   button.innerHTML = "star";
@@ -873,7 +900,7 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
     }
   });
 }
-const delayedSearch = debounce(searchRefresh, 300);
+const delayedSearch = debounce(createStationItems, 300);
 function hoursDay(what) {
   const now = new Date();
   const hoursFromMidnight = now.getHours() + now.getMinutes() / 60;
@@ -1103,7 +1130,7 @@ function showArrivalsMyBus(info, container, arrival) {
   let color =
     "RGB(" +
     lineToColor(
-      parseInt(arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, "")),
+      parseInt(Math.max(...arrival.route_short_name.match(/\d+/g).map(Number))),
       1
     ).join(",") +
     ")";
@@ -1130,7 +1157,7 @@ function showArrivalsMyBus(info, container, arrival) {
         darkenColor(
           lineToColor(
             parseInt(
-              arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, "")
+              Math.max(...arrival.route_short_name.match(/\d+/g).map(Number))
             ),
             1
           ),

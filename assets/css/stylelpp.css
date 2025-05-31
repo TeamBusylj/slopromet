@@ -15,7 +15,8 @@ md-primary-tab {
 }
 .title {
   z-index: 3;
-  margin: 0 20px;
+  padding: 0 20px;
+  margin: 0;
   display: block;
   height: max-content;
   justify-content: left;
@@ -480,7 +481,11 @@ img.busImgElement {
   gap: 5px;
   display: flex;
   flex-direction: column;
-  max-width: 80%;
+  width: 80%;
+}
+#searchRoutes {
+  width: calc(100% - 25px);
+  margin: 10px auto;
 }
 .buses .busNo {
   height: 25px;
@@ -1354,9 +1359,12 @@ body {
   align-items: center;
 }
 span.tripName {
-  align-items: center;
-  justify-content: left;
-  display: flex;
+  width: 80%;
+}
+md-icon.arrow {
+  height: 1rem;
+  transform: translateY(3px);
+  width: 1rem;
 }
 md-icon.alert,
 .alert .title md-icon {

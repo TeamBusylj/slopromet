@@ -16,7 +16,7 @@ async function loop(firsttim, arrival, station, arOnSt) {
         "--_color",
         lineToColor(
           parseInt(
-            arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, "")
+            Math.max(...arrival.route_short_name.match(/\d+/g).map(Number))
           ),
           1
         )
@@ -73,10 +73,9 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
             darkenColor(
               lineToColor(
                 parseInt(
-                  arrival.route_short_name
-                    .split(" ")[0]
-                    .replace(/[^\d]/g, "")
-                    .replace(/[^\d]/g, "")
+                  Math.max(
+                    ...arrival.route_short_name.match(/\d+/g).map(Number)
+                  )
                 ),
                 1
               ),
@@ -84,7 +83,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
             ),
             lineToColor(
               parseInt(
-                arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, "")
+                Math.max(...arrival.route_short_name.match(/\d+/g).map(Number))
               ),
               1
             )
@@ -181,9 +180,11 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
 }
 async function generateRouteVector(arrival, stationID, coordinatesRoute) {
   let color = lineToColor(
-    parseInt(arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, "")),
+    parseInt(Math.max(...arrival.route_short_name.match(/\d+/g).map(Number))),
     1
   );
+  console.log(color);
+
   if (arrival.trip_id === undefined) return;
   let coords1 = [...coordinates];
   if (coords1[0][0][0]) {
