@@ -1220,7 +1220,7 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
         document.querySelector(".myBusDiv").style.opacity = "0";
         clickedMyBus(busek, arrival.trip_id);
         intervalBusk = setInterval(() => {
-          clickedMyBus(busek, arrival.trip_id);
+          updateMyBus(busek, arrival.trip_id);
         }, 10000);
       });
     }
@@ -1233,7 +1233,7 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
   myBusDiv = document.querySelector(".myBusDiv");
 
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
-
+  iks.id = "busDataIks";
   iks.addEventListener("click", function () {
     holder.style.transform = "translateX(100vw) translateZ(1px)";
     clearInterval(intervalBusk);
@@ -1262,22 +1262,39 @@ async function getMyBusData(busId, arrivalsAll, tripId) {
 
     clickedMyBus(bus, arrivals ? arrivals[0].trip_id : bus.trip_id);
     intervalBusk = setInterval(() => {
-      clickedMyBus(bus, arrivals ? arrivals[0].trip_id : bus.trip_id);
+      updateMyBus(bus, arrivals ? arrivals[0].trip_id : bus.trip_id);
     }, 10000);
     return;
   }
 
   //get buse based on location (removed)
 }
+async function updateMyBus(bus, tripId) {
+  let arOnS = await fetchData(
+    "https://lpp.ojpp.derp.si/api/route/arrivals-on-route?trip-id=" + tripId
+  );
+
+  let busData = busObject.find((el) => el.bus_id === bus.bus_id);
+  let arrivalDataDiv = document.querySelector(".arrivalsOnStation");
+  if (document.startViewTransition) {
+    document.startViewTransition(() => {
+      clearElementContent(arrivalDataDiv);
+      arrivalDataDiv = document.querySelector(".arrivalsOnStation");
+      showArrivalsMyBus(arOnS, arrivalDataDiv, busData, bus.bus_id, 1);
+    });
+  } else {
+    clearElementContent(arrivalDataDiv);
+    arrivalDataDiv = document.querySelector(".arrivalsOnStation");
+    showArrivalsMyBus(arOnS, arrivalDataDiv, busData, bus.bus_id, 1);
+  }
+}
 async function clickedMyBus(bus, tripId) {
   let arOnS = await fetchData(
     "https://lpp.ojpp.derp.si/api/route/arrivals-on-route?trip-id=" + tripId
   );
-  console.log(bus);
 
   let busId = bus.bus_id;
   let busData = busObject.find((el) => el.bus_id === busId);
-  console.log(busData);
 
   let myBusDiv = document.querySelector(".myBusDiv");
   let scrollPosition = myBusDiv.scrollTop;
@@ -1304,7 +1321,7 @@ async function clickedMyBus(bus, tripId) {
   myBusDiv.style.transform = "translateY(0px)";
   myBusDiv.style.opacity = "1";
 }
-function showArrivalsMyBus(info, container, arrival, busIdUp) {
+function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
   let holder = addElement("div", container, "arFlex");
   holder.style.display = "flex";
 
@@ -1312,6 +1329,7 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
   var listArrivals = {};
   let arrivalsColumns = addElement("div", holder, "arrivalsColumns");
   let isItYet = true;
+  let o = 0;
   info.forEach((arrivalRoute, index) => {
     //vsaka postaja
     let arDiv = addElement("div", arHolder, "arrDiv");
@@ -1348,7 +1366,9 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
     let nameStation = addElement("div", arDiv, "nameStation");
     nameStation.classList.add("nameStation_" + arrivalRoute.station_code);
     nameStation.innerHTML = arrivalRoute.name;
-
+    arDiv.style.viewTransitionName = arrivalRoute.name
+      .toLowerCase()
+      .replace(/ /g, "_");
     let ar = arrivalRoute.arrivals.find(
       (el) => el.vehicle_id == busIdUp.toLowerCase()
     );
@@ -1382,10 +1402,9 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
                   arrival?.vehicle_id?.toLowerCase() === busIdUp.toLowerCase()
               )
             )?.arrivals;
-          console.log(moreThanAnHour);
 
           if (!moreThanAnHour) return;
-          console.log("no bus found");
+
           let indexOf = info.find(
             (station) => station?.arrivals?.length > 0
           )?.arrivals;
@@ -1404,7 +1423,7 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
       !lineStation.parentNode.classList.contains("half-hidden-first")
     ) {
       lnimg.innerHTML =
-        "<md-icon style='color:RGB(" +
+        "<md-icon style='view-transition-name:busIcon;color:RGB(" +
         darkenColor(
           lineColorsObj[arrival.line_number.replace(/\D/g, "")],
           100
@@ -1422,10 +1441,10 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
         ar["type"] !== 2
       ) {
         lnimg.innerHTML =
-          "<md-icon style='color:RGB(" +
+          "<md-icon style='view-transition-name:busIcon;color:RGB(" +
           darkenColor(
             lineColorsObj[arrival.line_number.replace(/\D/g, "")],
-            150
+            100
           ).join(",") +
           ")!important;background-color:RGB(" +
           lineColorsObj[arrival.line_number.replace(/\D/g, "")].join(",") +
@@ -1490,7 +1509,7 @@ function showArrivalsMyBus(info, container, arrival, busIdUp) {
 
           stationHTML = stationHTML[0] == "/" ? "/" : stationHTML;
           // Return the formatted station HTML with the background removed if needed
-          return `<div class="etaStation" style="${
+          return `<div class="etaStation"  style="view-transition-name:eta_${i};${
             spanText ? "" : "background:none;"
           }${border ? border : ""}">${stationHTML}</div>`;
         }

@@ -143,7 +143,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
             }
           });
         } catch (error) {
-          console.log(error);
+          console.error(error);
         }
       }
     }

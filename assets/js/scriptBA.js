@@ -1026,7 +1026,7 @@ async function getMyBusData(busId, arrivalsAll, routeId) {
         document.querySelector(".myBusDiv").style.opacity = "0";
         clickedMyBus(busek, arrival.trip_id, arrival);
         intervalBusk = setInterval(() => {
-          clickedMyBus(busek, arrival.trip_id, arrival);
+          updateMyBus(busek, arrival.trip_id, arrival);
         }, 10000);
       });
     }
@@ -1039,7 +1039,7 @@ async function getMyBusData(busId, arrivalsAll, routeId) {
   myBusDiv = document.querySelector(".myBusDiv");
 
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
-
+  iks.id = "busDataIks";
   iks.addEventListener("click", function () {
     holder.style.transform = "translateX(100vw)";
     clearInterval(intervalBusk);
@@ -1065,7 +1065,7 @@ async function getMyBusData(busId, arrivalsAll, routeId) {
 
     clickedMyBus(bus, bus ? bus.trip_id : arrivals[0].trip_id, arrivals[0]);
     intervalBusk = setInterval(() => {
-      clickedMyBus(bus, bus ? bus.trip_id : arrivals[0].trip_id, arrivals[0]);
+      updateMyBus(bus, bus ? bus.trip_id : arrivals[0].trip_id, arrivals[0]);
     }, 10000);
     return;
   }
@@ -1123,6 +1123,26 @@ async function clickedMyBus(bus, tripId, arrival) {
   myBusDiv.scrollTop = scrollPosition ? scrollPosition : 0;
   myBusDiv.style.transform = "translateY(0px)";
   myBusDiv.style.opacity = "1";
+}
+async function updateMyBus(bus, tripId, arrival) {
+  let arOnS1 = await fetchData(
+    `https://api.beta.brezavta.si/trips/${encodeURIComponent(
+      tripId
+    )}?date=${new Date().toISOString().slice(0, 10).replace(/-/g, "")}`
+  );
+  let arOnS = arOnS1.stop_times;
+  let arrivalDataDiv = document.querySelector(".arrivalsOnStation");
+  if (document.startViewTransition) {
+    document.startViewTransition(() => {
+      clearElementContent(arrivalDataDiv);
+      arrivalDataDiv = document.querySelector(".arrivalsOnStation");
+      showArrivalsMyBus(arOnS, arrivalDataDiv, arrival);
+    });
+  } else {
+    clearElementContent(arrivalDataDiv);
+    arrivalDataDiv = document.querySelector(".arrivalsOnStation");
+    showArrivalsMyBus(arOnS, arrivalDataDiv, arrival);
+  }
 }
 function showArrivalsMyBus(info, container, arrival) {
   let holder = addElement("div", container, "arFlex");

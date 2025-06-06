@@ -248,26 +248,6 @@ async function makeMap() {
 
     updateWhileInteracting: true,
   });
-  const container = addElement("div", document.body, "ol-popup");
-  container.id = "popup";
-
-  const pop = addElement("div", container);
-  pop.id = "pop";
-
-  const content = addElement("div", pop);
-  content.id = "popup-content";
-
-  const bubbleImg = addElement("div", container, "bubbleImg");
-  bubbleImg.id = "bubbleImg";
-
-  var popup = new ol.Overlay({
-    element: container,
-    positioning: "bottom-left", // controls anchor position+
-    autoPanAnimation: {
-      duration: 250,
-    },
-  });
-  map.addOverlay(popup);
 
   map.on("singleclick", function (evt) {
     var feature = map.forEachFeatureAtPixel(evt.pixel, function (feat, layer) {
@@ -276,6 +256,31 @@ async function makeMap() {
 
     if (feature && feature.get("name")) {
       var coordinate = feature.getGeometry().getCoordinates(); //default projection is EPSG:3857 you may want to use ol.proj.transform
+
+      let prevPopup = document.querySelector("#popup");
+      if (prevPopup) {
+        prevPopup.remove();
+      }
+      const container = addElement("div", document.body, "ol-popup");
+      container.id = "popup";
+
+      const pop = addElement("div", container);
+      pop.id = "pop";
+
+      const content = addElement("div", pop);
+      content.id = "popup-content";
+
+      const bubbleImg = addElement("div", container, "bubbleImg");
+      bubbleImg.id = "bubbleImg";
+
+      var popup = new ol.Overlay({
+        element: container,
+        positioning: "bottom-left", // controls anchor position+
+        autoPanAnimation: {
+          duration: 250,
+        },
+      });
+      map.addOverlay(popup);
       fetch("assets/images/bubble.svg")
         .then((r) => r.text())
         .then((svg) => {
@@ -285,6 +290,7 @@ async function makeMap() {
           bubbleImg.querySelectorAll(".st0")[1].style.fill =
             "RGB(" + feature.get("color") + ")";
         });
+
       pop.style.background = "RGB(" + feature.get("color") + ")";
       container.style.display = "none";
       content.innerHTML =
@@ -302,7 +308,7 @@ async function makeMap() {
         clearInterval(interval);
         clearInterval(arrivalsUpdateInterval);
         clearInterval(busUpdateInterval);
-        map.removeOverlay(popup);
+        document.querySelector("#busDataIks").click();
         if (document.querySelector(".arrivalsHolder"))
           document.querySelector(".arrivalsHolder").remove();
         let aos = document.querySelector(".arrivalsOnStation");

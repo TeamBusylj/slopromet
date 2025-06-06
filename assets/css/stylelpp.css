@@ -85,6 +85,7 @@ body {
   margin: 10px 0;
   color: var(--md-sys-color-on-surface);
   position: relative;
+  animation: arrivalItemShow 0.5s cubic-bezier(0.38, 1.21, 0.3, 1.33) forwards;
 }
 .center {
   margin-left: 10px;
@@ -723,6 +724,7 @@ span.nextBusTitle {
 }
 .arrivalsOnStation {
   flex-direction: column !important;
+  view-transition-name: busArrivals;
 }
 .arrivalsOnStation .iks {
   position: sticky;
@@ -1401,4 +1403,70 @@ md-icon.favorite {
   top: 15px;
   right: 15px;
   opacity: 0.5;
+}
+::view-transition-group(busIcon) {
+  animation-duration: 300ms;
+  z-index: 100;
+}
+::view-transition-new(busIcon) {
+  animation: busIconNew 1000ms forwards cubic-bezier(0.38, 1.21, 0.3, 1.33);
+  z-index: 100;
+}
+
+/* Exit transition */
+::view-transition-old(busIcon) {
+  animation: busIcon 1000ms forwards cubic-bezier(0.38, 1.21, 0.3, 1.33);
+  z-index: 100;
+}
+@keyframes busIcon {
+  0% {
+    transform: scale(1);
+
+    opacity: 1;
+    z-index: 100;
+  }
+  30% {
+    transform: scale(2);
+
+    opacity: 1;
+    z-index: 100;
+  }
+  50% {
+    transform: scale(2);
+
+    opacity: 1;
+    z-index: 100;
+  }
+  70% {
+    transform: scale(2);
+
+    opacity: 0;
+    z-index: 100;
+  }
+}
+@keyframes busIconNew {
+  30% {
+    transform: scale(2);
+
+    opacity: 0;
+    z-index: 100;
+  }
+  50% {
+    transform: scale(2);
+
+    opacity: 1;
+    z-index: 100;
+  }
+  70% {
+    transform: scale(2);
+
+    opacity: 1;
+    z-index: 100;
+  }
+  100% {
+    transform: scale(1);
+
+    opacity: 1;
+    z-index: 100;
+  }
 }
