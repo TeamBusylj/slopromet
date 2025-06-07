@@ -1376,6 +1376,24 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
     try {
       if (!ar) {
         if (
+          !info[index - 2]?.arrivals?.find(
+            (el) => el.vehicle_id == busIdUp.toLowerCase()
+          ) &&
+          !info[index + 1]?.arrivals?.find(
+            (el) => el.vehicle_id == busIdUp.toLowerCase()
+          ) &&
+          info[index + 2]?.arrivals?.find(
+            (el) => el.vehicle_id == busIdUp.toLowerCase()
+          ) &&
+          isItYet
+        ) {
+          arDiv.style.top = "-50px";
+          arDiv.style.position = "absolute";
+          arDiv.style.opacity = "0";
+
+          return;
+        }
+        if (
           info[index + 1]?.arrivals?.find(
             (el) => el.vehicle_id == busIdUp.toLowerCase()
           ) &&
