@@ -11,8 +11,8 @@
   "lang": "sl",
   "icons": [
     {
-      "src": "assets/images/bus.png",
-      "sizes": "384x384",
+      "src": "assets/images/icon/slopromet.png",
+      "sizes": "1024x1024",
       "type": "image/png"
     }
   ]
