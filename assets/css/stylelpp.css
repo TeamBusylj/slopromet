@@ -993,7 +993,7 @@ md-fab.refresh {
   overflow-y: scroll;
   overflow-x: hidden;
   align-items: normal;
-  height: calc(100dvh - 55px);
+  height: calc(100dvh - 110px);
   transition: transform 0.5s cubic-bezier(0.38, 1.21, 0.22, 1) !important;
   overscroll-behavior: none;
   position: absolute;
@@ -1087,29 +1087,52 @@ b {
   transform: translateY(-20px);
   transition: all 0.3s cubic-bezier(0.38, 1.21, 0.22, 1);
 }
-.pac-container {
-  background: var(--md-sys-color-surface-container-highest);
-  border: none;
+.placeResults {
+  position: fixed;
+  width: 80%;
+  background: var(--md-sys-color-surface-container-high);
   border-radius: 25px;
-  margin-top: 5px;
-  width: 100%;
+  box-sizing: border-box;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  list-style: none;
+  --md-elevation-level: 3;
+  overflow: hidden;
+  display: none;
 }
-.pac-container::after {
-  background-position: center !important;
-  border-top: 3px solid var(--md-sys-color-surface);
-  padding: 10px 0;
-  height: 30px;
+.placeResult {
+  display: grid;
+  grid-template-columns: 30px auto;
+  grid-template-rows: auto auto;
+  gap: 4px;
+  padding: 15px 15px;
+  position: relative;
 }
-.pac-item {
-  border: none;
-  padding: 10px;
-  color: var(--md-sys-color-on-surface);
+
+/* Place first item to span both rows in first column */
+.placeResult md-icon {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
 }
-.pac-item:not(:first-child) {
-  border-top: 3px solid var(--md-sys-color-surface);
+
+/* Place second item top right */
+.placeName {
+  grid-column: 2;
+  grid-row: 1;
+  height: fit-content;
 }
-span.pac-item-query {
-  color: var(--md-sys-color-on-surface);
+
+/* Place third item bottom right */
+.placeAddress {
+  grid-column: 2;
+  grid-row: 2;
+  height: fit-content;
+  font-size: 0.9rem;
+  color: var(--md-sys-color-outline);
 }
 .chipsHolder {
   display: flex;
@@ -1124,6 +1147,8 @@ span.pac-item-query {
   height: 25px;
   border-radius: 1000px;
   box-sizing: border-box;
+  padding: 3px;
+  margin-top: 3px;
 }
 .arrivalItem .stepIcon {
   flex-direction: column;
@@ -1170,18 +1195,10 @@ img.agenImg {
   z-index: 0;
 }
 .connectingLine {
-  margin: -1.5px 0 -1px 0;
   height: 15px;
-  width: 17px;
-  -webkit-mask: url("https://teambusylj.github.io/slopromet/assets/images/curve.svg")
-    no-repeat center;
-  -webkit-mask-size: contain;
-  mask: url("https://teambusylj.github.io/slopromet/assets/images/curve.svg")
-    no-repeat center;
-  mask-size: contain;
-  background: linear-gradient(to bottom, red, blue);
+  width: 1px;
+  border-left: 3px dotted var(--md-sys-color-on-surface);
 }
-
 .routeDiv {
   background: var(--md-sys-color-surface-container);
   width: 100%;
@@ -1205,6 +1222,7 @@ img.agenImg {
   bottom: -10px;
   scale: 0.8;
   border: 1px solid var(--md-sys-color-on-surface);
+  padding: 2px;
 }
 .busHolder {
   position: relative;

@@ -646,8 +646,7 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
   const distance = R * c; // Distance in kilometers
   return distance;
 }
-function getDirections() {
-  "https://maps.googleapis.com/maps/api/directions/json?origin=Central+Park,NY&destination=Times+Square,NY&mode=transit&key=AIzaSyCGnbK8F2HvhjqRrKo3xogo4Co7bitNwYA";
+async function getDirections() {
   let container = addElement(
     "div",
     document.querySelector(".mainSheet"),
@@ -669,39 +668,107 @@ function getDirections() {
     }, 500);
     clearMap();
   });
+  const resultsElement = addElement("div", container, "placeResults");
+  const debouncedShowPlaceDebounce = debounce(debouncedShowPlace, 500);
   let depart = addElement("md-filled-text-field", container, "locationInput");
   depart.label = "Začetna lokacija";
   depart.addEventListener(`focus`, () => depart.select());
   depart.innerHTML = "<md-icon slot='trailing-icon'>adjust</md-icon>";
+  depart.id = "departLocation";
   var departLocation = new google.maps.LatLng(latitude, longitude);
   geocodeLatLng(latitude, longitude)
-    .then((address) => {
-      depart.value = address;
+    .then((result) => {
+      depart.value = result[0];
+      departLocation = { place: { location: result[1] } };
     })
     .catch((error) => {
       console.error(error);
     });
-  const options = {
-    componentRestrictions: { country: "si" },
-    fields: ["address_components", "geometry.location", "name", "icon"],
-    strictBounds: false,
-  };
-  const autocomplete = new google.maps.places.Autocomplete(depart, options);
-  autocomplete.addListener("place_changed", () => {
-    departLocation = autocomplete.getPlace().geometry.location;
+  depart.addEventListener("input", () => {
+    debouncedShowPlaceDebounce(depart);
   });
-
   let arrive = addElement("md-filled-text-field", container, "locationInput");
   arrive.addEventListener(`focus`, () => arrive.select());
   arrive.label = "Končna lokacija";
   arrive.innerHTML = "<md-icon slot='trailing-icon'>location_on</md-icon>";
+  arrive.id = "arriveLocation";
   var arriveLocation;
+  arrive.addEventListener("input", async () => {});
 
-  const autocomplete2 = new google.maps.places.Autocomplete(arrive, options);
-  autocomplete2.addListener("place_changed", () => {
-    arriveLocation = autocomplete2.getPlace().geometry.location;
+  arrive.addEventListener("input", () => {
+    debouncedShowPlaceDebounce(arrive);
   });
+  const request = {
+    region: "sl",
+    input: "",
+    sessionToken: new google.maps.places.AutocompleteSessionToken(),
+    language: "sl-SI",
+    includedRegionCodes: ["SI"],
+    locationBias: new google.maps.LatLng(latitude, longitude),
+    origin: { lat: latitude, lng: longitude },
+  };
+  async function debouncedShowPlace(element) {
+    resultsElement.innerHTML = "";
+    resultsElement.style.display = "block";
+    addElement("md-elevation", resultsElement);
+    resultsElement.style.top = element.offsetTop + element.offsetHeight + "px";
+    request.input = element.value;
 
+    const { suggestions } =
+      await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(
+        request
+      );
+
+    suggestions.forEach((suggestion, i) => {
+      const placePrediction = suggestion.placePrediction;
+      const listItem = addElement("li", resultsElement, "placeResult");
+      let scndTxt = placePrediction.secondaryText
+        .toString()
+        .replace(", Slovenija", "")
+        .replace("Slovenija", "");
+      let iconHtml;
+
+      if (placePrediction.types.toString().includes("bus")) {
+        iconHtml = "<md-icon>directions_bus</md-icon>";
+      } else if (placePrediction.types.includes("lodging")) {
+        iconHtml = "<md-icon>hotel</md-icon>";
+      } else if (placePrediction.types.includes("store")) {
+        iconHtml = "<md-icon>shopping_bag</md-icon>";
+      } else if (placePrediction.types.includes("food")) {
+        iconHtml = "<md-icon>restaurant</md-icon>";
+      } else if (placePrediction.types.includes("bar")) {
+        iconHtml = "<md-icon>local_bar</md-icon>";
+      } else {
+        iconHtml = "<md-icon>location_on</md-icon>";
+      }
+
+      listItem.innerHTML = `
+      <md-icon>${iconHtml}</md-icon>
+        <span class="placeName">${placePrediction.mainText}</span>
+        ${scndTxt == "" ? "" : `<span class="placeAddress">${scndTxt}</span>`}
+        
+      `;
+      addElement("md-ripple", listItem);
+      if (i !== suggestions.length - 1) {
+        addElement("md-divider", resultsElement);
+      }
+      listItem.addEventListener("click", async () => {
+        element.value = placePrediction.text.text;
+        let place = placePrediction.toPlace();
+        place = await place.fetchFields({
+          fields: ["location"],
+        });
+        if (element.id == "departLocation") {
+          departLocation = place;
+        } else {
+          arriveLocation = place;
+        }
+
+        resultsElement.innerHTML = "";
+        resultsElement.style.display = "none";
+      });
+    });
+  }
   var agencies =
     localStorage.agencije ||
     '{"Ljubljanski":true,"SŽ":true,"Arriva":true,"Nomago":true,"Marprom":true,"Murska Sobota":true}';
@@ -759,7 +826,8 @@ function getDirections() {
     panel = await clearElementContent(panel);
 
     if (depart.value !== "" && arrive.value !== "") {
-      //goButton.style.display = "none";
+      console.log(departLocation, arriveLocation);
+
       calcRoute(
         departLocation,
         arriveLocation,
@@ -777,11 +845,12 @@ function getDirections() {
 function calcRoute(start, end, panel, agencies, leave, arrive) {
   var directionsService = new google.maps.DirectionsService();
   var directionsRenderer = new google.maps.DirectionsRenderer();
+  console.log(start.location, end.place.location);
 
   var directions;
   var request = {
-    origin: start,
-    destination: end,
+    origin: start.place.location,
+    destination: end.place.location,
     provideRouteAlternatives: true,
     travelMode: "TRANSIT",
     transitOptions: {
@@ -865,6 +934,7 @@ function calcRoute(start, end, panel, agencies, leave, arrive) {
     }
   });
 }
+
 function displayRoute(panel, dira) {
   var dir = dira
     ? dira.legs[0]
@@ -874,6 +944,8 @@ function displayRoute(panel, dira) {
 
     return false;
   }
+  let d = addElement("md-divider", panel);
+  d.style.marginBottom = "15px";
   if (dir.departure_time) {
     let startTime = addElement("div", panel, "stepDiv");
     startTime.innerHTML =
@@ -979,7 +1051,7 @@ function displayRoute(panel, dira) {
   }
   panel.style.opacity = "1";
   panel.style.transform = "translateY(0)";
-  startDuration.scrollIntoView({ behavior: "smooth", block: "start" });
+  d.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 function openRouteInGoogleMapsApp(originLat, originLng, destLat, destLng) {
   // Construct the Google Maps URL scheme for the mobile app (with walking mode)
@@ -1008,14 +1080,32 @@ function getCompany(company) {
 }
 function getLogo(agency, sz) {
   let a = sz ? "directions_railway" : "directions_bus";
-  const firstWord = agency.split(" ")[0].toLowerCase();
-  return (
-    "<md-icon>" +
-    a +
-    "</md-icon><div class=connectingLine></div><img class=agencyLogo src='assets/images/logos/" +
-    firstWord +
-    ".png'>"
-  );
+  let agenc = adaptColorsDir(agency);
+  const firstWord = agenc[0];
+  return `<md-icon>${a}</md-icon>
+<div class="connectingLine"></div>
+<img class="agencyLogo" style="background:${agenc[1]};" src="assets/images/logos_brezavta/${firstWord}">`;
+}
+function adaptColorsDir(agency) {
+  switch (agency) {
+    case "Javno podjetje Ljubljanski potniški promet d.o.o.":
+      return ["IJPP:1118.svg", "rgb(32, 124, 76)"];
+      break;
+    case "Arriva d.o.o.":
+      return ["IJPP:1123.svg", "rgb(36, 183, 199)"];
+      break;
+    case "Nomago d.o.o.":
+      return ["IJPP:1119.svg", "rgb(0, 72, 154)"];
+      break;
+    case "Avtobusni promet Murska Sobota d.d.":
+      return ["IJPP:1121.svg", "rgb(255, 255, 255)"];
+      break;
+    case "SŽ - Potniški promet, d.o.o.":
+      return ["IJPP:1161.svg", "rgb(41, 172, 226)"];
+      break;
+    default:
+      return ["IJPP:1118.svg", "rgb(32, 124, 76)"];
+  }
 }
 function getPostaj(number) {
   let skl =
@@ -1039,7 +1129,7 @@ function geocodeLatLng(latitude, longitude) {
 
     geocoder.geocode({ location: latlng }, (results, status) => {
       if (status === google.maps.GeocoderStatus.OK && results[0]) {
-        resolve(results[0].formatted_address); // Resolving with address
+        resolve([results[0].formatted_address, results[0].geometry.location]); // Resolving with address
       } else {
         reject("Geocoder failed or no results found");
       }
