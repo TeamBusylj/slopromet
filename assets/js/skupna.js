@@ -707,13 +707,30 @@ async function getDirections() {
     locationBias: new google.maps.LatLng(latitude, longitude),
     origin: { lat: latitude, lng: longitude },
   };
+  container.addEventListener("click", (e) => {
+    if (!e.target.classList.contains("placeResult")) {
+      resultsElement.style.opacity = "0";
+      resultsElement.style.scale = ".9";
+    }
+  });
   async function debouncedShowPlace(element) {
     resultsElement.innerHTML = "";
-    resultsElement.style.display = "block";
-    addElement("md-elevation", resultsElement);
-    resultsElement.style.top = element.offsetTop + element.offsetHeight + "px";
-    request.input = element.value;
 
+    resultsElement.style.top = element.offsetTop + element.offsetHeight + "px";
+    resultsElement.style.opacity = "0";
+    resultsElement.style.scale = ".9";
+    addElement("md-elevation", resultsElement);
+
+    request.input = element.value;
+    if (element.value.includes("post")) {
+      request.includedPrimaryTypes = ["bus_station", "bus_stop"];
+      request.input = element.value
+        .replace(/\bpostaja\w*|\bpost\w*/gi, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    } else {
+      request.includedPrimaryTypes = null;
+    }
     const { suggestions } =
       await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(
         request
@@ -764,10 +781,15 @@ async function getDirections() {
           arriveLocation = place;
         }
 
-        resultsElement.innerHTML = "";
-        resultsElement.style.display = "none";
+        resultsElement.style.opacity = "0";
+        resultsElement.style.scale = ".9";
+        setTimeout(() => {
+          resultsElement.innerHTML = "";
+        }, 300);
       });
     });
+    resultsElement.style.opacity = "1";
+    resultsElement.style.scale = "1";
   }
   var agencies =
     localStorage.agencije ||
@@ -1183,7 +1205,9 @@ function makeBottomSheet(title, height) {
       document.documentElement.clientHeight || 0,
       window.innerHeight || 0
     );
-    const scrollList = document.querySelector(".myBusDiv")
+    const scrollList = document.querySelector(".directions")
+      ? document.querySelector(".directions")
+      : document.querySelector(".myBusDiv")
       ? document.querySelector(".myBusDiv")
       : document.querySelector(".arrivalsOnStation")
       ? document.querySelector(".arrivalsOnStation")
@@ -1221,7 +1245,9 @@ function makeBottomSheet(title, height) {
     setSheetHeight(sheetHeight + deltaHeight);
   };
   const onDragEnd = () => {
-    (document.querySelector(".myBusDiv")
+    (document.querySelector(".directions")
+      ? document.querySelector(".directions")
+      : document.querySelector(".myBusDiv")
       ? document.querySelector(".myBusDiv")
       : document.querySelector(".arrivalsOnStation")
       ? document.querySelector(".arrivalsOnStation")

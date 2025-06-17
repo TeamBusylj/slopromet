@@ -562,19 +562,18 @@ md-tabs::part(divider) {
   position: absolute !important;
   top: 40px !important;
   overscroll-behavior: none;
-  height: calc(100dvh - 55px);
-  animation: showIn 0.5s;
-  transition: transform 0.5s !important;
+  animation: showIn 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
   transform: translateX(0);
+  height: calc(100dvh - 205px);
 }
 .lineTimes .busNo2 {
-  background: var(--md-sys-color-surface-container-high);
+  background: var(--md-sys-color-surface-container-highest);
 }
 
 .lineTimes .arrivalItem {
   background: none;
-  border-bottom: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
   border-radius: 0;
+  border-bottom: 1px solid var(--md-sys-color-surface-container-high, #cac4d0);
 }
 .lineTimes .arrivalTime {
   padding: 0;
@@ -582,14 +581,34 @@ md-tabs::part(divider) {
   margin: 0;
   flex-wrap: wrap;
   width: 100%;
+  gap: 10px;
+}
+.timet {
+  background: var(--md-sys-color-surface-container);
+  padding: 5px 10px;
+  border-radius: 100px;
 }
 sub {
   font-size: x-small;
   margin-left: 2px;
   vertical-align: baseline;
 }
-.arrivalItem.currentTime > .busNo2 {
+div.arrivalItem.currentTime > div.arrivalData > div > span > .timet {
   background: #860000;
+}
+div.arrivalItem.previusTime > div.arrivalData > div > span > .timet {
+  color: gray;
+}
+.newDay {
+  margin: 20px;
+  font-size: 1.3rem;
+  border-bottom: 1px solid var(--md-sys-color-outline);
+  width: 100%;
+  text-align: center;
+  padding-bottom: 20px;
+}
+.newDay::first-letter {
+  text-transform: uppercase;
 }
 .lineTimes md-icon-button.iks {
   top: 0;
@@ -1013,16 +1032,16 @@ md-filled-text-field.locationInput {
   --md-filled-text-field-container-shape: 25px;
   --md-filled-text-field-label-text-color: #898989;
 }
-
 md-filled-text-field.timeInput {
-  width: 120px;
-  border: 2px solid var(--ol-subtle-foreground-color);
-  border-radius: 250px;
+  width: 80%;
 }
 .timeHolder {
   display: flex;
   justify-content: space-evenly;
   margin-top: 10px;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 
 .stepDiv {
@@ -1088,6 +1107,9 @@ b {
   transition: all 0.3s cubic-bezier(0.38, 1.21, 0.22, 1);
 }
 .placeResults {
+  transition: all 0.3s cubic-bezier(0.38, 1.21, 0.22, 1);
+  opacity: 0;
+  scale: 0.9;
   position: fixed;
   width: 80%;
   background: var(--md-sys-color-surface-container-high);
@@ -1099,7 +1121,7 @@ b {
   list-style: none;
   --md-elevation-level: 3;
   overflow: hidden;
-  display: none;
+  transform-origin: center center;
 }
 .placeResult {
   display: grid;

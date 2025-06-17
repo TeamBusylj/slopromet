@@ -759,7 +759,7 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
   let arrival2 = arrival;
   arrival2.route_name = routeN;
   window.history.pushState(null, document.title, location.pathname);
-  showBusById(arrival2);
+  //showBusById(arrival2);
   let container = addElement(
     "div",
     document.querySelector(".mainSheet"),
@@ -786,14 +786,29 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
     `https://lpp.ojpp.derp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN.replace(
       /\D/g,
       ""
-    )}&previous-hours=${hoursDay(0)}&next-hours=${hoursDay(1)}`
+    )}&previous-hours=${hoursDay(0)}&next-hours=168`
   );
 
   data1 = data1.route_groups[0].routes;
+  let previusTime = true;
+  let newDay = null;
   data1.forEach((route) => {
     if (route.parent_name !== routeName) return;
     if (route.group_name + route.route_number_suffix == routeN) {
       route.timetable.forEach((time) => {
+        let dateStr = time.timestamp.slice(0, 10);
+        console.log(time.is_garage);
+
+        if (newDay !== dateStr) {
+          let newDayTxt = addElement("div", container, "newDay");
+          newDayTxt.innerHTML =
+            new Date(dateStr).toLocaleDateString("sl-SI", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            }) + (route.is_garage ? " (garaža)" : "");
+        }
+        newDay = dateStr;
         let arrivalItem = addElement("div", container, "arrivalItem");
         const busNumberDiv = addElement("div", arrivalItem, "busNo2");
         busNumberDiv.id = "bus_" + time.route_number;
@@ -801,17 +816,19 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
         const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
         const etaDiv = addElement("div", arrivalDataDiv, "eta");
         const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
-        arrivalTimeSpan.innerHTML =
-          "<span class=timet>" +
-          time.minutes
-            .toString()
-            .replace(
-              /,/g,
-              "<sub>min</sub>&nbsp;&nbsp;</span><span class=timet>"
-            )
-            .replace(/\b\d\b/g, (match) => "0" + match) +
-          "<sub>min</sub>";
-        if (time.is_current) arrivalItem.classList.add("currentTime");
+        let hour = time.hour
+          .toString()
+          .replace(/\b\d\b/g, (match) => "0" + match);
+        time.minutes.forEach((minute, index) => {
+          arrivalTimeSpan.innerHTML +=
+            "<span class=timet>" +
+            hour +
+            ":" +
+            minute.toString().replace(/\b\d\b/g, (match) => "0" + match);
+          +"</span>";
+        });
+        if (time.is_current) previusTime = false;
+        if (previusTime) arrivalItem.classList.add("previusTime");
       });
     }
   });
@@ -819,7 +836,7 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
 function hoursDay(what) {
   const now = new Date();
   const hoursFromMidnight = now.getHours() + now.getMinutes() / 60;
-  const hoursToMidnight = 24 - hoursFromMidnight;
+  const hoursToMidnight = 168;
   return what ? hoursToMidnight.toFixed(2) : hoursFromMidnight.toFixed(2);
 }
 const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
