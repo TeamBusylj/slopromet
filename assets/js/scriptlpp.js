@@ -1383,7 +1383,8 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
     let nameStation = addElement("div", arDiv, "nameStation");
     nameStation.classList.add("nameStation_" + arrivalRoute.station_code);
     nameStation.innerHTML = arrivalRoute.name;
-    arDiv.style.viewTransitionName = arrivalRoute.name
+
+    arDiv.style.viewTransitionName = (arrivalRoute.name + arrivalRoute.order_no)
       .toLowerCase()
       .replace(/ /g, "_");
     let ar = arrivalRoute.arrivals.find(
