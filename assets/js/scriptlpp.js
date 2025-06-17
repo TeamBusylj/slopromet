@@ -865,7 +865,7 @@ async function createInfoBar(parent, station_id) {
   absolut.label = minToTime(3, 1);
   let relativ = addElement("md-outlined-segmented-button", changeTime, "");
   relativ.label = "3 min";
-  localStorage.getItem("time") == "relativ"
+  localStorage.getItem("time") == "relativ" || !localStorage.getItem("time")
     ? relativ.setAttribute("selected", "")
     : absolut.setAttribute("selected", "");
   relativ.addEventListener("click", function () {

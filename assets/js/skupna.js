@@ -27,7 +27,7 @@ var rasterLayer,
   setSheetHeight;
 window.onerror = errorReturn;
 window.addEventListener("unhandledrejection", errorReturn);
-function errorReturn(message, source, lineno, colno, error) {
+function errorReturn(message) {
   let errorBar = document.querySelector(".errorMessage");
   if (!errorBar) errorBar = addElement("div", document.body, "errorMessage");
   errorBar.innerHTML = `
@@ -45,7 +45,6 @@ function errorReturn(message, source, lineno, colno, error) {
       errorBar.remove();
     }, 800);
   }, 5000);
-
   return true; // return true to suppress default browser error alert
 }
 function addElement(tag, parent, className) {
