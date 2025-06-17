@@ -25,7 +25,29 @@ var rasterLayer,
   busMarker = [],
   busImageData,
   setSheetHeight;
+window.onerror = errorReturn;
+window.addEventListener("unhandledrejection", errorReturn);
+function errorReturn(message, source, lineno, colno, error) {
+  let errorBar = document.querySelector(".errorMessage");
+  if (!errorBar) errorBar = addElement("div", document.body, "errorMessage");
+  errorBar.innerHTML = `
+    <md-icon>error</md-icon>
+    <div><span>Zgodila se je napaka.</span>
+    <span class="errorDetails">Napako so povzročili napačni podatki na LPP / IJPP.</span></div>
+  `;
+  setTimeout(() => {
+    errorBar.style.top = "20px";
+  }, 100);
 
+  setTimeout(() => {
+    errorBar.style.top = "-150px";
+    setTimeout(() => {
+      errorBar.remove();
+    }, 800);
+  }, 5000);
+
+  return true; // return true to suppress default browser error alert
+}
 function addElement(tag, parent, className) {
   var element = document.createElement(tag);
   if (className) {

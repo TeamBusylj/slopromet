@@ -71,13 +71,14 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
             anchorXUnits: "fraction",
             anchorYUnits: "fraction",
 
-            src: generateCustomSVG(
+            /*src: generateCustomSVG(
               darkenColor(
                 lineColorsObj[bus.line_number.replace(/\D/g, "")],
                 -100
               ),
               lineColorsObj[bus.line_number.replace(/\D/g, "")]
-            ), // Generate dynamic SVG
+            ), // Generate dynamic SVG*/
+            src: "assets/images/bus_urb.png",
             scale: 0.5,
             rotation: (bus.direction * Math.PI) / 180, // Convert degrees to radians
           }),
