@@ -355,6 +355,8 @@ async function oppositeStation(id) {
   arS.style.opacity = "0";
   clearInterval(interval);
   setTimeout(async () => {
+    document.querySelector(".arrivalsHolder").remove();
+    document.querySelector(".infoBar").remove();
     let i = document.querySelector(".timeTScroll");
     i = clearElementContent(document.querySelector(".timeTScroll"));
     if (id % 2 === 0) {
@@ -375,7 +377,7 @@ async function oppositeStation(id) {
       arS.style.transform = "translateX(0px) translateY(0px)";
       arS.style.opacity = "1";
     }, 1);
-  }, 300);
+  }, 100);
 }
 
 const delayedSearch = debounce(searchRefresh, 300);
@@ -834,13 +836,13 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
   iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
   iks.addEventListener("click", function () {
     window.history.replaceState(null, document.title, location.pathname);
+    setTimeout(() => {
+      container.remove();
+    }, 500);
     container.style.transform = "translateX(100vw) translateZ(1px)";
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(0vw) translateZ(1px)";
     clearMap();
-    setTimeout(() => {
-      container.remove();
-    }, 500);
   });
   let data1 = await fetchData(
     `https://lpp.ojpp.derp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN.replace(
