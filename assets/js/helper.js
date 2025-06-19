@@ -85,6 +85,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
         });
 
         marker.busId = bus.bus_id;
+        marker.direction = bus.direction;
         marker.busNo = bus.bus_name.replace("LJ LPP-", "");
 
         marker.setStyle(busStyle);

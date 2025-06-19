@@ -355,10 +355,6 @@ async function makeMap() {
           );
         }, 500);
 
-        interval = setInterval(async () => {
-          await stationClick(null, true);
-        }, 10000);
-
         setTimeout(() => {
           let bottomSheet = document.querySelector(".bottomSheet");
           bottomSheet.style.transition =
@@ -393,6 +389,7 @@ async function makeMap() {
     }
   });
 }
+
 async function centerMap() {
   await getLocation();
   const view = map.getView();
@@ -487,12 +484,6 @@ function changeAgency(agencyClicked) {
   setTimeout(() => {
     location.reload();
   }, 200);
-}
-function moveFAB(down = -50) {
-  document.querySelector(".directionsButton").style.transform =
-    document.querySelector(
-      ".refresh"
-    ).style.transform = `translateY(${down}px)`;
 }
 async function getLocation() {
   try {
@@ -624,7 +615,7 @@ async function refresh() {
     let arH = document.querySelector(".arrivalsScroll");
     arH.style.transform = "translateX(0px) translateY(-20px)";
     arH.style.opacity = "0";
-    await stationClick(null, true);
+    await showArrivals(isArrivalsOpen.ref_id);
     arH = document.querySelector(".arrivalsScroll");
     arH.style.transform = "translateX(0px) translateY(0px)";
     arH.style.opacity = "1";

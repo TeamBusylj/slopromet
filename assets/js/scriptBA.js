@@ -244,7 +244,6 @@ async function oppositeStation(id) {
 var arrivalsScroll;
 async function stationClick(stationa, noAnimation, ia) {
   if (document.querySelector(".arrivalsOnStation")) return;
-  moveFAB();
   let station = stationa ? stationa : isArrivalsOpen;
   var stylesTransition = [
     document.querySelector(".searchContain").style,
@@ -301,6 +300,9 @@ async function stationClick(stationa, noAnimation, ia) {
       localStorage.setItem("favouriteStationsArriva", JSON.stringify(favList));
     });
   } else {
+    document.querySelector(".navigationBar").style.transform =
+      "translateY(60px)";
+
     window.history.pushState(
       null,
       document.title + " - " + station.name,
@@ -332,6 +334,9 @@ async function stationClick(stationa, noAnimation, ia) {
       document.querySelector(".infoBar").style.transform = "translateY(100%)";
       container.style.opacity = "0";
       isArrivalsOpen = false;
+      document.querySelector(".navigationBar").style.transform =
+        "translateY(0px)";
+
       stylesTransition.forEach((style) => {
         style.transform = "translateX(0vw)";
       });
@@ -346,7 +351,6 @@ async function stationClick(stationa, noAnimation, ia) {
           .classList.remove("hideStations");
         document.querySelector(".infoBar").remove();
       }, 500);
-      moveFAB(0);
     });
 
     let ttl = addElement("div", title);
