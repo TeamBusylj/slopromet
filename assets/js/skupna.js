@@ -27,7 +27,7 @@ var rasterLayer,
   setSheetHeight;
 window.onerror = errorReturn;
 window.addEventListener("unhandledrejection", errorReturn);
-function errorReturn(message) {
+function errorReturn(message, source, lineno, colno, error) {
   let errorBar = document.querySelector(".errorMessage");
   if (!errorBar) errorBar = addElement("div", document.body, "errorMessage");
   errorBar.innerHTML = `
@@ -38,7 +38,7 @@ function errorReturn(message) {
   setTimeout(() => {
     errorBar.style.top = "20px";
   }, 100);
-
+  console.error(error);
   setTimeout(() => {
     errorBar.style.top = "-150px";
     setTimeout(() => {
