@@ -153,7 +153,6 @@ async function createStationItems(o) {
           stylesTransition.forEach((style) => {
             style.transform = "translateX(-100vw) translateZ(1px)";
           });
-          console.log(line);
 
           let line2 = line;
           line2.route_name = line.route_number;
@@ -299,7 +298,6 @@ function createFavourite(parent, search, query) {
           stylesTransition.forEach((style) => {
             style.transform = "translateX(-100vw) translateZ(1px)";
           });
-          console.log(line);
 
           let line2 = line;
           line2.route_name = line.route_number;
@@ -397,7 +395,6 @@ async function stationClick(stationa) {
     "infoBar"
   );
   createInfoBar(infoBar, station.ref_id);
-  console.log(infoBar);
 
   stylesTransition.forEach((style) => {
     style.transform = "translateX(-100vw) translateZ(1px)";
@@ -513,13 +510,11 @@ async function stationClick(stationa) {
     o.style.display = "none";
     o.style.transform = "translateX(0px) translateY(-20px)";
     o.style.opacity = "0";
-    console.log(currentPanel2);
 
     const panelId = event.target.activeTab?.getAttribute("aria-controls");
     const root = event.target.getRootNode();
     currentPanel2 = root.querySelector(`#${panelId}`);
     currentPanel2.style.display = "flex";
-    console.log(currentPanel2);
 
     currentPanel2.style.transform = "translateX(0px) translateY(0px)";
     currentPanel2.style.opacity = "1";
@@ -548,7 +543,6 @@ async function stationClick(stationa) {
   interval = setInterval(async () => {
     showArrivals(station.ref_id, true);
   }, 10000);
-  console.log("joza");
 }
 function makeSkeleton(container) {
   for (let i = 0; i < 5; i++) {
@@ -749,7 +743,6 @@ async function fetchStreetViewDataForStations(stations, apiKey) {
         pano_id: data.pano_id,
         headingToStation: heading,
       };
-      console.log(station.name);
     } else {
       console.warn(`No Street View found for station ${station.name}`);
       results[ref_id] = null;
@@ -827,7 +820,6 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
     container.style.transform = "translateX(100vw) translateZ(1px)";
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(0vw) translateZ(1px)";
-    clearMap();
   });
   let data1 = await fetchData(
     `https://lpp.ojpp.derp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN.replace(
@@ -844,7 +836,6 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
     if (route.group_name + route.route_number_suffix == routeN) {
       route.timetable.forEach((time) => {
         let dateStr = time.timestamp.slice(0, 10);
-        console.log(time.is_garage);
 
         if (newDay !== dateStr) {
           let newDayTxt = addElement("div", container, "newDay");
@@ -1012,7 +1003,6 @@ async function showBusById(arrival, station_id, arrivals) {
   if (arrivals) {
     document.querySelector(".arrivalsHolder").style.transform =
       "translateX(-100vw) translateZ(1px)";
-    console.log("clicked");
 
     getMyBusData(null, arrivals, arrival.trip_id);
   }
@@ -1072,8 +1062,6 @@ window.onpopstate = function (event) {
 };
 
 async function getMyBusData(busId, arrivalsAll, tripId, line) {
-  console.log("kk");
-
   map.removeOverlay(popup2);
 
   const arrivals = arrivalsAll
@@ -1161,16 +1149,12 @@ async function getMyBusData(busId, arrivalsAll, tripId, line) {
     holder.style.opacity = "1";
     holder.style.transform = "translateX(0px) translateY(0px)";
   }, 10);
-  console.log(busId);
 
   if (arrivals || busId) {
-    console.log(busId ? busId : arrivals[0].vehicle_id.toUpperCase());
-
     let bus = busObject.find(
       (el) =>
         el.bus_id == (busId ? busId : arrivals[0].vehicle_id.toUpperCase())
     );
-    console.log(arrivals);
 
     clickedMyBus(bus, arrivals ? arrivals[0].trip_id : bus.trip_id);
     intervalBusk = setInterval(() => {
@@ -1242,7 +1226,6 @@ async function clickedMyBus(bus, tripId) {
         const icon = feature.getStyle().getImage();
 
         let newIcon;
-        console.log(icon);
 
         if (feature.busId == busId) {
           newIcon = new ol.style.Icon({

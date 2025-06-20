@@ -427,6 +427,8 @@ window.addEventListener("load", async function () {
     .querySelector("#" + agency.toLocaleLowerCase() + "Tab > img")
     .classList.add("selected");
   document.body.classList.add(agency.toLocaleLowerCase());
+
+  createBuses();
   if (agency == "LPP") {
     busImageData = await fetch(
       "https://mestnipromet.cyou/tracker/js/json/images.json"
@@ -436,11 +438,16 @@ window.addEventListener("load", async function () {
     busImageData = await busImageData.json();
     lines = await fetchData("https://lpp.ojpp.derp.si/api/route/routes");
   }
-  createBuses();
   const script = document.createElement("script");
   script.src = "https://cdn.jsdelivr.net/npm/ol@v10.5.0/dist/ol.js";
   script.onload = makeMap;
   document.head.appendChild(script);
+  const script2 = document.createElement("script");
+  script2.async = true; // load asynchronously
+  script2.src =
+    "https://maps.googleapis.com/maps/api/js?key=AIzaSyCGnbK8F2HvhjqRrKo3xogo4Co7bitNwYA&libraries=places&region=SI&language=sl&apiOptions=MCYJ5E517XR2JC";
+
+  document.head.appendChild(script2);
 });
 function loadJS() {
   return new Promise((resolve, reject) => {
@@ -678,7 +685,6 @@ async function getDirections() {
     setTimeout(() => {
       container.remove();
     }, 500);
-    clearMap();
   });
   const resultsElement = addElement("div", container, "placeResults");
   const debouncedShowPlaceDebounce = debounce(debouncedShowPlace, 500);
@@ -1811,7 +1817,9 @@ async function fetchData(url, arrivaType) {
   }
   return data;
 }
-
+const darkMode =
+  window.matchMedia &&
+  window.matchMedia("(prefers-color-scheme: dark)").matches;
 /**
  * Given a bus index (e.g. "201" or "N201"), returns a CSS gradient string
  * that represents the line color. The direction of the gradient is determined
@@ -1825,17 +1833,19 @@ const lineColors = (i) => {
 
   if (!color) color = [201, 51, 54]; // Return empty string if the index is not found
   if (/[a-zA-Z]/.test(i)) color = darkenColor(color, 40);
-
+  color = darkenColor(color, darkMode ? 0 : -50);
   let darkerColor = darkenColor(color, 70);
 
   return i.includes("N")
     ? `linear-gradient(320deg,rgb(0,0,0)10%,rgb(${color.join(",")})160%) `
-    : `linear-gradient(165deg,rgb(${color.join(",")}),rgb(${darkerColor.join(
+    : `linear-gradient(165deg,rgb(${(darkMode ? color : darkerColor).join(
         ","
-      )}))`;
+      )}),rgb(${(darkMode ? darkerColor : color).join(",")}))`;
 };
 const darkenColor = (rgbArray, amount) =>
-  rgbArray.map((channel) => Math.max(0, channel - amount));
+  rgbArray.map((channel) =>
+    Math.max(0, channel - (darkMode ? amount : amount * -0.7))
+  );
 function hexToRgb(hex) {
   const [, r, g, b] = hex
     .match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i)

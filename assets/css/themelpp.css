@@ -165,7 +165,7 @@
     --md-sys-color-surface-bright: #f7faf4;
     --md-sys-color-surface-container-lowest: #ffffff;
     --md-sys-color-surface-container-low: #f1f5ef;
-    --md-sys-color-surface-container: #ebefe9;
+    --md-sys-color-surface-container: linear-gradient(329deg, #d8dcd6, #e5e9e3);
     --md-sys-color-surface-container-high: #e5e9e3;
     --md-sys-color-surface-container-highest: #dfe4de;
     --md-sys-color-on-surface: #181d19;
@@ -204,7 +204,7 @@
     --md-sys-color-surface-bright: #f9f9ff;
     --md-sys-color-surface-container-lowest: #ffffff;
     --md-sys-color-surface-container-low: #f3f3fb;
-    --md-sys-color-surface-container: #ededf5;
+    --md-sys-color-surface-container: #e7e7ef;
     --md-sys-color-surface-container-high: #e7e7ef;
     --md-sys-color-surface-container-highest: #e2e2e9;
     --md-sys-color-on-surface: #191b21;
@@ -243,7 +243,7 @@
     --md-sys-color-surface-bright: #fff8f6;
     --md-sys-color-surface-container-lowest: #ffffff;
     --md-sys-color-surface-container-low: #fff0ee;
-    --md-sys-color-surface-container: #fbeae7;
+    --md-sys-color-surface-container: #f5e4e2;
     --md-sys-color-surface-container-high: #f5e4e2;
     --md-sys-color-surface-container-highest: #f0dfdc;
     --md-sys-color-on-surface: #221a18;
@@ -282,7 +282,7 @@
     --md-sys-color-surface-bright: #f7f9ff;
     --md-sys-color-surface-container-lowest: #ffffff;
     --md-sys-color-surface-container-low: #f0f4fa;
-    --md-sys-color-surface-container: #eaeef5;
+    --md-sys-color-surface-container: #e4e8ef;
     --md-sys-color-surface-container-high: #e4e8ef;
     --md-sys-color-surface-container-highest: #dfe3e9;
     --md-sys-color-on-surface: #171c21;
