@@ -1234,6 +1234,40 @@ async function clickedMyBus(bus, tripId) {
   myBusDiv.scrollTop = scrollPosition ? scrollPosition : 0;
   myBusDiv.style.transform = "translateY(0px)";
   myBusDiv.style.opacity = "1";
+  setTimeout(() => {
+    markers
+      .getSource()
+      .getFeatures()
+      .forEach((feature) => {
+        const icon = feature.getStyle().getImage();
+
+        let newIcon;
+        console.log(icon);
+
+        if (feature.busId == busId) {
+          newIcon = new ol.style.Icon({
+            rotateWithView: true,
+            anchor: [0.52, 0.5],
+            anchorXUnits: "fraction",
+            anchorYUnits: "fraction",
+            src: "assets/images/bus_urb_sel.png",
+            scale: 0.5,
+            rotation: icon.getRotation(),
+          });
+        } else {
+          newIcon = newIcon = new ol.style.Icon({
+            rotateWithView: true,
+            anchor: [0.52, 0.5],
+            anchorXUnits: "fraction",
+            anchorYUnits: "fraction",
+            src: "assets/images/bus_urb.png",
+            scale: 0.5,
+            rotation: icon.getRotation(),
+          });
+        }
+        feature.setStyle(new ol.style.Style({ image: newIcon }));
+      });
+  }, 100);
 }
 function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
   let holder = addElement("div", container, "arFlex");
