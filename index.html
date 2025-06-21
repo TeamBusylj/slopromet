@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting</title>
+  </head>
+  <body>
+    Preusmerjanje na novo domeno...
+  </body>
+  <script>
+    // List of keys you want to transfer
+    const keysToTransfer = [
+      "agencije",
+      "agency",
+      "favoriteBuses",
+      "favouriteStations",
+      "favouriteStationsArriva",
+    ];
+
+    // Gather all key-value pairs into an object
+    const dataToTransfer = {};
+    keysToTransfer.forEach((key) => {
+      const value = localStorage.getItem(key);
+      if (value !== null) dataToTransfer[key] = value;
+    });
+
+    // Serialize to JSON and encode for URL
+    const jsonStr = encodeURIComponent(JSON.stringify(dataToTransfer));
+
+    // Redirect with data as a query param (consider URL length limits)
+    const redirectUrl = `https://slo-promet.web.app/?migratedData=${jsonStr}`;
+    window.location.replace(redirectUrl);
+  </script>
+</html>

@@ -406,7 +406,7 @@ async function centerMap() {
 }
 window.addEventListener("load", async function () {
   await loadJS();
-  console.log("loaded");
+  loadFromGuthub();
 
   let sht = makeBottomSheet(null, 98);
 
@@ -449,6 +449,28 @@ window.addEventListener("load", async function () {
 
   document.head.appendChild(script2);
 });
+function loadFromGuthub() {
+  function getQueryParam(name) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(name);
+  }
+
+  const migratedDataStr = getQueryParam("migratedData");
+
+  if (migratedDataStr) {
+    try {
+      const dataObj = JSON.parse(decodeURIComponent(migratedDataStr));
+      // Restore each key to localStorage
+      Object.entries(dataObj).forEach(([key, value]) => {
+        localStorage.setItem(key, value);
+      });
+      // Optionally clean URL to remove query params after loading
+      history.replaceState(null, "", window.location.pathname);
+    } catch (e) {
+      console.error("Failed to parse migrated data", e);
+    }
+  }
+}
 function loadJS() {
   return new Promise((resolve, reject) => {
     const script = document.createElement("script");
