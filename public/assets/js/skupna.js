@@ -527,7 +527,7 @@ function showStationOnMap(latitude, longitude, name) {
 
   map.getView().animate({
     center: ol.proj.fromLonLat([longitude, latitude]),
-    duration: 1000,
+    duration: 0,
     zoom: 16,
   });
   const container = addElement("div", document.body, "ol-popup");
