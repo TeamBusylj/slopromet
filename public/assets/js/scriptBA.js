@@ -12,9 +12,7 @@ async function updateStations() {
     );
   });
   routesStations = await (
-    await fetch(
-      "https://teambusylj.github.io/slopromet/assets/stop_to_routes.json"
-    )
+    await fetch("https://slo-promet.web.app/assets/stop_to_routes.json")
   ).json();
   createStationItems();
 }

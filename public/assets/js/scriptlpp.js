@@ -324,7 +324,10 @@ function createFavourite(parent, search, query) {
 }
 function searchRefresh() {
   let query = document.querySelector(".search").value;
-
+  if (query.includes("migrated")) {
+    window.location.href = query;
+    return;
+  }
   createStationItems(true, query);
 }
 
@@ -1470,7 +1473,7 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
 }
 async function createBusData(bus, busDataDiv) {
   let busAge = await (
-    await fetch("https://teambusylj.github.io/slopromet/assets/js/busAge.json")
+    await fetch("https://slo-promet.web.app/assets/js/busAge.json")
   ).json();
   const findYearByGarageNumber = (garageNumber) => {
     for (const year in busAge) {

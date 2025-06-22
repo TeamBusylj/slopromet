@@ -48,6 +48,8 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
       "https://lpp.ojpp.derp.si/api/route/stations-on-route?trip-id=" +
         arrival.trip_id
     );
+    console.log(arrival.trip_id);
+
     coordinates = await getCoordinates(arrival.trip_id, stations);
   }
   for (const i in busObject) {
@@ -327,6 +329,7 @@ async function getCoordinates(trip_id, data) {
     for (const i in data) {
       coords += data[i].longitude + "," + data[i].latitude + ";";
     }
+
     coordinates = await (
       await fetch(
         "https://cors.proxy.prometko.si/https://router.project-osrm.org/route/v1/driving/" +

@@ -457,7 +457,9 @@ function loadFromGuthub() {
 
   const migratedDataStr = getQueryParam("migratedData");
 
-  if (migratedDataStr) {
+  if (migratedDataStr && !localStorage.getItem("agency")) {
+    console.log("Loading migrated data from URL query parameter");
+
     try {
       const dataObj = JSON.parse(decodeURIComponent(migratedDataStr));
       // Restore each key to localStorage
@@ -1854,12 +1856,12 @@ const lineColors = (i) => {
   let color = lineColorsObj[i.replace(/\D/g, "")]; // Example: [201, 51, 54]
 
   if (!color) color = [201, 51, 54]; // Return empty string if the index is not found
-  if (/[a-zA-Z]/.test(i)) color = darkenColor(color, 40);
+  if (/[a-zA-Z]/.test(i)) color = darkenColor(color, 50);
   color = darkenColor(color, darkMode ? 0 : -50);
   let darkerColor = darkenColor(color, 70);
 
   return i.includes("N")
-    ? `linear-gradient(320deg,rgb(0,0,0)10%,rgb(${color.join(",")})160%) `
+    ? `linear-gradient(320deg,rgb(0,0,0)15%,rgb(${color.join(",")})80%) `
     : `linear-gradient(165deg,rgb(${(darkMode ? color : darkerColor).join(
         ","
       )}),rgb(${(darkMode ? darkerColor : color).join(",")}))`;
