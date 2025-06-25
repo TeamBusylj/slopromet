@@ -24,7 +24,8 @@ var rasterLayer,
   busObject,
   busMarker = [],
   busImageData,
-  setSheetHeight;
+  setSheetHeight,
+  busAge;
 window.onerror = errorReturn;
 window.addEventListener("unhandledrejection", errorReturn);
 function errorReturn(message, source, lineno, colno, error) {
@@ -644,9 +645,11 @@ async function createBuses() {
 
     busImageData = await busImageData.json();
     lines = await fetchData("https://lpp.ojpp.derp.si/api/route/routes");
+    busAge = await (await fetch("assets/js/busAge.json")).json();
   }
 }
-async function showStreetView(latitude, longitude) {
+async function showStreetView(latitude, longitude, btn) {
+  if (btn) btn.setAttribute("loading", "");
   let apiKey = "AIzaSyCGnbK8F2HvhjqRrKo3xogo4Co7bitNwYA";
   const camera = await getStreetViewCameraLocation(latitude, longitude, apiKey);
 
@@ -659,17 +662,20 @@ async function showStreetView(latitude, longitude) {
 
   var iframe = addElement("iframe", document.body, "streetView");
   iframe.src = `https://www.google.com/maps/embed/v1/streetview?key=${apiKey}&location=${camera.lat},${camera.lng}&heading=${heading}&pitch=0&fov=90`;
-  iframe.addEventListener("load", function () {
-    iframe.style.animation = "show 0.4s forwards";
-  });
-  iframe.setAttribute("allow", "accelerometer;gyroscope");
-  let iks = addElement("mdui-button-icon", document.body, "iks", "icon=close");
+
+  let iks = addElement("mdui-button-icon", null, "iks", "icon=close");
   iks.classList.add("closeStreetView");
   iks.addEventListener("click", function (event) {
     event.stopPropagation();
-
     iframe.remove();
     iks.remove();
+  });
+  iframe.addEventListener("load", function () {
+    setTimeout(() => {
+      document.body.appendChild(iks);
+      iframe.style.animation = "show 0.4s forwards";
+      if (btn) btn.removeAttribute("loading");
+    }, 400);
   });
 }
 function computeHeading(lat1, lng1, lat2, lng2) {
@@ -723,7 +729,7 @@ function minimizeSheet(h = 40) {
   }, 400);
 }
 async function refresh(btn) {
-  btn.setAttribute("loading", "");
+  if (btn) btn.setAttribute("loading", "");
   if (checkVisible(document.querySelector(".arrivalsOnStation"))) {
     await refreshMyBus();
   } else if (checkVisible(document.querySelector("#arrivals-panel"))) {
@@ -746,7 +752,7 @@ async function refresh(btn) {
     tabsFav.style.opacity = "1";
   } else {
   }
-  btn.removeAttribute("loading");
+  if (btn) btn.removeAttribute("loading");
 }
 function makeSkeleton(container) {
   for (let i = 0; i < 10; i++) {

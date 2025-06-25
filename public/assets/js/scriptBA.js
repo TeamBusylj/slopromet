@@ -320,7 +320,7 @@ async function stationClick(stationa, noAnimation, ia) {
   );
   streetView.innerHTML = "Slika postaje";
   streetView.addEventListener("click", function () {
-    showStreetView(station.lat, station.lon);
+    showStreetView(station.lat, station.lon, streetView);
   });
   var fav = addElement(
     "mdui-button-icon",

@@ -236,14 +236,9 @@ function createFavourite(parent, search, query) {
       }
       let buses = addElement("div", item, "buses");
       for (const bus of stationList[station].route_groups_on_station) {
-        buses.innerHTML +=
-          "<div class=busNo style=background:" +
-          lineColors(bus) +
-          " id=bus2_" +
-          bus +
-          ">" +
-          bus +
-          "</div>";
+        buses.innerHTML += `<div class=busNo style=background:${lineColors(
+          bus
+        )}>${bus}</div>`;
       }
 
       item.appendChild(buses);
@@ -438,7 +433,7 @@ async function stationClick(stationa) {
   );
   streetView.innerHTML = "Slika postaje";
   streetView.addEventListener("click", function () {
-    showStreetView(station.latitude, station.longitude);
+    showStreetView(station.latitude, station.longitude, streetView);
   });
   var fav = addElement(
     "mdui-button-icon",
@@ -652,30 +647,46 @@ async function showLines(parent, station) {
 
   data.forEach((arrival, i) => {
     if (!arrival.is_garage) {
-      let arrivalItem = addElement("div", parent, "arrivalItem");
+      let arrivalItem = addElement(
+        "mdui-card",
+        parent,
+        "arrivalItem",
+        "clickable"
+      );
       arrivalItem.style.animationDelay = "0." + i + "s";
       arrivalItem.style.order =
         arrival.route_number[0] == "N"
           ? arrival.route_number.replace(/\D/g, "") + 100
           : arrival.route_number.replace(/\D/g, "");
-      const busNumberDiv = addElement("div", arrivalItem, "busNo2");
+      const busNumberDiv = addElement(
+        "mdui-button-icon",
+        arrivalItem,
+        "busNo2",
+        "style=height:auto"
+      );
 
       busNumberDiv.style.background = lineColors(arrival.route_number);
 
       busNumberDiv.id = "bus_" + arrival.route_number;
       busNumberDiv.textContent = arrival.route_number;
       const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
-      addElement("mdui-ripple", arrivalItem);
 
       const tripNameSpan = addElement("span", arrivalDataDiv);
       tripNameSpan.textContent = arrival.route_group_name;
-      arrivalItem.addEventListener("click", () => {
-        showLineTime(
+      arrivalItem.addEventListener("click", async () => {
+        busNumberDiv.setAttribute("loading", "");
+        await showLineTime(
           arrival.route_number,
           station.ref_id,
           arrival.route_group_name,
           arrival
         );
+        document.querySelector(".arrivalsHolder").style.transform =
+          "translateX(-100vw) translateZ(1px)";
+
+        document.querySelector(".lineTimes").style.transform =
+          "translateX(0px) translateZ(1px)";
+        busNumberDiv.removeAttribute("loading");
       });
     }
   });
@@ -690,11 +701,9 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
     document.querySelector(".mainSheet"),
     "lineTimes"
   );
-  container.style.transform = "translateX(0px) translateY(0px)";
-  container.style.opacity = "1";
+
   container.classList.add("arrivalsScroll");
-  document.querySelector(".arrivalsHolder").style.transform =
-    "translateX(-100vw) translateZ(1px)";
+
   let iks = addElement(
     "mdui-button-icon",
     container,
@@ -1037,11 +1046,11 @@ async function getMyBusData(busId, arrivalsAll, tripId, line) {
     }
     myEtaChips.firstElementChild.classList.add("selected");
   }
-
   let myBusDiv = document.querySelector(".myBusDiv")
     ? clearElementContent(document.querySelector(".myBusDiv"))
     : addElement("div", holder, "myBusDiv");
   myBusDiv = document.querySelector(".myBusDiv");
+
   iks.addEventListener("click", function () {
     holder.style.transform = "translateX(100vw) translateZ(1px)";
     clearInterval(intervalBusk);
@@ -1062,10 +1071,6 @@ async function getMyBusData(busId, arrivalsAll, tripId, line) {
       }, 100);
     }, 500);
   });
-  setTimeout(() => {
-    holder.style.opacity = "1";
-    holder.style.transform = "translateX(0px) translateY(0px)";
-  }, 10);
 
   if (arrivals || busId) {
     let bus = busObject.find(
@@ -1073,7 +1078,9 @@ async function getMyBusData(busId, arrivalsAll, tripId, line) {
         el.bus_id == (busId ? busId : arrivals[0].vehicle_id.toUpperCase())
     );
 
-    clickedMyBus(bus, arrivals ? arrivals[0].trip_id : bus.trip_id);
+    await clickedMyBus(bus, arrivals ? arrivals[0].trip_id : bus.trip_id);
+    holder.style.opacity = "1";
+    holder.style.transform = "translateX(0px) translateY(0px)";
     intervalBusk = setInterval(() => {
       updateMyBus(bus, arrivals ? arrivals[0].trip_id : bus.trip_id);
     }, 10000);
@@ -1122,7 +1129,7 @@ async function clickedMyBus(bus, tripId) {
   myBusDiv = document.querySelector(".myBusDiv");
 
   let arrivalItem = addElement("div", myBusDiv, "arrivalItem");
-  arrivalItem.style.margin = "10px 0";
+  arrivalItem.style.margin = "15px 0";
   let busNumberDiv = addElement("div", arrivalItem, "busNo2");
   busNumberDiv.style.background = lineColors(busData.line_number);
   busNumberDiv.id = "bus_" + busData.line_number;
@@ -1389,9 +1396,20 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
       .join("");
     etaHolder = null;
   }
+  let bus = busObject.find((el) => el.bus_id == busIdUp);
+  console.log(bus.bus_name);
+  let date = new Intl.DateTimeFormat("sl-SI", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone: "Europe/Ljubljana",
+  }).format(new Date(bus.timestamp));
+  document.querySelector("#busDataSpeed > span").innerHTML = Math.round(
+    bus.speed
+  );
+  document.querySelector("#busDataTime > span").innerHTML = date;
 }
 async function createBusData(bus, busDataDiv) {
-  let busAge = await (await fetch("assets/js/busAge.json")).json();
   const findYearByGarageNumber = (garageNumber) => {
     for (const year in busAge) {
       if (busAge[year].includes(garageNumber)) {
@@ -1406,26 +1424,35 @@ async function createBusData(bus, busDataDiv) {
     second: "2-digit",
     timeZone: "Europe/Ljubljana",
   }).format(new Date(bus.timestamp));
-
-  busDataDiv.innerHTML = `<table class="busDataTable">
-  <tr><td>Ime:</td><td>${bus.bus_name}</td></tr>
-   <tr><td>Model:</td><td>${bus.model}</td></tr>
-   <tr><td>Leto:</td><td>${findYearByGarageNumber(bus.no)}</td></tr>
-   <tr><td>Vrsta:</td><td>${bus.type}</td></tr>
-   <tr><td>Odometer:</td><td>${Math.floor(bus.odometer)} km</td></tr>
-   <tr><td>Hitrost:</td><td>${bus.speed} km/h</td></tr>
-   <tr><td>Zabeležen:</td><td>ob ${date}</td></tr>
-  `;
+  let imgHtml = addElement("div", busDataDiv, "busImgHolder");
   if (bus.hasImage) {
-    let holder = addElement("div", busDataDiv, "busImgHolder");
-    let img = addElement("img", holder, "busImgElement");
+    let img = addElement("img", imgHtml, "busImgElement");
     let imageLoaded = new Promise((resolve, reject) => {
       img.onload = resolve;
       img.onerror = reject;
     });
     img.src =
       "https://mestnipromet.cyou/tracker/img/avtobusi/" + bus.no + ".jpg";
-    holder.innerHTML += `<div class="busAuthor"><mdui-icon name=photo_camera--outlined></mdui-icon>${bus.author}</div>`;
     await imageLoaded;
   }
+  busDataDiv.innerHTML = `
+   <div class=busDataTable>
+    <div class=busDataText>
+      <span class=busDataName>${bus.bus_name.slice(3).replace("-", " ")}</span>
+      <span class=busDataModel>${bus.model}</span>
+      <div class=busDataPillHolder>
+       <div class=busDataPill id=busDataSpeed><mdui-icon name=speed></mdui-icon><span>${Math.round(
+         bus.speed
+       )}</span> km/h</div>
+        <div class=busDataPill id=busDataTime><mdui-icon name=access_time></mdui-icon><span>${date}</span></div>
+        <div class=busDataPill><mdui-icon name=photo_camera--outlined></mdui-icon>${
+          bus.author
+        }</div>
+      </div>
+    </div>
+    <div class=busDataInfo>
+      <span class=busDataAge>${findYearByGarageNumber(bus.no)}</span>
+     ${imgHtml.outerHTML}
+   </div>
+   `;
 }

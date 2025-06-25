@@ -95,6 +95,8 @@ body {
     #00000026
   );
   font-size: 1rem !important;
+  width: 25px;
+  height: 25px;
 }
 .textHolder {
   align-items: center;
@@ -326,13 +328,7 @@ md-list .arrivalItem {
 span.hidden {
   display: none;
 }
-img.busImgElement {
-  max-width: 100%;
-  border-radius: 25px;
-  z-index: 2;
-  margin-top: 10px;
-  position: relative;
-}
+
 .busAuthor mdui-icon {
   font-size: 1rem;
 }
@@ -350,9 +346,6 @@ img.busImgElement {
   backdrop-filter: blur(3px);
   right: 0;
   border-radius: 15px 0px 25px 0px;
-}
-.busImgHolder {
-  position: relative;
 }
 @keyframes show {
   0% {
@@ -405,7 +398,7 @@ img.busImgElement {
   color: RGB(var(--mdui-color-on-error-container));
 }
 .arrivalGreen {
-  color: RGB(var(--mdui-color-surface-tint));
+  color: RGB(var(--mdui-color-primary));
 }
 .arrivalTime mdui-icon {
   animation: rotatingIcon 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -505,10 +498,11 @@ img.busImgElement {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #ffffffba;
   padding: 5px;
 }
 .busNo2 {
+  font-size: 1rem;
   font-weight: 900;
   height: 30px;
   border-radius: 200px;
@@ -517,12 +511,14 @@ img.busImgElement {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #ffffffba;
   padding: 5px;
   position: relative;
   cursor: pointer;
 }
-
+mdui-button-icon.busNo2::part(loading) {
+  stroke: #ffffff87;
+}
 .nextBus {
   background: transparent;
   border-radius: 0;
@@ -547,12 +543,13 @@ img.busImgElement {
   gap: 0px;
 }
 .lineTimes {
+  overflow: scroll;
   position: absolute !important;
   top: 40px !important;
   overscroll-behavior: none;
-  animation: showIn 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
-  transform: translateX(0);
+  transform: translateX(100vw);
   height: calc(100dvh - 150px);
+  transition: all 0.6s cubic-bezier(0.38, 1.21, 0.22, 1) !important;
 }
 .lineTimes .busNo2 {
   background: RGB(var(--mdui-color-surface-container-highest));
@@ -727,7 +724,7 @@ span.nextBusTitle {
   width: 100%;
   z-index: 1;
   padding-bottom: 100px;
-  margin-top: 10px;
+  margin-top: 15px;
   overscroll-behavior: none;
   position: relative;
 }
@@ -754,7 +751,7 @@ span.nextBusTitle {
 .myEtaHolder {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid var(--mdui-color-outline-variant, #cac4d0);
+  border-bottom: 1px solid rgb(var(--mdui-color-outline-variant));
   width: 100%;
   justify-content: space-between;
   z-index: 9;
@@ -779,16 +776,9 @@ span.nextBusTitle {
 }
 .myEtaHolder .arrivalTime {
   margin: 0;
+  padding: 0;
 }
-.busDataDiv {
-  z-index: 2;
-}
-table.busDataTable {
-  background: var(--mdui-color-surface-container);
-  width: 100%;
-  border-radius: 25px;
-  padding: 15px;
-}
+
 tr {
   line-height: 20px;
 }
@@ -1549,4 +1539,92 @@ mdui-button-icon.favorite {
   z-index: 40;
   animation-duration: 0.4s;
   animation-timing-function: cubic-bezier(0.38, 1.21, 0.3, 1.33);
+}
+.busDataDiv {
+  z-index: 2;
+}
+.busDataTable {
+  background: var(--mdui-color-surface-container);
+  width: 100%;
+  border-radius: 25px;
+  padding: 15px;
+  display: flex;
+  gap: 10px;
+  box-sizing: border-box;
+  position: relative;
+  justify-content: space-between;
+}
+.busDataInfo {
+  width: 60%;
+}
+
+.busDataText {
+  width: fit-content;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: fit-content;
+}
+span.busDataName {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+span.busDataModel {
+  font-size: 0.93rem;
+  width: 0;
+  color: rgb(var(--mdui-color-outline));
+  margin-bottom: 15px;
+  white-space: nowrap;
+}
+.busDataPillHolder {
+  height: 100%;
+  width: max-content;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 7px;
+  margin-right: 10px;
+}
+.busDataPill {
+  background: rgb(var(--mdui-color-secondary-container));
+  filter: saturate(0.5);
+  width: fit-content;
+  padding: 5px 10px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 1rem;
+  margin-bottom: 6px;
+  color: rgb(var(--mdui-color-on-secondary-container));
+}
+.busDataPill mdui-icon {
+  opacity: 0.6;
+}
+.busDataInfo {
+  width: 60%;
+  display: flex;
+  align-items: end;
+  flex-direction: column;
+  justify-content: space-between;
+}
+span.busDataAge {
+  margin-top: 5px;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-right: 10px;
+}
+.busImgHolder {
+  position: relative;
+  height: 100%;
+  margin-top: 25px;
+}
+img.busImgElement {
+  max-width: 100%;
+  border-radius: 18px;
+  z-index: 2;
+  position: relative;
+  object-fit: cover;
+  height: 100%;
+  animation: show 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
 }
