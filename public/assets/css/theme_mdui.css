@@ -1,0 +1,962 @@
+@media (prefers-color-scheme: dark) {
+  html.lpp {
+    --mdui-color-background-dark: 16, 20, 17;
+    --mdui-color-on-background-dark: 223, 228, 222;
+    --mdui-color-surface-dark: 16, 20, 17;
+    --mdui-color-surface-dim-dark: 16, 20, 17;
+    --mdui-color-surface-bright-dark: 54, 58, 54;
+    --mdui-color-surface-container-lowest-dark: 11, 15, 12;
+    --mdui-color-surface-container-low-dark: 24, 29, 25;
+    --mdui-color-surface-container: linear-gradient(
+      329deg,
+      RGB(22, 26, 23),
+      RGB(30, 36, 31)
+    );
+    --mdui-color-surface-container-high-dark: 38, 43, 39;
+    --mdui-color-surface-container-highest-dark: 49, 54, 50;
+    --mdui-color-on-surface-dark: 223, 228, 222;
+    --mdui-color-surface-variant-dark: 63, 73, 66;
+    --mdui-color-on-surface-variant-dark: 190, 201, 191;
+    --mdui-color-inverse-surface-dark: 223, 228, 222;
+    --mdui-color-inverse-on-surface-dark: 45, 50, 46;
+    --mdui-color-outline-dark: 137, 147, 138;
+    --mdui-color-outline-variant-dark: 63, 73, 66;
+    --mdui-color-shadow-dark: 0, 0, 0;
+    --mdui-color-scrim-dark: 0, 0, 0;
+    --mdui-color-surface-tint-dark: 131, 216, 167;
+    --mdui-color-primary-dark: 131, 216, 167;
+    --mdui-color-on-primary-dark: 0, 57, 33;
+    --mdui-color-primary-container-dark: 0, 95, 58;
+    --mdui-color-on-primary-container-dark: 208, 255, 223;
+    --mdui-color-inverse-primary-dark: 8, 108, 68;
+    --mdui-color-secondary-dark: 172, 207, 183;
+    --mdui-color-on-secondary-dark: 24, 54, 38;
+    --mdui-color-secondary-container-dark: 39, 69, 51;
+    --mdui-color-on-secondary-container-dark: 185, 220, 195;
+    --mdui-color-tertiary-dark: 191, 194, 255;
+    --mdui-color-on-tertiary-dark: 36, 40, 109;
+    --mdui-color-tertiary-container-dark: 72, 77, 146;
+    --mdui-color-on-tertiary-container-dark: 248, 245, 255;
+    --mdui-color-error-dark: 255, 180, 171;
+    --mdui-color-on-error-dark: 105, 0, 5;
+    --mdui-color-error-container-dark: 147, 0, 10;
+    --mdui-color-on-error-container-dark: 255, 218, 214;
+  }
+  html.ijpp {
+    --mdui-color-background-dark: 17, 19, 24;
+    --mdui-color-on-background-dark: 226, 226, 233;
+    --mdui-color-surface-dark: 17, 19, 24;
+    --mdui-color-surface-dim-dark: 17, 19, 24;
+    --mdui-color-surface-bright-dark: 55, 57, 63;
+    --mdui-color-surface-container-lowest-dark: 12, 14, 19;
+    --mdui-color-surface-container-low-dark: 25, 27, 33;
+    --mdui-color-surface-container-dark: 29, 32, 37;
+    --mdui-color-surface-container-high-dark: 40, 42, 47;
+    --mdui-color-surface-container-highest-dark: 51, 53, 58;
+    --mdui-color-on-surface-dark: 226, 226, 233;
+    --mdui-color-surface-variant-dark: 66, 71, 81;
+    --mdui-color-on-surface-variant-dark: 195, 198, 211;
+    --mdui-color-inverse-surface-dark: 226, 226, 233;
+    --mdui-color-inverse-on-surface-dark: 46, 48, 54;
+    --mdui-color-outline-dark: 141, 144, 157;
+    --mdui-color-outline-variant-dark: 66, 71, 81;
+    --mdui-color-shadow-dark: 0, 0, 0;
+    --mdui-color-scrim-dark: 0, 0, 0;
+    --mdui-color-surface-tint-dark: 172, 199, 255;
+    --mdui-color-primary-dark: 172, 199, 255;
+    --mdui-color-on-primary-dark: 0, 47, 104;
+    --mdui-color-primary-container-dark: 0, 62, 134;
+    --mdui-color-on-primary-container-dark: 197, 214, 255;
+    --mdui-color-inverse-primary-dark: 39, 93, 174;
+    --mdui-color-secondary-dark: 182, 199, 237;
+    --mdui-color-on-secondary-dark: 32, 48, 79;
+    --mdui-color-secondary-container-dark: 46, 62, 93;
+    --mdui-color-on-secondary-container-dark: 194, 210, 249;
+    --mdui-color-tertiary-dark: 238, 176, 255;
+    --mdui-color-on-tertiary-dark: 79, 17, 101;
+    --mdui-color-tertiary-container-dark: 98, 38, 119;
+    --mdui-color-on-tertiary-container-dark: 245, 200, 255;
+    --mdui-color-error-dark: 255, 180, 171;
+    --mdui-color-on-error-dark: 105, 0, 5;
+    --mdui-color-error-container-dark: 147, 0, 10;
+    --mdui-color-on-error-container-dark: 255, 218, 214;
+  }
+  html.marprom {
+    --mdui-color-background-dark: 25, 17, 16;
+    --mdui-color-on-background-dark: 240, 223, 220;
+    --mdui-color-surface-dark: 25, 17, 16;
+    --mdui-color-surface-dim-dark: 25, 17, 16;
+    --mdui-color-surface-bright-dark: 65, 55, 53;
+    --mdui-color-surface-container-lowest-dark: 20, 12, 11;
+    --mdui-color-surface-container-low-dark: 34, 26, 24;
+    --mdui-color-surface-container-dark: 38, 30, 28;
+    --mdui-color-surface-container-high-dark: 49, 40, 38;
+    --mdui-color-surface-container-highest-dark: 60, 50, 49;
+    --mdui-color-on-surface-dark: 240, 223, 220;
+    --mdui-color-surface-variant-dark: 85, 66, 64;
+    --mdui-color-on-surface-variant-dark: 219, 193, 189;
+    --mdui-color-inverse-surface-dark: 240, 223, 220;
+    --mdui-color-inverse-on-surface-dark: 56, 46, 45;
+    --mdui-color-outline-dark: 163, 140, 136;
+    --mdui-color-outline-variant-dark: 85, 66, 64;
+    --mdui-color-shadow-dark: 0, 0, 0;
+    --mdui-color-scrim-dark: 0, 0, 0;
+    --mdui-color-surface-tint-dark: 255, 180, 168;
+    --mdui-color-primary-dark: 255, 180, 168;
+    --mdui-color-on-primary-dark: 92, 25, 16;
+    --mdui-color-primary-container-dark: 180, 91, 77;
+    --mdui-color-on-primary-container-dark: 255, 255, 255;
+    --mdui-color-inverse-primary-dark: 152, 69, 57;
+    --mdui-color-secondary-dark: 242, 185, 176;
+    --mdui-color-on-secondary-dark: 74, 38, 33;
+    --mdui-color-secondary-container-dark: 92, 53, 47;
+    --mdui-color-on-secondary-container-dark: 255, 200, 191;
+    --mdui-color-tertiary-dark: 235, 212, 102;
+    --mdui-color-on-tertiary-dark: 57, 48, 0;
+    --mdui-color-tertiary-container-dark: 192, 171, 65;
+    --mdui-color-on-tertiary-container-dark: 39, 32, 0;
+    --mdui-color-error-dark: 255, 180, 171;
+    --mdui-color-on-error-dark: 105, 0, 5;
+    --mdui-color-error-container-dark: 147, 0, 10;
+    --mdui-color-on-error-container-dark: 255, 218, 214;
+  }
+  html.sž {
+    --mdui-color-background-dark: 15, 20, 24;
+    --mdui-color-on-background-dark: 223, 227, 233;
+    --mdui-color-surface-dark: 15, 20, 24;
+    --mdui-color-surface-dim-dark: 15, 20, 24;
+    --mdui-color-surface-bright-dark: 53, 58, 63;
+    --mdui-color-surface-container-lowest-dark: 10, 15, 19;
+    --mdui-color-surface-container-low-dark: 23, 28, 33;
+    --mdui-color-surface-container-dark: 27, 32, 37;
+    --mdui-color-surface-container-high-dark: 38, 42, 47;
+    --mdui-color-surface-container-highest-dark: 48, 53, 58;
+    --mdui-color-on-surface-dark: 223, 227, 233;
+    --mdui-color-surface-variant-dark: 62, 72, 81;
+    --mdui-color-on-surface-variant-dark: 190, 199, 210;
+    --mdui-color-inverse-surface-dark: 223, 227, 233;
+    --mdui-color-inverse-on-surface-dark: 44, 49, 54;
+    --mdui-color-outline-dark: 136, 146, 156;
+    --mdui-color-outline-variant-dark: 62, 72, 81;
+    --mdui-color-shadow-dark: 0, 0, 0;
+    --mdui-color-scrim-dark: 0, 0, 0;
+    --mdui-color-surface-tint-dark: 144, 205, 255;
+    --mdui-color-primary-dark: 144, 205, 255;
+    --mdui-color-on-primary-dark: 0, 52, 80;
+    --mdui-color-primary-container-dark: 0, 153, 225;
+    --mdui-color-on-primary-container-dark: 0, 0, 0;
+    --mdui-color-inverse-primary-dark: 0, 100, 149;
+    --mdui-color-secondary-dark: 165, 203, 236;
+    --mdui-color-on-secondary-dark: 4, 51, 79;
+    --mdui-color-secondary-container-dark: 26, 67, 94;
+    --mdui-color-on-secondary-container-dark: 179, 216, 250;
+    --mdui-color-tertiary-dark: 233, 179, 255;
+    --mdui-color-on-tertiary-dark: 80, 5, 112;
+    --mdui-color-tertiary-container-dark: 187, 117, 219;
+    --mdui-color-on-tertiary-container-dark: 0, 0, 0;
+    --mdui-color-error-dark: 255, 180, 171;
+    --mdui-color-on-error-dark: 105, 0, 5;
+    --mdui-color-error-container-dark: 147, 0, 10;
+    --mdui-color-on-error-container-dark: 255, 218, 214;
+  }
+}
+@media (prefers-color-scheme: light) {
+  html.lpp {
+    --mdui-color-background-light: 247, 250, 244;
+    --mdui-color-on-background-light: 24, 29, 25;
+    --mdui-color-surface-light: 247, 250, 244;
+    --mdui-color-surface-dim-light: 215, 219, 213;
+    --mdui-color-surface-bright-light: 247, 250, 244;
+    --mdui-color-surface-container-lowest-light: 255, 255, 255;
+    --mdui-color-surface-container-low-light: 241, 245, 239;
+    --mdui-color-surface-container: linear-gradient(
+      329deg,
+      RGB(216, 220, 214) RGB(229, 233, 227)
+    );
+    --mdui-color-surface-container-high-light: 229, 233, 227;
+    --mdui-color-surface-container-highest-light: 223, 228, 222;
+    --mdui-color-on-surface-light: 24, 29, 25;
+    --mdui-color-surface-variant-light: 218, 229, 219;
+    --mdui-color-on-surface-variant-light: 63, 73, 66;
+    --mdui-color-inverse-surface-light: 45, 50, 46;
+    --mdui-color-inverse-on-surface-light: 238, 242, 236;
+    --mdui-color-outline-light: 111, 122, 113;
+    --mdui-color-outline-variant-light: 190, 201, 191;
+    --mdui-color-shadow-light: 0, 0, 0;
+    --mdui-color-scrim-light: 0, 0, 0;
+    --mdui-color-surface-tint-light: 8, 108, 68;
+    --mdui-color-primary-light: 0, 83, 50;
+    --mdui-color-on-primary-light: 255, 255, 255;
+    --mdui-color-primary-container-light: 33, 122, 80;
+    --mdui-color-on-primary-container-light: 255, 255, 255;
+    --mdui-color-inverse-primary-light: 131, 216, 167;
+    --mdui-color-secondary-light: 70, 101, 82;
+    --mdui-color-on-secondary-light: 255, 255, 255;
+    --mdui-color-secondary-container-light: 204, 239, 214;
+    --mdui-color-on-secondary-container-light: 50, 81, 62;
+    --mdui-color-tertiary-light: 60, 64, 133;
+    --mdui-color-on-tertiary-light: 255, 255, 255;
+    --mdui-color-tertiary-container-light: 96, 101, 172;
+    --mdui-color-on-tertiary-container-light: 255, 255, 255;
+    --mdui-color-error-light: 186, 26, 26;
+    --mdui-color-on-error-light: 255, 255, 255;
+    --mdui-color-error-container-light: 255, 218, 214;
+    --mdui-color-on-error-container-light: 65, 0, 2;
+  }
+  html.ijpp {
+    --mdui-color-background-light: 249, 249, 255;
+    --mdui-color-on-background-light: 25, 27, 33;
+    --mdui-color-surface-light: 249, 249, 255;
+    --mdui-color-surface-dim-light: 217, 217, 225;
+    --mdui-color-surface-bright-light: 249, 249, 255;
+    --mdui-color-surface-container-lowest-light: 255, 255, 255;
+    --mdui-color-surface-container-low-light: 243, 243, 251;
+    --mdui-color-surface-container-light: 231, 231, 239;
+    --mdui-color-surface-container-high-light: 231, 231, 239;
+    --mdui-color-surface-container-highest-light: 226, 226, 233;
+    --mdui-color-on-surface-light: 25, 27, 33;
+    --mdui-color-surface-variant-light: 223, 226, 240;
+    --mdui-color-on-surface-variant-light: 66, 71, 81;
+    --mdui-color-inverse-surface-light: 46, 48, 54;
+    --mdui-color-inverse-on-surface-light: 240, 240, 248;
+    --mdui-color-outline-light: 115, 119, 131;
+    --mdui-color-outline-variant-light: 195, 198, 211;
+    --mdui-color-shadow-light: 0, 0, 0;
+    --mdui-color-scrim-light: 0, 0, 0;
+    --mdui-color-surface-tint-light: 39, 93, 174;
+    --mdui-color-primary-light: 0, 53, 116;
+    --mdui-color-on-primary-light: 255, 255, 255;
+    --mdui-color-primary-container-light: 32, 88, 169;
+    --mdui-color-on-primary-container-light: 255, 255, 255;
+    --mdui-color-inverse-primary-light: 172, 199, 255;
+    --mdui-color-secondary-light: 78, 94, 128;
+    --mdui-color-on-secondary-light: 255, 255, 255;
+    --mdui-color-secondary-container-light: 206, 220, 255;
+    --mdui-color-on-secondary-container-light: 52, 68, 100;
+    --mdui-color-tertiary-light: 86, 26, 108;
+    --mdui-color-on-tertiary-light: 255, 255, 255;
+    --mdui-color-tertiary-container-light: 125, 64, 146;
+    --mdui-color-on-tertiary-container-light: 255, 255, 255;
+    --mdui-color-error-light: 186, 26, 26;
+    --mdui-color-on-error-light: 255, 255, 255;
+    --mdui-color-error-container-light: 255, 218, 214;
+    --mdui-color-on-error-container-light: 65, 0, 2;
+  }
+  html.marprom {
+    --mdui-color-background-light: 255, 248, 246;
+    --mdui-color-on-background-light: 34, 26, 24;
+    --mdui-color-surface-light: 255, 248, 246;
+    --mdui-color-surface-dim-light: 231, 214, 212;
+    --mdui-color-surface-bright-light: 255, 248, 246;
+    --mdui-color-surface-container-lowest-light: 255, 255, 255;
+    --mdui-color-surface-container-low-light: 255, 240, 238;
+    --mdui-color-surface-container-light: 245, 228, 226;
+    --mdui-color-surface-container-high-light: 245, 228, 226;
+    --mdui-color-surface-container-highest-light: 240, 223, 220;
+    --mdui-color-on-surface-light: 34, 26, 24;
+    --mdui-color-surface-variant-light: 248, 220, 216;
+    --mdui-color-on-surface-variant-light: 85, 66, 64;
+    --mdui-color-inverse-surface-light: 56, 46, 45;
+    --mdui-color-inverse-on-surface-light: 254, 237, 234;
+    --mdui-color-outline-light: 136, 114, 111;
+    --mdui-color-outline-variant-light: 219, 193, 189;
+    --mdui-color-shadow-light: 0, 0, 0;
+    --mdui-color-scrim-light: 0, 0, 0;
+    --mdui-color-surface-tint-light: 152, 69, 57;
+    --mdui-color-primary-light: 134, 55, 44;
+    --mdui-color-on-primary-light: 255, 255, 255;
+    --mdui-color-primary-container-light: 180, 91, 77;
+    --mdui-color-on-primary-container-light: 255, 255, 255;
+    --mdui-color-inverse-primary-light: 255, 180, 168;
+    --mdui-color-secondary-light: 127, 83, 76;
+    --mdui-color-on-secondary-light: 255, 255, 255;
+    --mdui-color-secondary-container-light: 255, 204, 196;
+    --mdui-color-on-secondary-container-light: 94, 55, 49;
+    --mdui-color-tertiary-light: 109, 94, 0;
+    --mdui-color-on-tertiary-light: 255, 255, 255;
+    --mdui-color-tertiary-container-light: 192, 171, 65;
+    --mdui-color-on-tertiary-container-light: 39, 32, 0;
+    --mdui-color-error-light: 186, 26, 26;
+    --mdui-color-on-error-light: 255, 255, 255;
+    --mdui-color-error-container-light: 255, 218, 214;
+    --mdui-color-on-error-container-light: 65, 0, 2;
+  }
+  html.sž {
+    --mdui-color-background-light: 247, 249, 255;
+    --mdui-color-on-background-light: 23, 28, 33;
+    --mdui-color-surface-light: 247, 249, 255;
+    --mdui-color-surface-dim-light: 214, 218, 225;
+    --mdui-color-surface-bright-light: 247, 249, 255;
+    --mdui-color-surface-container-lowest-light: 255, 255, 255;
+    --mdui-color-surface-container-low-light: 240, 244, 250;
+    --mdui-color-surface-container-light: 228, 232, 239;
+    --mdui-color-surface-container-high-light: 228, 232, 239;
+    --mdui-color-surface-container-highest-light: 223, 227, 233;
+    --mdui-color-on-surface-light: 23, 28, 33;
+    --mdui-color-surface-variant-light: 218, 227, 239;
+    --mdui-color-on-surface-variant-light: 62, 72, 81;
+    --mdui-color-inverse-surface-light: 44, 49, 54;
+    --mdui-color-inverse-on-surface-light: 237, 241, 248;
+    --mdui-color-outline-light: 111, 120, 130;
+    --mdui-color-outline-variant-light: 190, 199, 210;
+    --mdui-color-shadow-light: 0, 0, 0;
+    --mdui-color-scrim-light: 0, 0, 0;
+    --mdui-color-surface-tint-light: 0, 100, 149;
+    --mdui-color-primary-light: 0, 100, 149;
+    --mdui-color-on-primary-light: 255, 255, 255;
+    --mdui-color-primary-container-light: 42, 174, 250;
+    --mdui-color-on-primary-container-light: 0, 28, 46;
+    --mdui-color-inverse-primary-light: 144, 205, 255;
+    --mdui-color-secondary-light: 61, 98, 127;
+    --mdui-color-on-secondary-light: 255, 255, 255;
+    --mdui-color-secondary-container-light: 193, 225, 255;
+    --mdui-color-on-secondary-container-light: 33, 72, 100;
+    --mdui-color-tertiary-light: 131, 65, 163;
+    --mdui-color-on-tertiary-light: 255, 255, 255;
+    --mdui-color-tertiary-container-light: 207, 136, 239;
+    --mdui-color-on-tertiary-container-light: 45, 0, 66;
+    --mdui-color-error-light: 186, 26, 26;
+    --mdui-color-on-error-light: 255, 255, 255;
+    --mdui-color-error-container-light: 255, 218, 214;
+    --mdui-color-on-error-container-light: 65, 0, 2;
+  }
+}
+:root {
+  --mdui-breakpoint-xs: 0px;
+  --mdui-breakpoint-sm: 600px;
+  --mdui-breakpoint-md: 840px;
+  --mdui-breakpoint-lg: 1080px;
+  --mdui-breakpoint-xl: 1440px;
+  --mdui-breakpoint-xxl: 1920px;
+}
+
+.mdui-theme-light,
+:root {
+  color-scheme: light;
+  --mdui-color-primary: var(--mdui-color-primary-light);
+  --mdui-color-primary-container: var(--mdui-color-primary-container-light);
+  --mdui-color-on-primary: var(--mdui-color-on-primary-light);
+  --mdui-color-on-primary-container: var(
+    --mdui-color-on-primary-container-light
+  );
+  --mdui-color-inverse-primary: var(--mdui-color-inverse-primary-light);
+  --mdui-color-secondary: var(--mdui-color-secondary-light);
+  --mdui-color-secondary-container: var(--mdui-color-secondary-container-light);
+  --mdui-color-on-secondary: var(--mdui-color-on-secondary-light);
+  --mdui-color-on-secondary-container: var(
+    --mdui-color-on-secondary-container-light
+  );
+  --mdui-color-tertiary: var(--mdui-color-tertiary-light);
+  --mdui-color-tertiary-container: var(--mdui-color-tertiary-container-light);
+  --mdui-color-on-tertiary: var(--mdui-color-on-tertiary-light);
+  --mdui-color-on-tertiary-container: var(
+    --mdui-color-on-tertiary-container-light
+  );
+  --mdui-color-surface: var(--mdui-color-surface-light);
+  --mdui-color-surface-dim: var(--mdui-color-surface-dim-light);
+  --mdui-color-surface-bright: var(--mdui-color-surface-bright-light);
+  --mdui-color-surface-container-lowest: var(
+    --mdui-color-surface-container-lowest-light
+  );
+  --mdui-color-surface-container-low: var(
+    --mdui-color-surface-container-low-light
+  );
+  --mdui-color-surface-container: var(--mdui-color-surface-container-light);
+  --mdui-color-surface-container-high: var(
+    --mdui-color-surface-container-high-light
+  );
+  --mdui-color-surface-container-highest: var(
+    --mdui-color-surface-container-highest-light
+  );
+  --mdui-color-surface-variant: var(--mdui-color-surface-variant-light);
+  --mdui-color-on-surface: var(--mdui-color-on-surface-light);
+  --mdui-color-on-surface-variant: var(--mdui-color-on-surface-variant-light);
+  --mdui-color-inverse-surface: var(--mdui-color-inverse-surface-light);
+  --mdui-color-inverse-on-surface: var(--mdui-color-inverse-on-surface-light);
+  --mdui-color-background: var(--mdui-color-background-light);
+  --mdui-color-on-background: var(--mdui-color-on-background-light);
+  --mdui-color-error: var(--mdui-color-error-light);
+  --mdui-color-error-container: var(--mdui-color-error-container-light);
+  --mdui-color-on-error: var(--mdui-color-on-error-light);
+  --mdui-color-on-error-container: var(--mdui-color-on-error-container-light);
+  --mdui-color-outline: var(--mdui-color-outline-light);
+  --mdui-color-outline-variant: var(--mdui-color-outline-variant-light);
+  --mdui-color-shadow: var(--mdui-color-shadow-light);
+  --mdui-color-surface-tint-color: var(--mdui-color-surface-tint-color-light);
+  --mdui-color-scrim: var(--mdui-color-scrim-light);
+  color: rgb(var(--mdui-color-on-background));
+  background-color: rgb(var(--mdui-color-background));
+}
+.mdui-theme-dark {
+  color-scheme: dark;
+  --mdui-color-primary: var(--mdui-color-primary-dark);
+  --mdui-color-primary-container: var(--mdui-color-primary-container-dark);
+  --mdui-color-on-primary: var(--mdui-color-on-primary-dark);
+  --mdui-color-on-primary-container: var(
+    --mdui-color-on-primary-container-dark
+  );
+  --mdui-color-inverse-primary: var(--mdui-color-inverse-primary-dark);
+  --mdui-color-secondary: var(--mdui-color-secondary-dark);
+  --mdui-color-secondary-container: var(--mdui-color-secondary-container-dark);
+  --mdui-color-on-secondary: var(--mdui-color-on-secondary-dark);
+  --mdui-color-on-secondary-container: var(
+    --mdui-color-on-secondary-container-dark
+  );
+  --mdui-color-tertiary: var(--mdui-color-tertiary-dark);
+  --mdui-color-tertiary-container: var(--mdui-color-tertiary-container-dark);
+  --mdui-color-on-tertiary: var(--mdui-color-on-tertiary-dark);
+  --mdui-color-on-tertiary-container: var(
+    --mdui-color-on-tertiary-container-dark
+  );
+  --mdui-color-surface: var(--mdui-color-surface-dark);
+  --mdui-color-surface-dim: var(--mdui-color-surface-dim-dark);
+  --mdui-color-surface-bright: var(--mdui-color-surface-bright-dark);
+  --mdui-color-surface-container-lowest: var(
+    --mdui-color-surface-container-lowest-dark
+  );
+  --mdui-color-surface-container-low: var(
+    --mdui-color-surface-container-low-dark
+  );
+  --mdui-color-surface-container: var(--mdui-color-surface-container-dark);
+  --mdui-color-surface-container-high: var(
+    --mdui-color-surface-container-high-dark
+  );
+  --mdui-color-surface-container-highest: var(
+    --mdui-color-surface-container-highest-dark
+  );
+  --mdui-color-surface-variant: var(--mdui-color-surface-variant-dark);
+  --mdui-color-on-surface: var(--mdui-color-on-surface-dark);
+  --mdui-color-on-surface-variant: var(--mdui-color-on-surface-variant-dark);
+  --mdui-color-inverse-surface: var(--mdui-color-inverse-surface-dark);
+  --mdui-color-inverse-on-surface: var(--mdui-color-inverse-on-surface-dark);
+  --mdui-color-background: var(--mdui-color-background-dark);
+  --mdui-color-on-background: var(--mdui-color-on-background-dark);
+  --mdui-color-error: var(--mdui-color-error-dark);
+  --mdui-color-error-container: var(--mdui-color-error-container-dark);
+  --mdui-color-on-error: var(--mdui-color-on-error-dark);
+  --mdui-color-on-error-container: var(--mdui-color-on-error-container-dark);
+  --mdui-color-outline: var(--mdui-color-outline-dark);
+  --mdui-color-outline-variant: var(--mdui-color-outline-variant-dark);
+  --mdui-color-shadow: var(--mdui-color-shadow-dark);
+  --mdui-color-surface-tint-color: var(--mdui-color-surface-tint-color-dark);
+  --mdui-color-scrim: var(--mdui-color-scrim-dark);
+  color: rgb(var(--mdui-color-on-background));
+  background-color: rgb(var(--mdui-color-background));
+}
+@media (prefers-color-scheme: dark) {
+  .mdui-theme-auto {
+    color-scheme: dark;
+    --mdui-color-primary: var(--mdui-color-primary-dark);
+    --mdui-color-primary-container: var(--mdui-color-primary-container-dark);
+    --mdui-color-on-primary: var(--mdui-color-on-primary-dark);
+    --mdui-color-on-primary-container: var(
+      --mdui-color-on-primary-container-dark
+    );
+    --mdui-color-inverse-primary: var(--mdui-color-inverse-primary-dark);
+    --mdui-color-secondary: var(--mdui-color-secondary-dark);
+    --mdui-color-secondary-container: var(
+      --mdui-color-secondary-container-dark
+    );
+    --mdui-color-on-secondary: var(--mdui-color-on-secondary-dark);
+    --mdui-color-on-secondary-container: var(
+      --mdui-color-on-secondary-container-dark
+    );
+    --mdui-color-tertiary: var(--mdui-color-tertiary-dark);
+    --mdui-color-tertiary-container: var(--mdui-color-tertiary-container-dark);
+    --mdui-color-on-tertiary: var(--mdui-color-on-tertiary-dark);
+    --mdui-color-on-tertiary-container: var(
+      --mdui-color-on-tertiary-container-dark
+    );
+    --mdui-color-surface: var(--mdui-color-surface-dark);
+    --mdui-color-surface-dim: var(--mdui-color-surface-dim-dark);
+    --mdui-color-surface-bright: var(--mdui-color-surface-bright-dark);
+    --mdui-color-surface-container-lowest: var(
+      --mdui-color-surface-container-lowest-dark
+    );
+    --mdui-color-surface-container-low: var(
+      --mdui-color-surface-container-low-dark
+    );
+    --mdui-color-surface-container: var(--mdui-color-surface-container-dark);
+    --mdui-color-surface-container-high: var(
+      --mdui-color-surface-container-high-dark
+    );
+    --mdui-color-surface-container-highest: var(
+      --mdui-color-surface-container-highest-dark
+    );
+    --mdui-color-surface-variant: var(--mdui-color-surface-variant-dark);
+    --mdui-color-on-surface: var(--mdui-color-on-surface-dark);
+    --mdui-color-on-surface-variant: var(--mdui-color-on-surface-variant-dark);
+    --mdui-color-inverse-surface: var(--mdui-color-inverse-surface-dark);
+    --mdui-color-inverse-on-surface: var(--mdui-color-inverse-on-surface-dark);
+    --mdui-color-background: var(--mdui-color-background-dark);
+    --mdui-color-on-background: var(--mdui-color-on-background-dark);
+    --mdui-color-error: var(--mdui-color-error-dark);
+    --mdui-color-error-container: var(--mdui-color-error-container-dark);
+    --mdui-color-on-error: var(--mdui-color-on-error-dark);
+    --mdui-color-on-error-container: var(--mdui-color-on-error-container-dark);
+    --mdui-color-outline: var(--mdui-color-outline-dark);
+    --mdui-color-outline-variant: var(--mdui-color-outline-variant-dark);
+    --mdui-color-shadow: var(--mdui-color-shadow-dark);
+    --mdui-color-surface-tint-color: var(--mdui-color-surface-tint-color-dark);
+    --mdui-color-scrim: var(--mdui-color-scrim-dark);
+    color: rgb(var(--mdui-color-on-background));
+    background-color: rgb(var(--mdui-color-background));
+  }
+}
+:root {
+  --mdui-elevation-level0: none;
+  --mdui-elevation-level1: 0 0.5px 1.5px 0 rgba(var(--mdui-color-shadow), 19%),
+    0 0 1px 0 rgba(var(--mdui-color-shadow), 3.9%);
+  --mdui-elevation-level2: 0 0.85px 3px 0 rgba(var(--mdui-color-shadow), 19%),
+    0 0.25px 1px 0 rgba(var(--mdui-color-shadow), 3.9%);
+  --mdui-elevation-level3: 0 1.25px 5px 0 rgba(var(--mdui-color-shadow), 19%),
+    0 0.3333px 1.5px 0 rgba(var(--mdui-color-shadow), 3.9%);
+  --mdui-elevation-level4: 0 1.85px 6.25px 0 rgba(var(--mdui-color-shadow), 19%),
+    0 0.5px 1.75px 0 rgba(var(--mdui-color-shadow), 3.9%);
+  --mdui-elevation-level5: 0 2.75px 9px 0 rgba(var(--mdui-color-shadow), 19%),
+    0 0.25px 3px 0 rgba(var(--mdui-color-shadow), 3.9%);
+}
+:root {
+  --mdui-motion-easing-linear: cubic-bezier(0, 0, 1, 1);
+  --mdui-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --mdui-motion-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --mdui-motion-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
+  --mdui-motion-easing-emphasized: var(--mdui-motion-easing-standard);
+  --mdui-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --mdui-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --mdui-motion-duration-short1: 50ms;
+  --mdui-motion-duration-short2: 100ms;
+  --mdui-motion-duration-short3: 150ms;
+  --mdui-motion-duration-short4: 200ms;
+  --mdui-motion-duration-medium1: 250ms;
+  --mdui-motion-duration-medium2: 300ms;
+  --mdui-motion-duration-medium3: 350ms;
+  --mdui-motion-duration-medium4: 400ms;
+  --mdui-motion-duration-long1: 450ms;
+  --mdui-motion-duration-long2: 500ms;
+  --mdui-motion-duration-long3: 550ms;
+  --mdui-motion-duration-long4: 600ms;
+  --mdui-motion-duration-extra-long1: 700ms;
+  --mdui-motion-duration-extra-long2: 800ms;
+  --mdui-motion-duration-extra-long3: 900ms;
+  --mdui-motion-duration-extra-long4: 1000ms;
+}
+.mdui-prose {
+  line-height: 1.75;
+  word-wrap: break-word;
+}
+.mdui-prose :first-child {
+  margin-top: 0;
+}
+.mdui-prose :last-child {
+  margin-bottom: 0;
+}
+.mdui-prose code,
+.mdui-prose kbd,
+.mdui-prose pre,
+.mdui-prose pre tt,
+.mdui-prose samp {
+  font-family: Consolas, Courier, "Courier New", monospace;
+}
+.mdui-prose caption {
+  text-align: left;
+}
+.mdui-prose [draggable="true"],
+.mdui-prose [draggable] {
+  cursor: move;
+}
+.mdui-prose [draggable="false"] {
+  cursor: inherit;
+}
+.mdui-prose dl,
+.mdui-prose form,
+.mdui-prose ol,
+.mdui-prose p,
+.mdui-prose ul {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+}
+.mdui-prose a {
+  text-decoration: none;
+  outline: 0;
+  color: rgb(var(--mdui-color-primary));
+}
+.mdui-prose a:focus,
+.mdui-prose a:hover {
+  border-bottom: 0.0625rem solid rgb(var(--mdui-color-primary));
+}
+.mdui-prose small {
+  font-size: 0.875em;
+}
+.mdui-prose strong {
+  font-weight: 600;
+}
+.mdui-prose blockquote {
+  margin: 1.6em 2em;
+  padding-left: 1em;
+  border-left: 0.25rem solid rgb(var(--mdui-color-surface-variant));
+}
+@media only screen and (max-width: 599.98px) {
+  .mdui-prose blockquote {
+    margin: 1.6em 0;
+  }
+}
+.mdui-prose blockquote footer {
+  font-size: 86%;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+.mdui-prose mark {
+  color: inherit;
+  background-color: rgb(var(--mdui-color-secondary-container));
+  border-bottom: 0.0625rem solid rgb(var(--mdui-color-secondary));
+  margin: 0 0.375rem;
+  padding: 0.125rem;
+}
+.mdui-prose h1,
+.mdui-prose h2,
+.mdui-prose h3,
+.mdui-prose h4,
+.mdui-prose h5,
+.mdui-prose h6 {
+  font-weight: 400;
+}
+.mdui-prose h1 small,
+.mdui-prose h2 small,
+.mdui-prose h3 small,
+.mdui-prose h4 small,
+.mdui-prose h5 small,
+.mdui-prose h6 small {
+  font-weight: inherit;
+  font-size: 65%;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+.mdui-prose h1 strong,
+.mdui-prose h2 strong,
+.mdui-prose h3 strong,
+.mdui-prose h4 strong,
+.mdui-prose h5 strong,
+.mdui-prose h6 strong {
+  font-weight: 600;
+}
+.mdui-prose h1 {
+  font-size: 2.5em;
+  margin-top: 0;
+  margin-bottom: 1.25em;
+  line-height: 1.1111;
+}
+.mdui-prose h2 {
+  font-size: 1.875em;
+  margin-top: 2.25em;
+  margin-bottom: 1.125em;
+  line-height: 1.3333;
+}
+.mdui-prose h3 {
+  font-size: 1.5em;
+  margin-top: 2em;
+  margin-bottom: 1em;
+  line-height: 1.6;
+}
+.mdui-prose h4 {
+  font-size: 1.25em;
+  margin-top: 1.875em;
+  margin-bottom: 0.875em;
+  line-height: 1.5;
+}
+.mdui-prose h2 + *,
+.mdui-prose h3 + *,
+.mdui-prose h4 + *,
+.mdui-prose hr + * {
+  margin-top: 0;
+}
+.mdui-prose code,
+.mdui-prose kbd {
+  font-size: 0.875em;
+  color: rgb(var(--mdui-color-on-surface-container));
+  background-color: rgba(var(--mdui-color-surface-variant), 0.28);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--mdui-shape-corner-extra-small);
+}
+.mdui-prose kbd {
+  font-size: 0.9em;
+}
+.mdui-prose abbr[title] {
+  text-decoration: none;
+  cursor: help;
+  border-bottom: 0.0625rem dotted rgb(var(--mdui-color-on-surface-variant));
+}
+.mdui-prose ins,
+.mdui-prose u {
+  text-decoration: none;
+  border-bottom: 0.0625rem solid rgb(var(--mdui-color-on-surface-variant));
+}
+.mdui-prose del {
+  text-decoration: line-through;
+}
+.mdui-prose hr {
+  margin-top: 3em;
+  margin-bottom: 3em;
+  border: none;
+  border-bottom: 0.0625rem solid rgb(var(--mdui-color-surface-variant));
+}
+.mdui-prose pre {
+  margin-top: 1.7143em;
+  margin-bottom: 1.7143em;
+}
+.mdui-prose pre code {
+  padding: 0.8571em 1.1429em;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background-color: rgb(var(--mdui-color-surface-container));
+  color: rgb(var(--mdui-color-on-surface-container));
+  border-radius: var(--mdui-shape-corner-extra-small);
+}
+.mdui-prose ol,
+.mdui-prose ul {
+  padding-left: 1.625em;
+}
+.mdui-prose ul {
+  list-style-type: disc;
+}
+.mdui-prose ol {
+  list-style-type: decimal;
+}
+.mdui-prose ol[type="A"] {
+  list-style-type: upper-alpha;
+}
+.mdui-prose ol[type="a"] {
+  list-style-type: lower-alpha;
+}
+.mdui-prose ol[type="I"] {
+  list-style-type: upper-roman;
+}
+.mdui-prose ol[type="i"] {
+  list-style-type: lower-roman;
+}
+.mdui-prose ol[type="1"] {
+  list-style-type: decimal;
+}
+.mdui-prose li {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+.mdui-prose ol > li,
+.mdui-prose ul > li {
+  padding-left: 0.375em;
+}
+.mdui-prose ol > li > p,
+.mdui-prose ul > li > p {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+}
+.mdui-prose ol > li > :first-child,
+.mdui-prose ul > li > :first-child {
+  margin-top: 1.25em;
+}
+.mdui-prose ol > li > :last-child,
+.mdui-prose ul > li > :last-child {
+  margin-bottom: 1.25em;
+}
+.mdui-prose ol > li::marker {
+  font-weight: 400;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+.mdui-prose ul > li::marker {
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+.mdui-prose ol ol,
+.mdui-prose ol ul,
+.mdui-prose ul ol,
+.mdui-prose ul ul {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+}
+.mdui-prose fieldset,
+.mdui-prose img {
+  border: none;
+}
+.mdui-prose figure,
+.mdui-prose img,
+.mdui-prose video {
+  margin-top: 2em;
+  margin-bottom: 2em;
+  max-width: 100%;
+}
+.mdui-prose figure > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.mdui-prose figcaption {
+  font-size: 0.875em;
+  line-height: 1.4286;
+  margin-top: 0.8571em;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+.mdui-prose figcaption:empty::before {
+  z-index: -1;
+  cursor: text;
+  content: attr(placeholder);
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+.mdui-prose table {
+  margin-top: 2em;
+  margin-bottom: 2em;
+  border: 0.0625rem solid rgb(var(--mdui-color-surface-variant));
+  border-radius: var(--mdui-shape-corner-large);
+}
+.mdui-table {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 2em;
+  margin-bottom: 2em;
+  border: 0.0625rem solid rgb(var(--mdui-color-surface-variant));
+  border-radius: var(--mdui-shape-corner-large);
+}
+.mdui-table table {
+  margin-top: 0;
+  margin-bottom: 0;
+  border: none;
+  border-radius: 0;
+}
+.mdui-prose table,
+.mdui-table table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+.mdui-prose td,
+.mdui-prose th,
+.mdui-table td,
+.mdui-table th {
+  border-top: 0.0625rem solid rgb(var(--mdui-color-surface-variant));
+}
+.mdui-prose td:not(:first-child),
+.mdui-prose th:not(:first-child),
+.mdui-table td:not(:first-child),
+.mdui-table th:not(:first-child) {
+  border-left: 0.0625rem solid rgb(var(--mdui-color-surface-variant));
+}
+.mdui-prose td:not(:last-child),
+.mdui-prose th:not(:last-child),
+.mdui-table td:not(:last-child),
+.mdui-table th:not(:last-child) {
+  border-right: 0.0625rem solid rgb(var(--mdui-color-surface-variant));
+}
+.mdui-prose tfoot td,
+.mdui-prose tfoot th,
+.mdui-prose thead td,
+.mdui-prose thead th,
+.mdui-table tfoot td,
+.mdui-table tfoot th,
+.mdui-table thead td,
+.mdui-table thead th {
+  position: relative;
+  vertical-align: middle;
+  padding: 1.125rem 1rem;
+  font-weight: var(--mdui-typescale-title-medium-weight);
+  letter-spacing: var(--mdui-typescale-title-medium-tracking);
+  line-height: var(--mdui-typescale-title-medium-line-height);
+  color: rgb(var(--mdui-color-on-surface-variant));
+  box-shadow: var(--mdui-elevation-level1);
+}
+.mdui-prose tbody td,
+.mdui-prose tbody th,
+.mdui-table tbody td,
+.mdui-table tbody th {
+  padding: 0.875rem 1rem;
+}
+.mdui-prose tbody th,
+.mdui-table tbody th {
+  vertical-align: middle;
+  font-weight: inherit;
+}
+.mdui-prose tbody td,
+.mdui-table tbody td {
+  vertical-align: baseline;
+}
+.mdui-prose tbody:first-child tr:first-child td,
+.mdui-prose thead:first-child tr:first-child th,
+.mdui-table tbody:first-child tr:first-child td,
+.mdui-table thead:first-child tr:first-child th {
+  border-top: 0;
+}
+:root {
+  --mdui-shape-corner-none: 0;
+  --mdui-shape-corner-extra-small: 0.25rem;
+  --mdui-shape-corner-small: 0.5rem;
+  --mdui-shape-corner-medium: 0.75rem;
+  --mdui-shape-corner-large: 1rem;
+  --mdui-shape-corner-extra-large: 1.75rem;
+  --mdui-shape-corner-full: 1000rem;
+}
+:root {
+  --mdui-state-layer-hover: 0.08;
+  --mdui-state-layer-focus: 0.12;
+  --mdui-state-layer-pressed: 0.12;
+  --mdui-state-layer-dragged: 0.16;
+}
+:root {
+  --mdui-typescale-display-large-weight: 400;
+  --mdui-typescale-display-medium-weight: 400;
+  --mdui-typescale-display-small-weight: 400;
+  --mdui-typescale-display-large-line-height: 4rem;
+  --mdui-typescale-display-medium-line-height: 3.25rem;
+  --mdui-typescale-display-small-line-height: 2.75rem;
+  --mdui-typescale-display-large-size: 3.5625rem;
+  --mdui-typescale-display-medium-size: 2.8125rem;
+  --mdui-typescale-display-small-size: 2.25rem;
+  --mdui-typescale-display-large-tracking: 0rem;
+  --mdui-typescale-display-medium-tracking: 0rem;
+  --mdui-typescale-display-small-tracking: 0rem;
+  --mdui-typescale-headline-large-weight: 400;
+  --mdui-typescale-headline-medium-weight: 400;
+  --mdui-typescale-headline-small-weight: 400;
+  --mdui-typescale-headline-large-line-height: 2.5rem;
+  --mdui-typescale-headline-medium-line-height: 2.25rem;
+  --mdui-typescale-headline-small-line-height: 2rem;
+  --mdui-typescale-headline-large-size: 2rem;
+  --mdui-typescale-headline-medium-size: 1.75rem;
+  --mdui-typescale-headline-small-size: 1.5rem;
+  --mdui-typescale-headline-large-tracking: 0rem;
+  --mdui-typescale-headline-medium-tracking: 0rem;
+  --mdui-typescale-headline-small-tracking: 0rem;
+  --mdui-typescale-title-large-weight: 400;
+  --mdui-typescale-title-medium-weight: 500;
+  --mdui-typescale-title-small-weight: 500;
+  --mdui-typescale-title-large-line-height: 1.75rem;
+  --mdui-typescale-title-medium-line-height: 1.5rem;
+  --mdui-typescale-title-small-line-height: 1.25rem;
+  --mdui-typescale-title-large-size: 1.375rem;
+  --mdui-typescale-title-medium-size: 1rem;
+  --mdui-typescale-title-small-size: 0.875rem;
+  --mdui-typescale-title-large-tracking: 0rem;
+  --mdui-typescale-title-medium-tracking: 0.009375rem;
+  --mdui-typescale-title-small-tracking: 0.00625rem;
+  --mdui-typescale-label-large-weight: 500;
+  --mdui-typescale-label-medium-weight: 500;
+  --mdui-typescale-label-small-weight: 500;
+  --mdui-typescale-label-large-line-height: 1.25rem;
+  --mdui-typescale-label-medium-line-height: 1rem;
+  --mdui-typescale-label-small-line-height: 0.375rem;
+  --mdui-typescale-label-large-size: 0.875rem;
+  --mdui-typescale-label-medium-size: 0.75rem;
+  --mdui-typescale-label-small-size: 0.6875rem;
+  --mdui-typescale-label-large-tracking: 0.00625rem;
+  --mdui-typescale-label-medium-tracking: 0.03125rem;
+  --mdui-typescale-label-small-tracking: 0.03125rem;
+  --mdui-typescale-body-large-weight: 400;
+  --mdui-typescale-body-medium-weight: 400;
+  --mdui-typescale-body-small-weight: 400;
+  --mdui-typescale-body-large-line-height: 1.5rem;
+  --mdui-typescale-body-medium-line-height: 1.25rem;
+  --mdui-typescale-body-small-line-height: 1rem;
+  --mdui-typescale-body-large-size: 1rem;
+  --mdui-typescale-body-medium-size: 0.875rem;
+  --mdui-typescale-body-small-size: 0.75rem;
+  --mdui-typescale-body-large-tracking: 0.009375rem;
+  --mdui-typescale-body-medium-tracking: 0.015625rem;
+  --mdui-typescale-body-small-tracking: 0.025rem;
+}
+.mdui-lock-screen {
+  overflow: hidden !important;
+}

@@ -1,11 +1,11 @@
 "use strict";
 
-async function updateStations() {
+async function updateStations(t) {
   console.log(agency);
   let url =
     "https://lpp.ojpp.derp.si/api/station/station-details?show-subroutes=1";
 
-  if (localStorage.getItem("stationList")) {
+  if (localStorage.getItem("stationList") && !t) {
     stationList = JSON.parse(localStorage.getItem("stationList"));
     setTimeout(async () => {
       stationList = await fetchData(url);
@@ -40,7 +40,7 @@ async function createStationItems(o) {
   if (navigator.geolocation) {
     if (latitude == 46.051467939339034)
       list.innerHTML +=
-        "<p><md-icon>location_off</md-icon>Lokacija ni omogočena.</p>";
+        "<p><mdui-icon name=location_off></mdui-icon>Lokacija ni omogočena.</p>";
     for (const station in stationList) {
       if (
         search &&
@@ -49,8 +49,8 @@ async function createStationItems(o) {
         )
       )
         continue;
-      let item = addElement("div", null, "station");
-      addElement("md-ripple", item);
+      let item = addElement("mdui-card", null, "station");
+      item.clickable = true;
       let textHolder = addElement("div", item, "textHolder");
       textHolder.innerHTML =
         '<span class="stationName">' + stationList[station].name + "</span>";
@@ -67,11 +67,13 @@ async function createStationItems(o) {
       if (distance < 3 || search) {
         let cornot = "";
         if (stationList[station].ref_id % 2 !== 0) {
-          cornot = '<md-icon class="center">adjust</md-icon>';
+          cornot =
+            '<mdui-icon name=adjust--outlined class="center"></mdui-icon>';
         }
         let fav = "";
         if (favList.includes(stationList[station].ref_id)) {
-          fav = '<md-icon class="iconFill">favorite</md-icon>';
+          fav =
+            '<mdui-icon name=favorite--outlined class="iconFill"></mdui-icon>';
         }
         if (distance > 1) {
           textHolder.innerHTML +=
@@ -139,20 +141,15 @@ async function createStationItems(o) {
         busNumberDiv.id = "bus_" + line.route_number;
         busNumberDiv.textContent = line.route_number;
         let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
-        addElement("md-ripple", arrivalItem);
+        addElement("mdui-ripple", arrivalItem);
 
         let tripNameSpan = addElement("span", arrivalDataDiv);
         tripNameSpan.textContent = line.route_name;
         arrivalItem.addEventListener("click", () => {
-          var stylesTransition = [
-            document.querySelector(".searchContain").style,
-            document.querySelector(".listOfStations").style,
-            document.querySelector(".favouriteStations").style,
-            document.getElementById("tabsFav").style,
-          ];
-          stylesTransition.forEach((style) => {
-            style.transform = "translateX(-100vw) translateZ(1px)";
-          });
+          document.querySelector(".searchContain").style.transform =
+            "translateX(-100vw) translateZ(1px)";
+          document.getElementById("tabsFav").style.transform =
+            "translateX(-100vw) translateZ(1px)";
 
           let line2 = line;
           line2.route_name = line.route_number;
@@ -182,17 +179,17 @@ function createFavourite(parent, search, query) {
   var nearby = {};
   if (latitude == 46.051467939339034)
     parent.innerHTML +=
-      "<p><md-icon>location_off</md-icon>Lokacija ni omogočena.</p>";
+      "<p><mdui-icon name=location_off></mdui-icon>Lokacija ni omogočena.</p>";
   const favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
   for (const station in stationList) {
     if (favList.length == 0 && !search) {
       let p = addElement("p", parent);
       p.innerHTML =
-        "<p><md-icon>favorite</md-icon>Nimate priljubljenih postaj.</p>";
+        "<p><mdui-icon name=favorite></mdui-icon>Nimate priljubljenih postaj.</p>";
       break;
     }
-    let item = addElement("div", null, "station");
-    addElement("md-ripple", item);
+    let item = addElement("mdui-card", null, "station");
+    item.clickable = true;
     let textHolder = addElement("div", item, "textHolder");
     textHolder.innerHTML =
       '<span class="stationName">' + stationList[station].name + "</span>";
@@ -213,11 +210,12 @@ function createFavourite(parent, search, query) {
       );
       let cornot = "";
       if (stationList[station].ref_id % 2 !== 0) {
-        cornot = '<md-icon class="center">adjust</md-icon>';
+        cornot = '<mdui-icon name=adjust--outlined class="center"></mdui-icon>';
       }
       let fav = "";
       if (favList.includes(stationList[station].ref_id)) {
-        fav = '<md-icon class="iconFill">favorite</md-icon>';
+        fav =
+          '<mdui-icon name=favorite--outlined class="iconFill"></mdui-icon>';
       }
       if (distance > 1) {
         textHolder.innerHTML +=
@@ -284,20 +282,14 @@ function createFavourite(parent, search, query) {
         busNumberDiv.id = "bus_" + line.route_number;
         busNumberDiv.textContent = line.route_number;
         let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
-        addElement("md-ripple", arrivalItem);
 
         let tripNameSpan = addElement("span", arrivalDataDiv);
         tripNameSpan.textContent = line.route_name;
         arrivalItem.addEventListener("click", () => {
-          var stylesTransition = [
-            document.querySelector(".searchContain").style,
-            document.querySelector(".listOfStations").style,
-            document.querySelector(".favouriteStations").style,
-            document.getElementById("tabsFav").style,
-          ];
-          stylesTransition.forEach((style) => {
-            style.transform = "translateX(-100vw) translateZ(1px)";
-          });
+          document.querySelector(".searchContain").style.transform =
+            "translateX(-100vw) translateZ(1px)";
+          document.getElementById("tabsFav").style.transform =
+            "translateX(-100vw) translateZ(1px)";
 
           let line2 = line;
           line2.route_name = line.route_number;
@@ -366,18 +358,10 @@ async function oppositeStation(id) {
 
 const delayedSearch = debounce(searchRefresh, 300);
 async function stationClick(stationa) {
-  document.querySelector(".navigationBar").style.transform = "translateY(60px)";
+  document.querySelector(".navigationBar").style.transform = "translateY(80px)";
   if (document.querySelector(".arrivalsOnStation")) return;
-  var arrivalsScroll;
   let station = stationa ? stationList[stationa] : isArrivalsOpen;
-  var stylesTransition = [
-    document.querySelector(".searchContain").style,
-    document.querySelector(".listOfStations").style,
-    document.querySelector(".favouriteStations").style,
-    document.getElementById("tabsFav").style,
-  ];
 
-  var notYet = false;
   var container;
 
   var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
@@ -399,25 +383,31 @@ async function stationClick(stationa) {
   );
   createInfoBar(infoBar, station.ref_id);
 
-  stylesTransition.forEach((style) => {
-    style.transform = "translateX(-100vw) translateZ(1px)";
-  });
+  document.querySelector(".searchContain").style.transform =
+    "translateX(-100vw) translateZ(1px)";
+  document.getElementById("tabsFav").style.transform =
+    "translateX(-100vw) translateZ(1px)";
   setTimeout(() => {
     container.style.transform = "translateX(0) translateZ(1px)";
   }, 0);
 
   const title = addElement("h1", container, "title");
   let holder = addElement("div", title);
-  let iks = addElement("md-icon-button", holder, "iks");
-  iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
+  let iks = addElement(
+    "mdui-button-icon",
+    holder,
+    "iks",
+    "icon=arrow_back_ios_new"
+  );
   iks.addEventListener("click", function () {
     window.history.replaceState(null, document.title, location.pathname);
     container.style.transform = "translateX(100vw) translateZ(1px)";
     document.querySelector(".infoBar").style.transform = "translateY(100%)";
     isArrivalsOpen = false;
-    stylesTransition.forEach((style) => {
-      style.transform = "translateX(0vw) translateZ(1px)";
-    });
+    document.querySelector(".searchContain").style.transform =
+      "translateX(0vw) translateZ(1px)";
+    document.getElementById("tabsFav").style.transform =
+      "translateX(0vw) translateZ(1px)";
     document.querySelector(".navigationBar").style.transform =
       "translateY(0px)";
     clearInterval(interval);
@@ -436,36 +426,39 @@ async function stationClick(stationa) {
   let ttl = addElement("span", title);
   let cornot = "";
   if (station.ref_id % 2 !== 0)
-    cornot = '<md-icon class="center">adjust</md-icon>';
+    cornot = '<mdui-icon name=adjust--outlined class="center"></mdui-icon>';
   ttl.innerHTML = station.name + cornot;
   let hh = addElement("div", title, "titleHolder");
   var streetView = addElement(
-    "md-filled-tonal-button",
+    "mdui-button",
     infoBar,
-    "streetViewBtn"
+    "streetViewBtn",
+    "icon=360",
+    "variant=tonal"
   );
-  streetView.innerHTML = "<md-icon slot=icon>360</md-icon>Slika postaje";
+  streetView.innerHTML = "Slika postaje";
   streetView.addEventListener("click", function () {
     showStreetView(station.latitude, station.longitude);
   });
-  var fav = addElement("md-icon-button", hh, "favi");
-  fav.innerHTML = favList.includes(station.ref_id)
-    ? "<md-icon class=iconFill>favorite</md-icon>"
-    : "<md-icon>favorite</md-icon>";
+  var fav = addElement(
+    "mdui-button-icon",
+    hh,
+    "favi",
+    "icon=favorite_border",
+    "selectable",
+    "selected-icon=favorite",
+    favList.includes(station.ref_id) ? "selected" : ""
+  );
+
   fav.addEventListener("click", function () {
     if (favList.includes(station.ref_id)) {
       favList = favList.filter((item) => item !== station.ref_id);
-      fav.innerHTML = "<md-icon>favorite</md-icon>";
     } else {
       favList.push(station.ref_id);
-
-      fav.innerHTML = "<md-icon class=iconFill>favorite</md-icon>";
     }
-
     localStorage.setItem("favouriteStations", JSON.stringify(favList));
   });
-  var mapca = addElement("md-icon-button", hh, "mapca");
-  mapca.innerHTML = "<md-icon>swap_calls</md-icon>";
+  var mapca = addElement("mdui-button-icon", hh, "mapca", "icon=swap_calls");
   mapca.addEventListener("click", function () {
     oppositeStation(station.ref_id);
   });
@@ -488,56 +481,31 @@ async function stationClick(stationa) {
     }
   }
 
-  var tabs = addElement("md-tabs", container, "tabs");
-  tabs.innerHTML = `<md-primary-tab id="arrivalsTab" aria-controls="arrivals-panel">Prihodi</md-primary-tab>
-   <md-primary-tab id="timeTab" aria-controls="time-panel">Urnik</md-primary-tab>`;
-  arrivalsScroll = addElement("div", container, "arrivalsScroll");
+  var tabs = addElement("mdui-tabs", container, "tabs");
+  tabs.outerHTML = `<mdui-tabs
+  placement="top"
+  value="tab-1"
+  class="tabs"
+  full-width
+  ><mdui-tab value="tab-1">Prihodi</mdui-tab
+  ><mdui-tab value="tab-2">Urnik</mdui-tab>
+  <mdui-tab-panel
+  class="arrivalsScroll"
+    slot="panel"
+    value="tab-1"
+    
+    id=arrivals-panel
+  ></mdui-tab-panel>
+  <mdui-tab-panel
+    slot="panel"
+    value="tab-2"
+    class="timeTScroll arrivalsScroll"
+    id=time-panel
+  ></mdui-tab-panel
+></mdui-tabs>`;
+  let arrivalsScroll = document.getElementById("arrivals-panel");
   makeSkeleton(arrivalsScroll);
-  arrivalsScroll.setAttribute("role", "tabpanel");
-  arrivalsScroll.setAttribute("aria-labelledby", "arrivalsTab");
-  arrivalsScroll.setAttribute("id", "arrivals-panel");
-  let currentPanel2 = document.querySelector(".arrivalsScroll");
-  if (document.querySelector(".timeTScroll"))
-    document.querySelector(".timeTScroll").remove();
-  var timeTScroll = addElement("div", container, "timeTScroll");
-  timeTScroll.setAttribute("role", "tabpanel");
-  timeTScroll.setAttribute("aria-labelledby", "timeTab");
-  timeTScroll.setAttribute("id", "time-panel");
-  timeTScroll.classList.add("arrivalsScroll");
-  timeTScroll.style.display = "none";
-  tabs.addEventListener("change", () => {
-    let o =
-      currentPanel2.id == "arrivals-panel"
-        ? document.getElementById("arrivals-panel")
-        : document.querySelector(".timeTScroll");
-    o.style.display = "none";
-    o.style.transform = "translateX(0px) translateY(-20px)";
-    o.style.opacity = "0";
-
-    const panelId = event.target.activeTab?.getAttribute("aria-controls");
-    const root = event.target.getRootNode();
-    currentPanel2 = root.querySelector(`#${panelId}`);
-    currentPanel2.style.display = "flex";
-
-    currentPanel2.style.transform = "translateX(0px) translateY(0px)";
-    currentPanel2.style.opacity = "1";
-
-    if (currentPanel2.id == "time-panel" && !notYet) {
-      notYet = true;
-      showLines(timeTScroll, station);
-    }
-    getLocation();
-  });
-
-  let getMyBus = addElement("md-filled-tonal-button", null, "getMyBus");
-  container.insertBefore(getMyBus, arrivalsScroll);
-  getMyBus.innerHTML = "Moja vožnja";
-  getMyBus.style.display = "none";
-  const clickedMyBus = () => {
-    container.style.transform = "translateX(-100vw) translateZ(1px)";
-    getMyBusData();
-  };
-  getMyBus.addEventListener("click", clickedMyBus);
+  showLines(document.getElementById("time-panel"), station);
 
   showStationOnMap(station.latitude, station.longitude, station.name);
 
@@ -547,13 +515,7 @@ async function stationClick(stationa) {
     showArrivals(station.ref_id, true);
   }, 10000);
 }
-function makeSkeleton(container) {
-  for (let i = 0; i < 5; i++) {
-    let arrivalItem = addElement("div", container, "arrivalItem");
-    arrivalItem.style.height = "100px";
-    arrivalItem.style.animationDelay = "0.2" + i * 2 + "s";
-  }
-}
+
 /**
  * Displays the arrivals of buses on the provided element.
  *
@@ -594,9 +556,9 @@ async function showArrivals(ref_id, repeated) {
         );
         if (arrival.type == 0) {
           arrivalTimeSpan.innerHTML =
-            "<md-icon style='animation-delay:" +
+            "<mdui-icon name=near_me--outlined style='animation-delay:" +
             randomOneDecimal() +
-            "s;'>near_me</md-icon>" +
+            "s;'></mdui-icon>" +
             minToTime(arrival.eta_min);
           arrivalTimeSpan.classList.add("arrivalGreen");
         } else if (arrival.type == 1) {
@@ -612,7 +574,12 @@ async function showArrivals(ref_id, repeated) {
 
         arrivalTimeSpan = null;
       } else {
-        let arrivalItem = addElement("div", arrivalsScroll, "arrivalItem");
+        let arrivalItem = addElement(
+          "mdui-card",
+          arrivalsScroll,
+          "arrivalItem",
+          "clickable"
+        );
         if (repeated) {
           arrivalItem.style.opacity = "1";
           arrivalItem.style.transform = "translateX(0)";
@@ -629,7 +596,7 @@ async function showArrivals(ref_id, repeated) {
         busNumberDiv.textContent = arrival.route_name;
         listOfArrivals.push(arrival.trip_id);
         let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
-        addElement("md-ripple", arrivalItem);
+        addElement("mdui-ripple", arrivalItem);
 
         let tripNameSpan = addElement("span", arrivalDataDiv);
         tripNameSpan.textContent = arrival.stations.arrival;
@@ -640,9 +607,9 @@ async function showArrivals(ref_id, repeated) {
         let arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
         if (arrival.type == 0) {
           arrivalTimeSpan.innerHTML =
-            "<md-icon style='animation-delay:" +
+            "<mdui-icon name=near_me--outlined style='animation-delay:" +
             randomOneDecimal() +
-            "s;'>near_me</md-icon>" +
+            "s;'></mdui-icon>" +
             minToTime(arrival.eta_min);
           arrivalTimeSpan.classList.add("arrivalGreen");
         } else if (arrival.type == 1) {
@@ -670,93 +637,8 @@ async function showArrivals(ref_id, repeated) {
     }
   } else {
     arrivalsScroll.innerHTML +=
-      "<p><md-icon>no_transfer</md-icon>V naslednji uri ni predvidenih avtobusov.</p>";
+      "<p><mdui-icon name=no_transfer--outlined></mdui-icon>V naslednji uri ni predvidenih avtobusov.</p>";
   }
-}
-async function showStreetView(latitude, longitude) {
-  let apiKey = "AIzaSyCGnbK8F2HvhjqRrKo3xogo4Co7bitNwYA";
-  const camera = await getStreetViewCameraLocation(latitude, longitude, apiKey);
-
-  if (!camera) {
-    alert("Street View not available for this station.");
-    return;
-  }
-
-  const heading = computeHeading(camera.lat, camera.lng, latitude, longitude);
-
-  var iframe = addElement("iframe", document.body, "streetView");
-  iframe.src = `https://www.google.com/maps/embed/v1/streetview?key=${apiKey}&location=${camera.lat},${camera.lng}&heading=${heading}&pitch=0&fov=90`;
-  iframe.addEventListener("load", function () {
-    iframe.style.animation = "show 0.4s forwards";
-  });
-  iframe.setAttribute("allow", "accelerometer;gyroscope");
-  let iks = addElement("md-icon-button", document.body, "iks");
-  iks.classList.add("closeStreetView");
-  iks.innerHTML = "<md-icon>close</md-icon>";
-  iks.addEventListener("click", function (event) {
-    event.stopPropagation();
-
-    iframe.remove();
-    iks.remove();
-  });
-}
-function computeHeading(lat1, lng1, lat2, lng2) {
-  const dLon = ((lng2 - lng1) * Math.PI) / 180;
-  const y = Math.sin(dLon) * Math.cos((lat2 * Math.PI) / 180);
-  const x =
-    Math.cos((lat1 * Math.PI) / 180) * Math.sin((lat2 * Math.PI) / 180) -
-    Math.sin((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.cos(dLon);
-  const brng = (Math.atan2(y, x) * 180) / Math.PI;
-  return (brng + 360) % 360;
-}
-async function getStreetViewCameraLocation(stopLat, stopLng, apiKey) {
-  const url = `https://maps.googleapis.com/maps/api/streetview/metadata?location=${stopLat},${stopLng}&key=${apiKey}`;
-  const res = await fetch(url);
-  const data = await res.json();
-
-  if (data.status === "OK") {
-    return { lat: data.location.lat, lng: data.location.lng };
-  } else {
-    console.warn("No Street View found at this location.");
-    return null;
-  }
-}
-
-async function fetchStreetViewDataForStations(stations, apiKey) {
-  const results = {};
-
-  let i = 0;
-  for (const station of stations) {
-    const { ref_id, latitude, longitude } = station;
-
-    const metadataUrl = `https://maps.googleapis.com/maps/api/streetview/metadata?location=${latitude},${longitude}&key=${apiKey}`;
-    const res = await fetch(metadataUrl);
-    const data = await res.json();
-
-    if (data.status === "OK") {
-      const camLat = data.location.lat;
-      const camLng = data.location.lng;
-      const heading = computeHeading(camLat, camLng, latitude, longitude);
-
-      results[ref_id] = {
-        pano_lat: camLat,
-        pano_lng: camLng,
-        pano_id: data.pano_id,
-        headingToStation: heading,
-      };
-    } else {
-      console.warn(`No Street View found for station ${station.name}`);
-      results[ref_id] = null;
-    }
-    if (i > 5) break;
-    i++;
-    // Optional: add delay to avoid hitting quota
-    await new Promise((r) => setTimeout(r, 100));
-  }
-
-  return results;
 }
 
 async function showLines(parent, station) {
@@ -783,7 +665,7 @@ async function showLines(parent, station) {
       busNumberDiv.id = "bus_" + arrival.route_number;
       busNumberDiv.textContent = arrival.route_number;
       const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
-      addElement("md-ripple", arrivalItem);
+      addElement("mdui-ripple", arrivalItem);
 
       const tripNameSpan = addElement("span", arrivalDataDiv);
       tripNameSpan.textContent = arrival.route_group_name;
@@ -813,8 +695,12 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
   container.classList.add("arrivalsScroll");
   document.querySelector(".arrivalsHolder").style.transform =
     "translateX(-100vw) translateZ(1px)";
-  let iks = addElement("md-icon-button", container, "iks");
-  iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
+  let iks = addElement(
+    "mdui-button-icon",
+    container,
+    "iks",
+    "icon=arrow_back_ios_new"
+  );
   iks.addEventListener("click", function () {
     window.history.replaceState(null, document.title, location.pathname);
     setTimeout(() => {
@@ -892,14 +778,26 @@ const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
  */
 async function createInfoBar(infoBar, station_id) {
   let changeTime = addElement(
-    "md-outlined-segmented-button-set",
+    "mdui-segmented-button-group",
     infoBar,
-    "changeTime"
+    "changeTime",
+    "selects=single",
+    "value=" + (localStorage.getItem("time") ? "absolute" : "relative")
   );
-  let absolut = addElement("md-outlined-segmented-button", changeTime, "");
-  absolut.label = minToTime(3, 1);
-  let relativ = addElement("md-outlined-segmented-button", changeTime, "");
-  relativ.label = "3 min";
+  let absolut = addElement(
+    "mdui-segmented-button",
+    changeTime,
+    "",
+    "value=absolute"
+  );
+  absolut.innerHTML = minToTime(3, 1);
+  let relativ = addElement(
+    "mdui-segmented-button",
+    changeTime,
+    "",
+    "value=relative"
+  );
+  relativ.innerHTML = "3 min";
   localStorage.getItem("time") == "relativ" || !localStorage.getItem("time")
     ? relativ.setAttribute("selected", "")
     : absolut.setAttribute("selected", "");
@@ -917,8 +815,13 @@ async function createInfoBar(infoBar, station_id) {
     "https://lpp.ojpp.derp.si/api/station/messages?station-code=" + station_id
   );
   if (info.length !== 0) {
-    let infoBtn = addElement("md-filled-tonal-icon-button", infoBar, "infoBtn");
-    infoBtn.innerHTML = "<md-icon>warning</md-icon>";
+    let infoBtn = addElement(
+      "mdui-button-icon",
+      infoBar,
+      "infoBtn",
+      "icon=warning",
+      "variant=tonal"
+    );
     infoBtn.addEventListener("click", () => {
       alert(info.toString());
     });
@@ -942,10 +845,14 @@ const nextBusTemplate = (data, parent) => {
       }
     }
 
-    let arrivalItem = addElement("div", parent, "arrivalItem");
-    addElement("md-ripple", arrivalItem);
+    let arrivalItem = addElement(
+      "mdui-card",
+      parent,
+      "arrivalItem",
+      "clickable"
+    );
+    addElement("mdui-ripple", arrivalItem);
     arrivalItem.style.animationDelay = "0";
-    //arrivalItem.innerHTML = `<md-icon>${icon}</md-icon>`;
     arrivalItem.style.order = arrival.type === 2 ? 0 : arrival.eta_min;
     let busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
@@ -953,7 +860,7 @@ const nextBusTemplate = (data, parent) => {
 
     busNumberDiv.id = "next_bus_" + arrival.route_name;
     busNumberDiv.textContent = arrival.route_name;
-    addElement("md-ripple", busNumberDiv);
+    addElement("mdui-ripple", busNumberDiv);
     let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
 
     let tripNameSpan = addElement("span", arrivalDataDiv);
@@ -966,9 +873,9 @@ const nextBusTemplate = (data, parent) => {
 
     if (arrival.type == 0) {
       arrivalTimeSpan.innerHTML =
-        "<md-icon style='animation-delay:" +
+        "<mdui-icon name=near_me--outlined style='animation-delay:" +
         randomOneDecimal() +
-        "s;'>near_me</md-icon>" +
+        "s;'></mdui-icon>" +
         minToTime(arrival.eta_min);
       arrivalTimeSpan.classList.add("arrivalGreen");
     } else if (arrival.type == 1) {
@@ -1084,21 +991,33 @@ async function getMyBusData(busId, arrivalsAll, tripId, line) {
   holder.classList.add("arrivalsScroll");
   let myEtaHolder = addElement("div", holder, "myEtaHolder");
 
-  let iks = addElement("md-icon-button", myEtaHolder, "iks");
+  let iks = addElement(
+    "mdui-button-icon",
+    myEtaHolder,
+    "iks",
+    "icon=arrow_back_ios_new",
+    "id=busDataIks"
+  );
   let myEtaChips = addElement("div", myEtaHolder, "myEtaChips");
   if (arrivals && arrivals.length > 1) {
     let i = 1;
     for (const arrival of arrivals) {
-      let arTime = addElement("div", myEtaChips, "arrivalTime");
+      let arTime = addElement(
+        "mdui-button",
+        myEtaChips,
+        "arrivalTime",
+        "variant=elevated"
+      );
       arTime.innerHTML = arrival.eta_min
         ? minToTime(arrival.eta_min)
         : "Bus " + i;
       i++;
       arTime.busId = arrival.vehicle_id;
-      addElement("md-ripple", arTime);
+      addElement("mdui-ripple", arTime);
       arTime.addEventListener("click", function () {
         myEtaChips.querySelector(".selected").classList.remove("selected");
         arTime.classList.add("selected");
+
         clearInterval(intervalBusk);
         intervalBusk = null;
         let busek = busObject.find(
@@ -1111,6 +1030,9 @@ async function getMyBusData(busId, arrivalsAll, tripId, line) {
         intervalBusk = setInterval(() => {
           updateMyBus(busek, arrival.trip_id);
         }, 10000);
+        window.refreshMyBus = async () => {
+          await updateMyBus(busek, arrival.trip_id);
+        };
       });
     }
     myEtaChips.firstElementChild.classList.add("selected");
@@ -1120,9 +1042,6 @@ async function getMyBusData(busId, arrivalsAll, tripId, line) {
     ? clearElementContent(document.querySelector(".myBusDiv"))
     : addElement("div", holder, "myBusDiv");
   myBusDiv = document.querySelector(".myBusDiv");
-
-  iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
-  iks.id = "busDataIks";
   iks.addEventListener("click", function () {
     holder.style.transform = "translateX(100vw) translateZ(1px)";
     clearInterval(intervalBusk);
@@ -1130,15 +1049,10 @@ async function getMyBusData(busId, arrivalsAll, tripId, line) {
       document.querySelector(".arrivalsHolder").style.transform =
         "translateX(0vw) translateZ(1px)";
     } else {
-      var stylesTransition = [
-        document.querySelector(".searchContain").style,
-        document.querySelector(".listOfStations").style,
-        document.querySelector(".favouriteStations").style,
-        document.getElementById("tabsFav").style,
-      ];
-      stylesTransition.forEach((style) => {
-        style.transform = "translateX(0vw) translateZ(1px)";
-      });
+      document.querySelector(".searchContain").style.transform =
+        "translateX(0vw) translateZ(1px)";
+      document.getElementById("tabsFav").style.transform =
+        "translateX(0vw) translateZ(1px)";
     }
     clearMap();
     setTimeout(() => {
@@ -1163,6 +1077,10 @@ async function getMyBusData(busId, arrivalsAll, tripId, line) {
     intervalBusk = setInterval(() => {
       updateMyBus(bus, arrivals ? arrivals[0].trip_id : bus.trip_id);
     }, 10000);
+    window.refreshMyBus = async () => {
+      await updateMyBus(bus, arrivals ? arrivals[0].trip_id : bus.trip_id);
+    };
+
     return;
   } else {
     stationsOnRoute(line, myBusDiv);
@@ -1376,14 +1294,14 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
       !lineStation.parentNode.classList.contains("half-hidden-first")
     ) {
       lnimg.innerHTML =
-        "<md-icon style='view-transition-name:busIcon;color:RGB(" +
+        "<mdui-icon name='directions_bus--outlined' style='view-transition-name:busIcon;color:RGB(" +
         darkenColor(
           lineColorsObj[arrival.line_number.replace(/\D/g, "")],
           100
         ).join(",") +
         ")!important;background-color:RGB(" +
         lineColorsObj[arrival.line_number.replace(/\D/g, "")].join(",") +
-        ")'>directions_bus</md-icon>";
+        ")'></mdui-icon>";
       lnimg.classList.add("busOnStation");
     }
     if (!listArrivals[ar["vehicle_id"]]) {
@@ -1394,14 +1312,14 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
         ar["type"] !== 2
       ) {
         lnimg.innerHTML =
-          "<md-icon style='view-transition-name:busIcon;color:RGB(" +
+          "<mdui-icon name='directions_bus--outlined' style='view-transition-name:busIcon;color:RGB(" +
           darkenColor(
             lineColorsObj[arrival.line_number.replace(/\D/g, "")],
             100
           ).join(",") +
           ")!important;background-color:RGB(" +
           lineColorsObj[arrival.line_number.replace(/\D/g, "")].join(",") +
-          ")'>directions_bus</md-icon>";
+          ")'></mdui-icon>";
         lnimg.classList.add("busBetween");
       }
     }
@@ -1448,9 +1366,10 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
               // If spanText is empty, remove the background from etaStation
               stationHTML = item + `<sub>${long}</sub>`;
             } else if (typeValue === "0") {
-              // If type is 0, add <md-icon>near_me</md-icon>
               stationHTML =
-                item + `<sub>${long}</sub>` + "<md-icon>near_me</md-icon>";
+                item +
+                `<sub>${long}</sub>` +
+                "<mdui-icon name=near_me--outlined></mdui-icon>";
             } else if (typeValue === "2") {
               // If type is 2, replace the text with "P"
               stationHTML = item.replace(item, "PRIHOD");
@@ -1472,9 +1391,7 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
   }
 }
 async function createBusData(bus, busDataDiv) {
-  let busAge = await (
-    await fetch("https://slo-promet.web.app/assets/js/busAge.json")
-  ).json();
+  let busAge = await (await fetch("assets/js/busAge.json")).json();
   const findYearByGarageNumber = (garageNumber) => {
     for (const year in busAge) {
       if (busAge[year].includes(garageNumber)) {
@@ -1508,7 +1425,7 @@ async function createBusData(bus, busDataDiv) {
     });
     img.src =
       "https://mestnipromet.cyou/tracker/img/avtobusi/" + bus.no + ".jpg";
-    holder.innerHTML += `<div class="busAuthor"><md-icon slot="trailing-icon">photo_camera</md-icon>${bus.author}</div>`;
+    holder.innerHTML += `<div class="busAuthor"><mdui-icon name=photo_camera--outlined></mdui-icon>${bus.author}</div>`;
     await imageLoaded;
   }
 }

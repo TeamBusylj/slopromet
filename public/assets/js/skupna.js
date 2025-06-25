@@ -31,7 +31,7 @@ function errorReturn(message, source, lineno, colno, error) {
   let errorBar = document.querySelector(".errorMessage");
   if (!errorBar) errorBar = addElement("div", document.body, "errorMessage");
   errorBar.innerHTML = `
-    <md-icon>error</md-icon>
+    <mdui-icon>error</mdui-icon>
     <div><span>Zgodila se je napaka.</span>
     <span class="errorDetails">Napako so povzročili napačni podatki na LPP / IJPP.</span></div>
   `;
@@ -47,16 +47,29 @@ function errorReturn(message, source, lineno, colno, error) {
   }, 5000);
   return true; // return true to suppress default browser error alert
 }
-function addElement(tag, parent, className) {
-  var element = document.createElement(tag);
+function addElement(tag, parent, className, ...attrs) {
+  const element = document.createElement(tag);
+
   if (className) {
     element.classList.add(className);
   }
+
+  // Set additional attributes
+  for (const attr of attrs) {
+    const [key, ...rest] = attr.split("=");
+    const value = rest.join("=").trim();
+    if (key && value !== undefined) {
+      element.setAttribute(key.trim(), value);
+    }
+  }
+
   if (parent) {
     parent.appendChild(element);
   }
+
   return element;
 }
+
 function sortArrivals(listArrivals, sortIndex) {
   let combinedArrivals = [];
 
@@ -315,8 +328,7 @@ async function makeMap() {
       pop.style.background = "RGB(" + feature.get("color") + ")";
       container.style.display = "none";
       content.innerHTML =
-        "<md-ripple></md-ripple><md-icon>directions_bus</md-icon>" +
-        feature.get("name");
+        "<mdui-icon>directions_bus--outlined</mdui-icon>" + feature.get("name");
       popup.setPosition(coordinate);
 
       container.style.display = "block";
@@ -412,32 +424,42 @@ window.addEventListener("load", async function () {
 
   let bava = "";
   sht.innerHTML = `
-<div class="searchContain"> <md-filled-text-field class="search" value='${bava}' placeholder="Išči"><md-icon slot="leading-icon">search</md-icon></md-filled-text-field></div>
- <md-circular-progress indeterminate id="loader"></md-circular-progress>
- <md-tabs class=tabs id=tabsFav><md-primary-tab id="favTab" aria-controls="fav-panel">Priljubljeno</md-primary-tab><md-primary-tab id="locationTab" aria-controls="location-panel">V bližini</md-primary-tab></md-tabs>
-  <md-list role="tabpanel" aria-labelledby="favTab" id="fav-panel" class="favouriteStations"></md-list>  
- <md-list role="tabpanel" aria-labelledby="locationTab" id="location-panel" class="listOfStations"></md-list>
+<div class="searchContain">
+  <mdui-text-field clearable class="search" value="${bava}" placeholder="Išči"
+    ><mdui-symbol>search</mdui-symbol></mdui-text-field
+  >
+</div>
+<mdui-circular-progress id="loader"></mdui-circular-progress>
+<mdui-tabs
+full-width
+  placement="top"
+  value="tab-1"
+  class="tabs"
+  id="tabsFav"
+  ><mdui-tab value="tab-1">Priljubljeno</mdui-tab
+  ><mdui-tab value="tab-2">V bližini</mdui-tab>
+  <mdui-tab-panel
+    slot="panel"
+    value="tab-1"
+    class="favouriteStations"
+  ></mdui-tab-panel>
+  <mdui-tab-panel
+    slot="panel"
+    value="tab-2"
+    class="listOfStations"
+  ></mdui-tab-panel
+></mdui-tabs>
    `;
 
   let search = this.document.querySelector(".search");
   search.addEventListener("input", delayedSearch);
   search.addEventListener(`focus`, () => search.select());
   absoluteTime = localStorage.getItem("time") ? true : false;
-  document
-    .querySelector("#" + agency.toLocaleLowerCase() + "Tab > img")
-    .classList.add("selected");
-  document.body.classList.add(agency.toLocaleLowerCase());
+  document.querySelector(".navigationBar").value = agency;
+  document.body.classList.add(agency);
+  document.documentElement.classList.add(agency);
 
   createBuses();
-  if (agency == "LPP") {
-    busImageData = await fetch(
-      "https://mestnipromet.cyou/tracker/js/json/images.json"
-    );
-    absoluteTime = localStorage.getItem("time") ? true : false;
-
-    busImageData = await busImageData.json();
-    lines = await fetchData("https://lpp.ojpp.derp.si/api/route/routes");
-  }
   const script = document.createElement("script");
   script.src = "https://cdn.jsdelivr.net/npm/ol@v10.5.0/dist/ol.js";
   script.onload = makeMap;
@@ -483,10 +505,11 @@ function loadJS() {
     script2.type = "text/javascript";
 
     script.src =
-      agency === "LPP" ? "assets/js/scriptlpp.js" : "assets/js/scriptBA.js";
+      agency === "lpp" ? "assets/js/scriptlpp.js" : "assets/js/scriptBA.js";
     script2.src =
-      agency === "LPP" ? "assets/js/helper.js" : "assets/js/helperBA.js";
-
+      agency === "lpp" ? "assets/js/helper.js" : "assets/js/helperBA.js";
+    script.id = "mainScript";
+    script2.id = "helperScript";
     let loaded = 0;
     const onLoad = () => {
       loaded++;
@@ -502,19 +525,28 @@ function loadJS() {
     document.head.appendChild(script2);
   });
 }
-function changeAgency(agencyClicked) {
+async function changeAgency(agencyClicked) {
+  let joj = agencyClicked + agency;
+  document.documentElement.classList.remove(agency);
   if (agency == agencyClicked) return;
-  document.body.style.opacity = "0";
-  if (agencyClicked !== "LPP") {
+  if (agencyClicked !== "lpp") {
     agency = agencyClicked;
     localStorage.setItem("agency", agencyClicked);
   } else {
-    agency = "LPP";
-    localStorage.setItem("agency", "LPP");
+    agency = "lpp";
+    localStorage.setItem("agency", "lpp");
   }
-  setTimeout(() => {
-    location.reload();
-  }, 200);
+
+  if (joj.includes("lpp")) {
+    setTimeout(() => {
+      location.reload();
+    }, 200);
+  } else {
+    document.querySelector(".favouriteStations").innerHTML = "";
+    document.querySelector(".listOfStations").innerHTML = "";
+    document.documentElement.classList.add(agency);
+    createBuses();
+  }
 }
 async function getLocation() {
   try {
@@ -573,9 +605,12 @@ function showStationOnMap(latitude, longitude, name) {
       duration: 1000,
     },
   });
-  let color = getComputedStyle(document.body).getPropertyValue(
-    "--md-sys-color-primary"
-  );
+  let color =
+    "RGB(" +
+    getComputedStyle(document.documentElement).getPropertyValue(
+      "--mdui-color-primary"
+    ) +
+    ")";
   map.addOverlay(popup2);
   fetch("assets/images/bubble.svg")
     .then((r) => r.text())
@@ -587,7 +622,8 @@ function showStationOnMap(latitude, longitude, name) {
   pop.style.background = color;
   container.style.display = "none";
 
-  content.innerHTML = "<md-icon>directions_bus</md-icon>" + name;
+  content.innerHTML =
+    "<mdui-icon name=directions_bus--outlined></mdui-icon>" + name;
   popup2.setPosition(coordinate);
   setTimeout(() => {
     container.style.display = "block";
@@ -599,17 +635,65 @@ function showStationOnMap(latitude, longitude, name) {
 }
 async function createBuses() {
   await getLocation();
-  currentPanel = document.querySelector(".favouriteStations");
   await updateStations();
-  var tabs = document.getElementById("tabsFav");
+  if (agency == "lpp") {
+    busImageData = await fetch(
+      "https://mestnipromet.cyou/tracker/js/json/images.json"
+    );
+    absoluteTime = localStorage.getItem("time") ? true : false;
 
-  tabs.addEventListener("change", changeTabs);
-  let e = document.querySelector(".favouriteStations");
-  e.style.display = "flex";
-  setTimeout(() => {
-    e.style.transform = "translateX(0px) translateY(0px)";
-    e.style.opacity = "1";
-  }, 10);
+    busImageData = await busImageData.json();
+    lines = await fetchData("https://lpp.ojpp.derp.si/api/route/routes");
+  }
+}
+async function showStreetView(latitude, longitude) {
+  let apiKey = "AIzaSyCGnbK8F2HvhjqRrKo3xogo4Co7bitNwYA";
+  const camera = await getStreetViewCameraLocation(latitude, longitude, apiKey);
+
+  if (!camera) {
+    alert("Street View not available for this station.");
+    return;
+  }
+
+  const heading = computeHeading(camera.lat, camera.lng, latitude, longitude);
+
+  var iframe = addElement("iframe", document.body, "streetView");
+  iframe.src = `https://www.google.com/maps/embed/v1/streetview?key=${apiKey}&location=${camera.lat},${camera.lng}&heading=${heading}&pitch=0&fov=90`;
+  iframe.addEventListener("load", function () {
+    iframe.style.animation = "show 0.4s forwards";
+  });
+  iframe.setAttribute("allow", "accelerometer;gyroscope");
+  let iks = addElement("mdui-button-icon", document.body, "iks", "icon=close");
+  iks.classList.add("closeStreetView");
+  iks.addEventListener("click", function (event) {
+    event.stopPropagation();
+
+    iframe.remove();
+    iks.remove();
+  });
+}
+function computeHeading(lat1, lng1, lat2, lng2) {
+  const dLon = ((lng2 - lng1) * Math.PI) / 180;
+  const y = Math.sin(dLon) * Math.cos((lat2 * Math.PI) / 180);
+  const x =
+    Math.cos((lat1 * Math.PI) / 180) * Math.sin((lat2 * Math.PI) / 180) -
+    Math.sin((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.cos(dLon);
+  const brng = (Math.atan2(y, x) * 180) / Math.PI;
+  return (brng + 360) % 360;
+}
+async function getStreetViewCameraLocation(stopLat, stopLng, apiKey) {
+  const url = `https://maps.googleapis.com/maps/api/streetview/metadata?location=${stopLat},${stopLng}&key=${apiKey}`;
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (data.status === "OK") {
+    return { lat: data.location.lat, lng: data.location.lng };
+  } else {
+    console.warn("No Street View found at this location.");
+    return null;
+  }
 }
 const changeTabs = (event) => {
   let o =
@@ -638,10 +722,10 @@ function minimizeSheet(h = 40) {
     bottomSheet.style.willChange = "";
   }, 400);
 }
-async function refresh() {
-  document.querySelector(".navigationBar").style.display = "flex";
+async function refresh(btn) {
+  btn.setAttribute("loading", "");
   if (checkVisible(document.querySelector(".arrivalsOnStation"))) {
-    console.log("nebi");
+    await refreshMyBus();
   } else if (checkVisible(document.querySelector("#arrivals-panel"))) {
     let arH = document.querySelector(".arrivalsScroll");
     arH.style.transform = "translateX(0px) translateY(-20px)";
@@ -650,14 +734,25 @@ async function refresh() {
     arH = document.querySelector(".arrivalsScroll");
     arH.style.transform = "translateX(0px) translateY(0px)";
     arH.style.opacity = "1";
-  } else if (checkVisible(currentPanel)) {
-    currentPanel.style.transform = "translateX(0px) translateY(-20px)";
-    currentPanel.style.opacity = "0";
+  } else if (checkVisible(document.querySelector("#tabsFav"))) {
+    let tabsFav = document.querySelector("#tabsFav > mdui-tab-panel[active]");
+    tabsFav.style.transform = "translateX(0px) translateY(-20px)";
+    tabsFav.style.opacity = "0";
     await getLocation();
+    await updateStations(true);
     await createStationItems();
-    currentPanel.style.transform = "translateX(0px) translateY(0px)";
-    currentPanel.style.opacity = "1";
+    tabsFav = document.querySelector("#tabsFav > mdui-tab-panel[active]");
+    tabsFav.style.transform = "translateX(0px) translateY(0px)";
+    tabsFav.style.opacity = "1";
   } else {
+  }
+  btn.removeAttribute("loading");
+}
+function makeSkeleton(container) {
+  for (let i = 0; i < 10; i++) {
+    let arrivalItem = addElement("div", container, "arrivalItem");
+    arrivalItem.style.height = "100px";
+    arrivalItem.style.animationDelay = "0.2" + i * 2 + "s";
   }
 }
 function checkVisible(elm) {
@@ -702,8 +797,12 @@ async function getDirections() {
     container.style.opacity = "1";
   }, 1);
 
-  let iks = addElement("md-icon-button", container, "iks");
-  iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
+  let iks = addElement(
+    "mdui-button-icon",
+    container,
+    "iks",
+    "icon=arrow_back_ios_new"
+  );
   iks.addEventListener("click", function () {
     container.style.transform = "translateX(100vw) translateZ(1px)";
     setTimeout(() => {
@@ -712,11 +811,15 @@ async function getDirections() {
   });
   const resultsElement = addElement("div", container, "placeResults");
   const debouncedShowPlaceDebounce = debounce(debouncedShowPlace, 500);
-  let depart = addElement("md-filled-text-field", container, "locationInput");
-  depart.label = "Začetna lokacija";
+  let depart = addElement(
+    "mdui-text-field",
+    container,
+    "locationInput",
+    "end-icon=adjust",
+    "id=departLocation",
+    "label=Začetna lokacija"
+  );
   depart.addEventListener(`focus`, () => depart.select());
-  depart.innerHTML = "<md-icon slot='trailing-icon'>adjust</md-icon>";
-  depart.id = "departLocation";
   var departLocation = new google.maps.LatLng(latitude, longitude);
   geocodeLatLng(latitude, longitude)
     .then((result) => {
@@ -729,11 +832,15 @@ async function getDirections() {
   depart.addEventListener("input", () => {
     debouncedShowPlaceDebounce(depart);
   });
-  let arrive = addElement("md-filled-text-field", container, "locationInput");
+  let arrive = addElement(
+    "mdui-text-field",
+    container,
+    "locationInput",
+    "end-icon=place--outlined",
+    "id=arriveLocation",
+    "label=Končna lokacija"
+  );
   arrive.addEventListener(`focus`, () => arrive.select());
-  arrive.label = "Končna lokacija";
-  arrive.innerHTML = "<md-icon slot='trailing-icon'>location_on</md-icon>";
-  arrive.id = "arriveLocation";
   var arriveLocation;
   arrive.addEventListener("input", async () => {});
 
@@ -761,7 +868,6 @@ async function getDirections() {
     resultsElement.style.top = element.offsetTop + element.offsetHeight + "px";
     resultsElement.style.opacity = "0";
     resultsElement.style.scale = ".9";
-    addElement("md-elevation", resultsElement);
 
     request.input = element.value;
     if (element.value.includes("post")) {
@@ -788,28 +894,28 @@ async function getDirections() {
       let iconHtml;
 
       if (placePrediction.types.toString().includes("bus")) {
-        iconHtml = "<md-icon>directions_bus</md-icon>";
+        iconHtml = "<mdui-icon name=directions_bus--outlined></mdui-icon>";
       } else if (placePrediction.types.includes("lodging")) {
-        iconHtml = "<md-icon>hotel</md-icon>";
+        iconHtml = "<mdui-icon name=hotel--outlined></mdui-icon>";
       } else if (placePrediction.types.includes("store")) {
-        iconHtml = "<md-icon>shopping_bag</md-icon>";
+        iconHtml = "<mdui-icon name=shopping_bag--outlined></mdui-icon>";
       } else if (placePrediction.types.includes("food")) {
-        iconHtml = "<md-icon>restaurant</md-icon>";
+        iconHtml = "<mdui-icon name=restaurant--outlined></mdui-icon>";
       } else if (placePrediction.types.includes("bar")) {
-        iconHtml = "<md-icon>local_bar</md-icon>";
+        iconHtml = "<mdui-icon name=local_bar--outlined></mdui-icon>";
       } else {
-        iconHtml = "<md-icon>location_on</md-icon>";
+        iconHtml = "<mdui-icon name=place--outlined></mdui-icon>";
       }
 
       listItem.innerHTML = `
-      <md-icon>${iconHtml}</md-icon>
+    ${iconHtml}
         <span class="placeName">${placePrediction.mainText}</span>
         ${scndTxt == "" ? "" : `<span class="placeAddress">${scndTxt}</span>`}
         
       `;
-      addElement("md-ripple", listItem);
+      addElement("mdui-ripple", listItem);
       if (i !== suggestions.length - 1) {
-        addElement("md-divider", resultsElement);
+        addElement("mdui-divider", resultsElement);
       }
       listItem.addEventListener("click", async () => {
         element.value = placePrediction.text.text;
@@ -850,7 +956,7 @@ async function getDirections() {
   }
   let chipsHolder = addElement("div", container, "chipsHolder");
   for (const key in agencies) {
-    let lppChip = addElement("md-filter-chip", chipsHolder, "chip");
+    let lppChip = addElement("mdui-chip", chipsHolder, "chip", "selectable");
     lppChip.innerHTML = key;
     lppChip.selected = agencies[key];
     lppChip.addEventListener("click", () => {
@@ -862,26 +968,31 @@ async function getDirections() {
     });
   }
   let timeHolder = addElement("div", container, "timeHolder");
-  var inputLeave = addElement("md-filled-text-field", timeHolder, "timeInput");
-  inputLeave.type = "datetime-local";
+  var inputLeave = addElement(
+    "mdui-text-field",
+    timeHolder,
+    "timeInput",
+    "type=datetime-local",
+    "label=Odhod",
+    "end-icon=logout"
+  );
   inputLeave.value = new Date(Date.now()).toISOString().split("T")[0];
-  inputLeave.label = "Odhod";
-  inputLeave.innerHTML += '<md-icon slot="leading-icon">logout</md-icon>';
   inputLeave.addEventListener("click", () => {
-    inputLeave.shadowRoot
-      .querySelector("span > md-filled-field > div.input-wrapper > input")
-      .showPicker();
+    inputLeave.shadowRoot.querySelector("div > div > input").showPicker();
   });
-  var inputArrive = addElement("md-filled-text-field", timeHolder, "timeInput");
-  inputArrive.type = "datetime-local";
-  inputArrive.label = "Prihod";
-  inputArrive.innerHTML += '<md-icon slot="leading-icon">login</md-icon>';
+  var inputArrive = addElement(
+    "mdui-text-field",
+    timeHolder,
+    "timeInput",
+    "type=datetime-local",
+    "label=Prihod",
+    "end-icon=login"
+  );
+  inputArrive.value = new Date(Date.now()).toISOString().split("T")[0];
   inputArrive.addEventListener("click", () => {
-    inputArrive.shadowRoot
-      .querySelector("span > md-filled-field > div.input-wrapper > input")
-      .showPicker();
+    inputArrive.shadowRoot.querySelector("div > div > input").showPicker();
   });
-  var goButton = addElement("md-filled-button", container, "goButton");
+  var goButton = addElement("mdui-button", container, "goButton");
   goButton.innerHTML = "Pokaži pot";
 
   let panel = addElement("div", container, "panel");
@@ -959,16 +1070,16 @@ function calcRoute(start, end, panel, agencies, leave, arrive) {
       document.querySelector(".directions").insertBefore(routesHolder, panel);
       for (const route of validRoutes) {
         let routeDiv = addElement("div", routesHolder, "routeDiv");
-        addElement("md-ripple", routeDiv);
+        addElement("mdui-ripple", routeDiv);
         console.log(route);
 
         for (const step of route.legs[0].steps) {
           console.log(step);
           if (step.travel_mode == "WALKING") {
             routeDiv.innerHTML +=
-              "<div class=busHolder><md-icon>directions_walk</md-icon><span class=textMin>" +
+              "<div class=busHolder><mdui-icon name=directions_walk></mdui-icon><span class=textMin>" +
               step.duration.text.replace(" min", "") +
-              "</span></div><md-icon>chevron_right</md-icon>";
+              "</span></div><mdui-icon name=chevron_right></mdui-icon>";
           } else if (step.travel_mode == "TRANSIT") {
             routeDiv.innerHTML +=
               "<div class=busHolder>" +
@@ -981,7 +1092,7 @@ function calcRoute(start, end, panel, agencies, leave, arrive) {
                 : step.transit.line.agencies[0].name.includes("SŽ")
                 ? getLogo(step.transit.line.agencies[0].name, 1)
                 : getLogo(step.transit.line.agencies[0].name)) +
-              "</div><md-icon>chevron_right</md-icon>";
+              "</div><mdui-icon name=chevron_right></mdui-icon>";
           }
         }
         routeDiv.innerHTML +=
@@ -1008,12 +1119,12 @@ function displayRoute(panel, dira) {
 
     return false;
   }
-  let d = addElement("md-divider", panel);
+  let d = addElement("mdui-divider", panel);
   d.style.marginBottom = "15px";
   if (dir.departure_time) {
     let startTime = addElement("div", panel, "stepDiv");
     startTime.innerHTML =
-      "<md-icon>alarm</md-icon>Začnite ob " + dir.departure_time.text;
+      "<mdui-icon name=alarm></mdui-icon>Začnite ob " + dir.departure_time.text;
     startTime.setAttribute(
       "style",
       "margin-top: 0px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;"
@@ -1022,7 +1133,7 @@ function displayRoute(panel, dira) {
 
   let startDuration = addElement("div", panel, "stepDiv");
   startDuration.innerHTML =
-    "<md-icon>schedule</md-icon>Potovali boste " + dir.duration.text;
+    "<mdui-icon name=schedule></mdui-icon>Potovali boste " + dir.duration.text;
   startDuration.setAttribute(
     "style",
     "margin-top: 10px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;"
@@ -1040,7 +1151,9 @@ function displayRoute(panel, dira) {
   if (transfersN > 0) {
     let transfers = addElement("div", panel, "stepDiv");
     transfers.innerHTML =
-      "<md-icon>sync_alt</md-icon>Prestopili boste " + transfersN + "-krat";
+      "<mdui-icon name=sync_alt></mdui-icon>Prestopili boste " +
+      transfersN +
+      "-krat";
     transfers.setAttribute(
       "style",
       "margin-top: 10px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;"
@@ -1053,7 +1166,7 @@ function displayRoute(panel, dira) {
     let icon = addElement("div", stepDiv, "stepIcon");
     let txtContent = addElement("div", stepDiv, "stepTextContent");
     if (step.travel_mode == "WALKING") {
-      icon.innerHTML = "<md-icon>directions_walk</md-icon>";
+      icon.innerHTML = "<mdui-icon name=directions_walk></mdui-icon>";
       txtContent.innerHTML += `<span class='stepText'>${step.instructions
         .replace(
           "se do",
@@ -1062,12 +1175,12 @@ function displayRoute(panel, dira) {
         .replace(
           /(postaje\s*)(.*)/,
           "$1<b>$2</b>"
-        )}</span><div><span class='stepText'><md-icon>schedule</md-icon>${
+        )}</span><div><span class='stepText'><mdui-icon name=schedule></mdui-icon>${
         step.duration.text
-      }</span><span class='stepText'><md-icon>distance</md-icon>${
+      }</span><span class='stepText'><mdui-icon name=distance></mdui-icon>${
         step.distance.text
       }</span></div>`;
-      addElement("md-ripple", txtContent);
+      addElement("mdui-ripple", txtContent);
       txtContent.addEventListener("click", () => {
         openRouteInGoogleMapsApp(
           step.start_location.lat(),
@@ -1089,20 +1202,20 @@ function displayRoute(panel, dira) {
 
       txtContent.innerHTML += `<span class='stepText endStation'>${
         step.transit.departure_stop.name
-      }<md-icon>chevron_right</md-icon>${
+      }<mdui-icon name=chevron_right></mdui-icon>${
         step.transit.arrival_stop.name
       }</span><span class='stepText'>${
         step.transit.headsign +
         (step.transit.line.short_name
           ? ""
           : " (" + getCompany(step.transit.line.agencies[0].name) + ")")
-      }</span><div><span class='stepText'><md-icon>schedule</md-icon>${
+      }</span><div><span class='stepText'><mdui-icon name=schedule></mdui-icon>${
         step.transit.departure_time.text
       } - ${step.transit.arrival_time.text}&nbsp;<b>•</b>&nbsp;${
         step.duration.text
-      }</span></div><div><span class='stepText'><md-icon>distance</md-icon>${
+      }</span></div><div><span class='stepText'><mdui-icon name=distance></mdui-icon>${
         step.distance.text
-      }</span><span class='stepText'><md-icon>timeline</md-icon>${getPostaj(
+      }</span><span class='stepText'><mdui-icon name=timeline></mdui-icon>${getPostaj(
         step.transit.num_stops
       )}</span></div>`;
     }
@@ -1110,7 +1223,8 @@ function displayRoute(panel, dira) {
   if (dir.arrival_time) {
     let endTime = addElement("div", panel, "stepDiv");
     endTime.innerHTML =
-      "<md-icon>schedule</md-icon>Na cilju boste ob " + dir.arrival_time.text;
+      "<mdui-icon name=schedule></mdui-icon>Na cilju boste ob " +
+      dir.arrival_time.text;
     endTime.setAttribute("style", "margin-top: 10px;padding-top: 0px;");
   }
   panel.style.opacity = "1";
@@ -1143,10 +1257,10 @@ function getCompany(company) {
     : cmp;
 }
 function getLogo(agency, sz) {
-  let a = sz ? "directions_railway" : "directions_bus";
+  let a = sz ? "directions_railway" : "directions_bus--outlined";
   let agenc = adaptColorsDir(agency);
   const firstWord = agenc[0];
-  return `<md-icon>${a}</md-icon>
+  return `<mdui-icon name=${a}></mdui-icon>
 <div class="connectingLine"></div>
 <img class="agencyLogo" style="background:${agenc[1]};" src="assets/images/logos_brezavta/${firstWord}">`;
 }
@@ -1830,10 +1944,10 @@ function minToTime(min, yes) {
 
   return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
 }
-var agency = localStorage.getItem("agency") || "LPP";
+var agency = localStorage.getItem("agency").toLowerCase() || "lpp";
 async function fetchData(url, arrivaType) {
   let data;
-  if (agency !== "LPP") {
+  if (agency !== "lpp") {
     data = await (await fetch(url)).json();
   } else {
     data = await (await fetch(url)).json();
@@ -1954,3 +2068,42 @@ function findClosestPoint(busCoord, routeCoords) {
   });
   return closestIndex;
 }
+class MduiSymbol extends HTMLElement {
+  connectedCallback() {
+    requestAnimationFrame(() => {
+      const iconName = Array.from(this.childNodes)
+        .filter((n) => n.nodeType === Node.TEXT_NODE)
+        .map((n) => n.textContent.trim())
+        .join("");
+
+      if (!iconName) return;
+
+      const wrapper = document.createElement("mdui-icon");
+
+      const slotAttr = this.getAttribute("slot");
+      if (slotAttr === null) {
+        // No slot attribute: default to "icon"
+        wrapper.setAttribute("slot", "icon");
+      } else if (slotAttr) {
+        // Slot attribute with value: use it
+        wrapper.setAttribute("slot", slotAttr);
+      }
+      // else: slot attribute exists but empty — do not set slot
+
+      const span = document.createElement("span");
+      span.textContent = iconName;
+
+      // Copy all other attributes to <span>, excluding "slot"
+      for (const attr of this.attributes) {
+        if (attr.name !== "slot") {
+          span.setAttribute(attr.name, attr.value);
+        }
+      }
+      span.classList.add("material-symbols-outlined");
+      wrapper.appendChild(span);
+      this.replaceWith(wrapper);
+    });
+  }
+}
+
+customElements.define("mdui-symbol", MduiSymbol);

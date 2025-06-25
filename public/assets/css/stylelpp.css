@@ -1,12 +1,10 @@
 body {
-  background-color: var(--md-sys-color-surface);
+  background-color: RGB(var(--mdui-color-surface));
   height: 100dvh;
   font-family: sans-serif !important;
   user-select: none;
 }
-md-primary-tab {
-  font-family: sans-serif;
-}
+
 .gmnoprint {
   display: none;
 }
@@ -23,9 +21,9 @@ md-primary-tab {
   align-items: center;
   display: flex;
   transition: all 0.4s;
-  background: var(--md-sys-color-surface);
+  background: RGB(var(--mdui-color-surface));
   width: calc(100% - 40px);
-  color: var(--md-sys-color-on-surface);
+  color: RGB(var(--mdui-color-on-surface));
   text-align: center;
   position: sticky;
   top: -1px;
@@ -34,10 +32,6 @@ md-primary-tab {
 @media only screen and (max-width: 500px) {
   .title {
     font-size: 1.5rem !important;
-  }
-  .center {
-    font-size: 1rem !important;
-    padding: 0 !important;
   }
 }
 
@@ -55,18 +49,18 @@ md-circular-progress#loader {
   transform: translate(-50%, -50%);
 }
 
-md-filled-text-field {
-  --_active-indicator-height: 0;
-  --_hover-active-indicator-height: 0;
-  --_focus-active-indicator-height: 0;
-  width: 100%;
-  --md-filled-text-field-container-shape: 150px;
-  --_container-color: linear-gradient(
+mdui-text-field::part(container) {
+  background: linear-gradient(
     188deg,
-    var(--md-sys-color-surface-container-highest),
+    RGB(var(--mdui-color-surface-container-highest)),
     #1919192e
   );
-  display: block;
+  border-radius: 150px;
+  box-shadow: none !important;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 30;
 }
 html,
 body {
@@ -79,12 +73,14 @@ body {
 }
 
 .station {
+  width: 100%;
   padding: 15px;
-  background: var(--md-sys-color-surface-container);
+  background: var(--mdui-color-surface-container);
   border-radius: 25px;
   margin: 10px 0;
-  color: var(--md-sys-color-on-surface);
+  color: RGB(var(--mdui-color-on-surface));
   position: relative;
+  box-sizing: border-box;
   animation: arrivalItemShow 0.5s cubic-bezier(0.38, 1.21, 0.3, 1.33) forwards;
 }
 .center {
@@ -95,9 +91,10 @@ body {
   border-radius: 100px;
   background: linear-gradient(
     134deg,
-    var(--md-sys-color-surface-bright),
+    RGB(var(--mdui-color-surface-bright)),
     #00000026
   );
+  font-size: 1rem !important;
 }
 .textHolder {
   align-items: center;
@@ -110,11 +107,18 @@ body {
   z-index: 2;
   transition: all 0.6s cubic-bezier(0.38, 1.21, 0.22, 1);
   transform: translateX(0);
-  background: var(--md-sys-color-surface);
+  background: RGB(var(--mdui-color-surface));
   padding: 0 30px;
 }
 #tabsFav {
-  top: 96px !important;
+  width: 100%;
+  transition: all 0.6s cubic-bezier(0.38, 1.21, 0.22, 1);
+}
+mdui-tab-panel {
+  overflow: visible;
+}
+mdui-tab-panel:not([active]) {
+  display: none !important;
 }
 .gm-style iframe + div {
   border: none !important;
@@ -132,8 +136,8 @@ body {
   .arrivalRed {
     background: linear-gradient(
       329deg,
-      var(--md-sys-color-on-error),
-      var(--md-sys-color-error-container)
+      RGB(var(--mdui-color-on-error)),
+      RGB(var(--mdui-color-error-container))
     ) !important;
   }
   .arrivalBlue {
@@ -155,8 +159,8 @@ body {
   .arrivalRed {
     background: linear-gradient(
       163deg,
-      var(--md-sys-color-error),
-      var(--md-sys-color-on-error-container)
+      RGB(var(--mdui-color-error)),
+      RGB(var(--mdui-color-on-error-container))
     ) !important;
   }
   .arrivalBlue {
@@ -175,7 +179,7 @@ body {
   top: unset !important;
 }
 
-md-fab.centerMap,
+.centerMap,
 .switch {
   position: absolute;
   bottom: 9dvh;
@@ -223,14 +227,14 @@ md-fab.centerMap,
   background: none !important;
 }
 
-.search md-icon {
+.search mdui-icon {
   margin-left: 10px;
 }
 .search:focus {
-  border: 2px solid var(--md-sys-color-on-surface);
+  border: 2px solid RGB(var(--mdui-color-on-surface));
 }
 .search {
-  border: 2px solid var(--md-sys-color-surface);
+  border: 2px solid RGB(var(--mdui-color-surface));
   border-radius: 100px;
   transition: all 0.5s;
 }
@@ -242,7 +246,7 @@ md-fab.centerMap,
   display: flex;
   align-items: center;
 }
-.stationDistance md-icon {
+.stationDistance mdui-icon {
   margin-right: 5px;
   font-size: 16px;
 }
@@ -250,20 +254,19 @@ md-fab.centerMap,
   font-weight: 400;
   font-size: 1.2rem;
 }
-.material-symbols-outlined {
-  font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 40;
-}
+
 .iconFill {
-  font-variation-settings: "FILL" 1, "wght" 300, "GRAD" 0, "opsz" 40;
+  font-variation-settings: "FILL" 1, "wght" 300, "GRAD" 0, "opsz" 40 !important;
 }
-md-list.listOfStations,
-md-list.favouriteStations {
+
+.listOfStations,
+.favouriteStations {
+  flex-direction: column;
   overflow-y: scroll;
   height: 100%;
   width: 100%;
   transition: all 0.6s cubic-bezier(0.38, 1.21, 0.22, 1);
-  transform: translateY(-20px);
-  opacity: 0;
+
   padding: 0 40px;
   overscroll-behavior: none;
   overflow-x: hidden;
@@ -271,8 +274,6 @@ md-list.favouriteStations {
   height: calc(100dvh - 240px);
   position: relative;
   padding-bottom: 50px;
-  margin-top: 10px;
-  display: none;
 }
 .hideStations {
   position: absolute;
@@ -308,7 +309,7 @@ md-list.favouriteStations {
   overflow-y: scroll;
 }
 md-list-item.stationItem {
-  background: var(--md-sys-color-surface-container);
+  background: var(--mdui-color-surface-container);
   margin: 10px 0;
 
   border-radius: 25px;
@@ -319,7 +320,7 @@ md-list .arrivalItem {
   width: 100%;
   margin: 10px 0;
   box-sizing: border-box;
-  color: var(--md-sys-color-on-surface);
+  color: RGB(var(--mdui-color-on-surface));
 }
 
 span.hidden {
@@ -331,6 +332,9 @@ img.busImgElement {
   z-index: 2;
   margin-top: 10px;
   position: relative;
+}
+.busAuthor mdui-icon {
+  font-size: 1rem;
 }
 .busAuthor {
   position: absolute;
@@ -345,7 +349,6 @@ img.busImgElement {
   gap: 5px;
   backdrop-filter: blur(3px);
   right: 0;
-  --md-icon-size: 15px;
   border-radius: 15px 0px 25px 0px;
 }
 .busImgHolder {
@@ -381,7 +384,7 @@ img.busImgElement {
   width: min-content;
   background: linear-gradient(
     163deg,
-    var(--md-sys-color-surface-container-highest),
+    RGB(var(--mdui-color-surface-container-highest)),
     #00000021
   );
   padding: 5px 13px;
@@ -392,22 +395,22 @@ img.busImgElement {
   flex-direction: row;
   align-items: center;
   gap: 3px;
-  --md-icon-size: 19px;
 }
 .arrivalRed {
   animation: blinking 2s ease-in infinite;
-  color: var(--md-sys-color-on-error-container);
+  color: RGB(var(--mdui-color-on-error-container));
 }
 .arrivalBlue {
   animation: blinkingBlue 2s ease-in infinite;
-  color: var(--md-sys-color-on-error-container);
+  color: RGB(var(--mdui-color-on-error-container));
 }
 .arrivalGreen {
-  color: var(--md-sys-color-surface-tint);
+  color: RGB(var(--mdui-color-surface-tint));
 }
-.arrivalTime md-icon {
+.arrivalTime mdui-icon {
   animation: rotatingIcon 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   transform: rotate(-10deg);
+  font-size: 1rem;
 }
 @keyframes blinking {
   0%,
@@ -447,7 +450,7 @@ img.busImgElement {
   }
 }
 .arrivalItem {
-  background: var(--md-sys-color-surface-container);
+  background: var(--mdui-color-surface-container);
   margin: 10px;
   width: 100%;
   box-sizing: border-box;
@@ -475,7 +478,7 @@ img.busImgElement {
 }
 .myBusDiv .arrivalItem span {
   font-size: 1.2rem;
-  color: var(--md-sys-color-on-surface);
+  color: RGB(var(--mdui-color-on-surface));
   font-weight: 400;
 }
 .arrivalData {
@@ -492,22 +495,7 @@ img.busImgElement {
   height: 25px;
   width: 25px;
 }
-md-tabs.tabs {
-  width: 100%;
-  z-index: 3;
-  /* --md-primary-tab-active-indicator-color: transparent;*/
-  border: none;
-  position: sticky;
-  top: 38px;
 
-  transition: all 0.6s cubic-bezier(0.38, 1.21, 0.22, 1);
-}
-md-tabs::part(divider) {
-}
-/*md-primary-tab[active=""] {
-    --_container-color: linear-gradient(170deg, var(--md-sys-color-secondary-container), var(--md-sys-color-inverse-primary));
-    color: var(--md-sys-color-on-secondary-container);
-}*/
 .busNo {
   font-weight: 900;
   height: 60%;
@@ -567,13 +555,13 @@ md-tabs::part(divider) {
   height: calc(100dvh - 150px);
 }
 .lineTimes .busNo2 {
-  background: var(--md-sys-color-surface-container-highest);
+  background: RGB(var(--mdui-color-surface-container-highest));
 }
 
 .lineTimes .arrivalItem {
   background: none;
   border-radius: 0;
-  border-bottom: 1px solid var(--md-sys-color-surface-container-high, #cac4d0);
+  border-bottom: 1px solid var(--mdui-color-surface-container-high, #cac4d0);
 }
 .lineTimes .arrivalTime {
   padding: 0;
@@ -584,7 +572,7 @@ md-tabs::part(divider) {
   gap: 10px;
 }
 .timet {
-  background: var(--md-sys-color-surface-container);
+  background: var(--mdui-color-surface-container);
   padding: 5px 10px;
   border-radius: 100px;
 }
@@ -602,7 +590,7 @@ div.arrivalItem.previusTime > div.arrivalData > div > span > .timet {
 .newDay {
   margin: 20px;
   font-size: 1.3rem;
-  border-bottom: 1px solid var(--md-sys-color-outline);
+  border-bottom: 1px solid RGB(var(--mdui-color-outline));
   width: 100%;
   text-align: center;
   padding-bottom: 20px;
@@ -610,7 +598,7 @@ div.arrivalItem.previusTime > div.arrivalData > div > span > .timet {
 .newDay::first-letter {
   text-transform: uppercase;
 }
-.lineTimes md-icon-button.iks {
+.lineTimes mdui-button-icon.iks {
   top: 0;
   left: 0;
 }
@@ -628,7 +616,7 @@ div.arrivalItem.previusTime > div.arrivalData > div > span > .timet {
 }
 span.nextBusTitle {
   width: 100%;
-  color: var(--md-sys-color-on-surface);
+  color: RGB(var(--mdui-color-on-surface));
   display: block;
   font-size: 1.5rem;
   text-align: center;
@@ -642,7 +630,7 @@ span.nextBusTitle {
   width: calc(100% - 40px);
   margin: 0 20px;
   position: relative;
-  color: var(--md-sys-color-on-surface);
+  color: RGB(var(--mdui-color-on-surface));
   flex-direction: column;
   align-items: center;
 
@@ -690,15 +678,15 @@ span.nextBusTitle {
   position: fixed;
   bottom: 13px;
   z-index: 4;
-  background: var(--md-sys-color-surface-container);
+  background: var(--mdui-color-surface-container);
   width: 100%;
   height: fit-content;
   display: flex;
   transition: all 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
-  border-top: 1px var(--md-sys-color-outline-variant, #cac4d0) solid;
+  border-top: 1px var(--mdui-color-outline-variant, #cac4d0) solid;
   overflow: hidden;
   white-space: nowrap;
-  color: var(--md-sys-color-on-surface);
+  color: RGB(var(--mdui-color-on-surface));
   align-items: center;
   transform: translateY(100%);
   view-transition-name: infoBar;
@@ -707,10 +695,10 @@ span.nextBusTitle {
 .infoBtn {
   margin-left: auto;
   margin-right: 10px;
-  --md-sys-color-secondary-container: var(--md-sys-color-error-container);
-  --_icon-color: var(--md-sys-color-on-error-container);
-  --_hover-icon-color: var(--md-sys-color-on-error-container);
-  --_active-icon-color: var(--md-sys-color-on-error-container);
+  --mdui-color-secondary-container: RGB(var(--mdui-color-error-container));
+  --_icon-color: RGB(var(--mdui-color-on-error-container));
+  --_hover-icon-color: RGB(var(--mdui-color-on-error-container));
+  --_active-icon-color: RGB(var(--mdui-color-on-error-container));
 }
 .changeTime,
 .streetViewBtn {
@@ -752,7 +740,7 @@ span.nextBusTitle {
   top: -1px;
   z-index: 90;
   width: 100%;
-  background: var(--md-sys-color-surface);
+  background: RGB(var(--mdui-color-surface));
   padding: 8px 0;
 }
 .myBusDiv {
@@ -766,11 +754,11 @@ span.nextBusTitle {
 .myEtaHolder {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
+  border-bottom: 1px solid var(--mdui-color-outline-variant, #cac4d0);
   width: 100%;
   justify-content: space-between;
   z-index: 9;
-  background: var(--md-sys-color-surface);
+  background: RGB(var(--mdui-color-surface));
   padding: 10px 20px;
   box-sizing: border-box;
 }
@@ -785,8 +773,8 @@ span.nextBusTitle {
 .myEtaHolder .selected {
   background: linear-gradient(
     163deg,
-    var(--md-sys-color-surface-variant),
-    var(--md-sys-color-outline-variant)
+    RGB(var(--mdui-color-surface-variant)),
+    RGB(var(--mdui-color-outline-variant))
   );
 }
 .myEtaHolder .arrivalTime {
@@ -796,7 +784,7 @@ span.nextBusTitle {
   z-index: 2;
 }
 table.busDataTable {
-  background: var(--md-sys-color-surface-container);
+  background: var(--mdui-color-surface-container);
   width: 100%;
   border-radius: 25px;
   padding: 15px;
@@ -831,7 +819,7 @@ tr {
 .lineStation {
   width: 7px;
   height: 48px;
-  background: var(--md-sys-color-primary);
+  background: RGB(var(--mdui-color-primary));
   position: relative;
   border-radius: 10px;
   margin: 1px 0;
@@ -870,24 +858,28 @@ img.googleLogo {
   align-items: center;
   justify-content: center;
 }
-.busBetween md-icon {
+
+.busBetween mdui-icon {
   color: rgb(140, 136, 65);
   transform: translateY(-25px);
   font-size: 1rem;
   border-radius: 50%;
   width: 20px;
   height: 20px;
+  padding: 2px;
 }
-.busOnStation md-icon {
+.busOnStation mdui-icon {
   color: rgb(140, 136, 65);
-  font-size: 1.2rem;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   scale: 1.1;
+  padding: 3px;
 }
 .etaStation {
   font-size: 1.1rem;
   display: flex;
-  background: var(--md-sys-color-surface-container-low);
+  background: RGB(var(--mdui-color-surface-container-low));
   align-items: center;
   height: 48px;
   margin: 2px 0;
@@ -898,7 +890,7 @@ img.googleLogo {
 .noBG {
   background: none;
 }
-.etaStation md-icon {
+.etaStation mdui-icon {
   font-size: 12px;
   animation: rotatingIcon 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   position: relative;
@@ -916,9 +908,9 @@ img.googleLogo {
 
   border-radius: 25px;
 }
-.arrivalData > span > span > md-icon,
-.arrivalItem > span > span > md-icon {
-  --md-icon-size: 20px;
+.arrivalData > span > span > mdui-icon,
+.arrivalItem > span > span > mdui-icon {
+  font-size: 20px;
   height: 10px;
   width: 18px;
   opacity: 0.6;
@@ -950,14 +942,14 @@ img.googleLogo {
   max-width: 74vw;
 }
 p {
-  color: var(--md-sys-color-on-surface);
+  color: RGB(var(--mdui-color-on-surface));
   align-items: center;
   margin: 10px 0;
   display: flex;
   justify-content: center;
   gap: 10px;
 }
-p md-icon {
+p mdui-icon {
   font-size: 1.4rem;
 }
 .arrivalsScroll p {
@@ -976,7 +968,7 @@ p md-icon {
   left: -10px;
   height: 50%;
   width: 25px;
-  background: var(--md-sys-color-surface);
+  background: RGB(var(--mdui-color-surface));
   pointer-events: none;
 }
 .half-hidden-first::after,
@@ -987,16 +979,16 @@ p md-icon {
   left: -10px;
   height: 50%;
   width: 25px;
-  background: var(--md-sys-color-surface);
+  background: RGB(var(--mdui-color-surface));
   pointer-events: none;
 }
 .half-hidden-normal::after {
   top: -9.7px;
 }
-md-fab.refresh,
+.refresh,
 .directionsButton {
   position: fixed;
-  bottom: 90px;
+  bottom: 110px;
   z-index: 100;
   right: 25px;
   transition: all 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
@@ -1005,8 +997,8 @@ md-fab.refresh,
 .directionsButton {
   view-transition-name: dirBtn;
 }
-md-fab.refresh {
-  bottom: 155px;
+.refresh {
+  bottom: 175px;
   view-transition-name: refBtn;
 }
 .directions {
@@ -1020,20 +1012,28 @@ md-fab.refresh {
   top: 40px;
   transform: translateX(100vw);
   z-index: 100;
-  background: var(--md-sys-color-surface);
+  background: RGB(var(--mdui-color-surface));
   width: 100%;
   padding: 0 20px;
   box-sizing: border-box;
 }
-md-filled-text-field.locationInput {
+
+mdui-text-field.locationInput::part(container) {
+  border-radius: 25px;
+}
+mdui-text-field.locationInput::part(label) {
+  color: #898989;
+}
+.locationInput {
   margin: 10px auto;
   width: 80%;
   border: 2px solid var(--ol-subtle-foreground-color);
   border-radius: 25px;
-  --md-filled-text-field-container-shape: 25px;
-  --md-filled-text-field-label-text-color: #898989;
 }
-md-filled-text-field.timeInput {
+mdui-text-field::part(input)::-internal-datetime-container {
+  display: none !important;
+}
+mdui-text-field.timeInput {
   width: 80%;
 }
 .timeHolder {
@@ -1053,7 +1053,7 @@ md-filled-text-field.timeInput {
   align-items: center;
   gap: 10px;
   overflow: hidden;
-  border-bottom: 5px solid var(--md-sys-color-surface);
+  border-bottom: 5px solid RGB(var(--mdui-color-surface));
   overflow: hidden;
 }
 .stepTextContent {
@@ -1065,7 +1065,6 @@ md-filled-text-field.timeInput {
 }
 .stepTextContent div {
   font-size: 1rem;
-  --md-icon-size: 1.1rem;
   display: flex;
   gap: 15px;
   flex-wrap: wrap;
@@ -1078,11 +1077,10 @@ md-filled-text-field.timeInput {
 span.stepText.endStation {
   align-items: center;
   font-size: 1.1rem;
-  --md-icon-size: 1rem;
   font-weight: bold;
   gap: 5px;
 }
-span.stepText.endStation md-icon {
+span.stepText.endStation mdui-icon {
   font-weight: bold;
 }
 .stepIcon .busNo {
@@ -1093,7 +1091,7 @@ b {
   font-weight: bold !important;
 }
 .stepsDir {
-  background: var(--md-sys-color-surface-container-low);
+  background: RGB(var(--mdui-color-surface-container-low));
 
   box-sizing: border-box;
   border-radius: 25px;
@@ -1113,7 +1111,7 @@ b {
   scale: 0.9;
   position: fixed;
   width: 80%;
-  background: var(--md-sys-color-surface-container-high);
+  background: RGB(var(--mdui-color-surface-container-high));
   border-radius: 25px;
   box-sizing: border-box;
   left: 50%;
@@ -1128,15 +1126,15 @@ b {
   position: fixed;
   transition: all 0.8s cubic-bezier(0.38, 1.21, 0.22, 1);
   z-index: 100;
-  background: var(--md-sys-color-error-container);
-  color: var(--md-sys-color-on-error-container);
+  background: RGB(var(--mdui-color-error-container));
+  color: RGB(var(--mdui-color-on-error-container));
   padding: 10px;
   border-radius: 20px;
   width: 80%;
   left: 50%;
   transform: translateX(-50%);
   top: -150px;
-  filter: drop-shadow(0px 0px 9px var(--md-sys-color-error-container));
+  filter: drop-shadow(0px 0px 9px RGB(var(--mdui-color-error-container)));
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1154,14 +1152,14 @@ iframe.streetView {
   scale: 0.95;
   transition: all 0.3s;
 }
-md-icon-button.iks.closeStreetView {
+.iks.closeStreetView {
   position: fixed;
   z-index: 31;
   top: 10px;
   right: 10px;
-  background: var(--md-sys-color-primary-container);
+  background: RGB(var(--mdui-color-primary-container));
   border-radius: 100px;
-  --_icon-color: var(--md-sys-color-on-primary-container);
+  --_icon-color: RGB(var(--mdui-color-on-primary-container));
   filter: drop-shadow(2px 2px 7px black);
 }
 div.errorMessage > div {
@@ -1185,7 +1183,7 @@ div.errorMessage > div > span:nth-child(1) {
 }
 
 /* Place first item to span both rows in first column */
-.placeResult md-icon {
+.placeResult mdui-icon {
   grid-column: 1;
   grid-row: 1 / span 2;
   position: absolute;
@@ -1206,7 +1204,7 @@ div.errorMessage > div > span:nth-child(1) {
   grid-row: 2;
   height: fit-content;
   font-size: 0.9rem;
-  color: var(--md-sys-color-outline);
+  color: RGB(var(--mdui-color-outline));
 }
 .chipsHolder {
   display: flex;
@@ -1271,10 +1269,10 @@ img.agenImg {
 .connectingLine {
   height: 15px;
   width: 1px;
-  border-left: 3px dotted var(--md-sys-color-on-surface);
+  border-left: 3px dotted RGB(var(--mdui-color-on-surface));
 }
 .routeDiv {
-  background: var(--md-sys-color-surface-container);
+  background: var(--mdui-color-surface-container);
   width: 100%;
   height: fit-content;
   z-index: 55;
@@ -1295,7 +1293,7 @@ img.agenImg {
   left: 9px;
   bottom: -10px;
   scale: 0.8;
-  border: 1px solid var(--md-sys-color-on-surface);
+  border: 1px solid RGB(var(--mdui-color-on-surface));
   padding: 2px;
 }
 .busHolder {
@@ -1331,7 +1329,7 @@ div#popup-content2 {
   cursor: pointer;
   transform: translate(0%, 0%);
 
-  background: var(--md-sys-color-secondary);
+  background: RGB(var(--mdui-color-secondary));
   padding: 10px;
   border-radius: 25px;
   transform-origin: 0% 100%;
@@ -1354,45 +1352,15 @@ div#popup-content2 {
 }
 .navigationBar {
   view-transition-name: navBar;
-  position: fixed;
-  bottom: 0;
-  background: var(--md-sys-color-surface-container);
+  background: var(--mdui-color-surface-container);
   z-index: 100;
-  width: 100%;
-  height: 60px;
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  align-items: center;
   transition: all 0.4s;
 }
 
-.navigationTab img {
+mdui-navigation-bar-item img {
   height: 20px;
 }
-.navigationTab img.selected {
-  filter: brightness(1.2);
-  background: var(--md-sys-color-secondary-container);
-  color: var(--md-sys-color-on-secondary-container);
-  width: 50%;
-  border-radius: 100px;
-  padding: 5px;
-}
-.navigationTab {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.8rem;
-  background: transparent;
-  position: relative;
-  width: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--md-sys-color-on-surface);
-  border-radius: 100px;
-  height: 30px;
-  gap: 2px;
-}
+
 body {
   padding: env(safe-area-inset-top) env(safe-area-inset-right)
     env(safe-area-inset-bottom) env(safe-area-inset-left);
@@ -1414,7 +1382,7 @@ body {
   max-width: 1000px;
   left: 50%;
   transform: translate(-50%, 100vh);
-  background-color: var(--md-sys-color-surface);
+  background-color: RGB(var(--mdui-color-surface));
   bottom: 0;
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
@@ -1425,14 +1393,14 @@ body {
 .bottomSheetHandle {
   transition: all var(--transDur);
   margin-top: 7px;
-  background: var(--md-sys-color-on-surface);
+  background: RGB(var(--mdui-color-on-surface));
   width: 10%;
   height: 3px;
   border-radius: 50px;
 }
 .handleHolder {
   left: 50%;
-  background: var(--md-sys-color-surface);
+  background: RGB(var(--mdui-color-surface));
   transform: translateX(-50%);
   position: absolute;
   top: 0px;
@@ -1465,18 +1433,18 @@ body {
 span.tripName {
   width: 80%;
 }
-md-icon.arrow {
+mdui-icon.arrow {
   height: 1rem;
   transform: translateY(3px);
   width: 1rem;
 }
-md-icon.alert,
-.alert .title md-icon {
+mdui-icon.alert,
+.alert .title mdui-icon {
   color: #ffbb00;
   margin-left: 5px;
   font-size: 1.2rem;
 }
-.alert .title md-icon {
+.alert .title mdui-icon {
   margin-right: 5px;
   margin-left: 0px;
 }
@@ -1500,7 +1468,7 @@ md-icon.alert,
   text-align: left;
   font-size: 1rem;
 }
-md-icon.favorite {
+mdui-button-icon.favorite {
   position: absolute;
   top: 15px;
   right: 15px;

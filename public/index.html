@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="mdui-theme-auto">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,9 +7,11 @@
     <link rel="manifest" href="manifest.json" />
     <link rel="stylesheet" href="assets/css/stylelpp.css" />
     <link rel="stylesheet" href="assets/css/themelpp.css" />
+    <link rel="stylesheet" href="assets/css/theme_mdui.css" />
     <meta name="theme-color" content="#22282d" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
     <link
       rel="shortcut icon"
       href="assets/images/icon/slopromet.png"
@@ -19,7 +21,14 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
     />
-    <!-- CSS -->
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
     <link
       preload="none"
       rel="stylesheet"
@@ -29,50 +38,56 @@
   <script src="assets/js/skupna.js"></script>
   <body>
     <div id="map">
-      <md-fab
+      <mdui-fab
         class="centerMap"
         size="small"
         onclick="centerMap()"
         variant="surface"
-        ><md-icon slot="icon" aria-hidden="true">adjust</md-icon></md-fab
+        ><mdui-symbol>adjust</mdui-symbol></mdui-fab
       >
     </div>
 
     <div class="loader"></div>
     <div class="busImg"></div>
-    <md-fab class="refresh" onclick="refresh()" variant="surface"
-      ><md-icon slot="icon" aria-hidden="true">refresh</md-icon></md-fab
-    >
-    <md-fab
+
+    <mdui-fab
+      icon="refresh--outlined"
+      variant="surface"
+      class="refresh"
+      onclick="refresh(this)"
+    ></mdui-fab>
+
+    <mdui-fab
+      icon="directions--outlined"
       class="directionsButton"
       onclick="getDirections()"
-      label="Načrtuj"
-      variant="primary"
-      ><md-icon slot="icon" aria-hidden="true">directions</md-icon></md-fab
+      extended
+      >Načrtuj</mdui-fab
     >
 
-    <div class="navigationBar">
-      <div onclick="changeAgency('LPP')" id="lppTab" class="navigationTab">
-        <img loading="lazy" src="assets/images/logos/lpp_logo.svg" />
-        <md-ripple></md-ripple>LPP
-      </div>
-      <div onclick="changeAgency('IJPP')" id="ijppTab" class="navigationTab">
-        <img loading="lazy" src="assets/images/logos/arriva_logo.svg" />
-        <md-ripple></md-ripple>IJPP
-      </div>
-      <div
-        onclick="changeAgency('MARPROM')"
+    <mdui-navigation-bar   scroll-behavior="hide"
+    scroll-threshold="30"
+    scroll-target=".arrivalsScroll" label-visibility="labeled" value="lpp" class="navigationBar">
+      <mdui-navigation-bar-item onclick="changeAgency('lpp')" id="lppTab" value="lpp" >
+        <img slot="icon" loading="lazy" src="assets/images/logos/lpp_logo.svg" />
+       LPP
+      </mdui-navigation-bar-item>
+      <mdui-navigation-bar-item onclick="changeAgency('ijpp')" id="ijppTab" value="ijpp" >
+        <img  slot="icon"loading="lazy" src="assets/images/logos/arriva_logo.svg" />IJPP
+      </mdui-navigation-bar-item>
+      <mdui-navigation-bar-item
+        onclick="changeAgency('marprom')"
         id="marpromTab"
-        class="navigationTab"
-      >
-        <img loading="lazy" src="assets/images/logos/marprom.svg" />
-        <md-ripple></md-ripple>MARPROM
+        value="marprom">
+        <img slot="icon" loading="lazy" src="assets/images/logos/marprom.svg" />
+       MARPROM
+      </mdui-navigation-bar-item>
+      <mdui-navigation-bar-item onclick="changeAgency('sž')" id="sžTab" value="sž">
+        <img slot="icon" loading="lazy" src="assets/images/logos/sz.svg" />
+       SŽ
       </div>
-      <div onclick="changeAgency('SŽ')" id="sžTab" class="navigationTab">
-        <img loading="lazy" src="assets/images/logos/sz.svg" />
-        <md-ripple></md-ripple>SŽ
-      </div>
-    </div>
+    </mdui-navigation-bar-item>
+    </mdui-navigation-bar>
     <script async src="assets/js/bundle.js" type="module"></script>
   </body>
 </html>

@@ -7,15 +7,15 @@ async function updateStations() {
 
   stationList = stations.filter((station) => {
     return (
-      (station.gtfs_id.includes(agency) && station.type == "BUS") ||
-      (station.type == "RAIL" && agency == "SŽ")
+      (station.gtfs_id.includes(agency.toUpperCase()) &&
+        station.type == "BUS") ||
+      (station.type == "RAIL" && agency == "sž")
     );
   });
-  routesStations = await (
-    await fetch("https://slo-promet.web.app/assets/stop_to_routes.json")
-  ).json();
+  routesStations = await (await fetch("assets/stop_to_routes.json")).json();
   createStationItems();
 }
+
 var isArrivalsOpen = false;
 var currentPanel;
 async function createStationItems() {
@@ -39,11 +39,11 @@ async function createStationItems() {
   if (navigator.geolocation) {
     if (latitude == 46.051467939339034)
       list.innerHTML +=
-        "<p><md-icon>location_off</md-icon>Lokacija ni omogočena.</p>";
+        "<p><mdui-icon name=location_off></mdui-icon>Lokacija ni omogočena.</p>";
 
     for (const station of stationList) {
-      let item = addElement("div", null, "station");
-      addElement("md-ripple", item);
+      let item = addElement("mdui-card", null, "station");
+      addElement("mdui-ripple", item);
       let textHolder = addElement("div", item, "textHolder");
       textHolder.innerHTML =
         '<span class="stationName">' + station.name + "</span>";
@@ -69,13 +69,15 @@ async function createStationItems() {
         if (
           station.code &&
           station.code.match(/\d+/)[0] % 2 !== 0 &&
-          agency !== "SŽ"
+          agency !== "sž"
         ) {
-          cornot = '<md-icon class="center">adjust</md-icon>';
+          cornot =
+            '<mdui-icon name=adjust--outlined class="center"></mdui-icon>';
         }
         let fav = "";
         if (favList.includes(station.gtfs_id.match(/\d+/)[0])) {
-          fav = '<md-icon class="iconFill">favorite</md-icon>';
+          fav =
+            '<mdui-icon name=favorite--outlined class="iconFill"></mdui-icon>';
         }
         if (distance > 1) {
           textHolder.innerHTML +=
@@ -94,13 +96,10 @@ async function createStationItems() {
             " m</span>";
           nearby[distance.toFixed(5)] = item;
         }
-        const openStation = async () => {
-          await stationClick(station);
-          interval = setInterval(async () => {
-            await stationClick(null, true);
-          }, 10000);
-        };
-        item.addEventListener("click", openStation);
+
+        item.addEventListener("click", () => {
+          stationClick(station);
+        });
         item = null;
 
         textHolder = null;
@@ -125,7 +124,7 @@ function createFavourite(parent, search, query) {
   var nearby = {};
   if (latitude == 46.051467939339034)
     parent.innerHTML +=
-      "<p><md-icon>location_off</md-icon>Lokacija ni omogočena.</p>";
+      "<p><mdui-icon name=location_off></mdui-icon>Lokacija ni omogočena.</p>";
   const favList = JSON.parse(
     localStorage.getItem("favouriteStationsArriva") || "[]"
   );
@@ -133,11 +132,11 @@ function createFavourite(parent, search, query) {
     if (favList.length == 0 && !search) {
       let p = addElement("p", parent);
       p.innerHTML =
-        "<p><md-icon>favorite</md-icon>Nimate priljubljenih postaj.</p>";
+        "<p><mdui-icon name=favorite></mdui-icon>Nimate priljubljenih postaj.</p>";
       break;
     }
-    let item = addElement("div", null, "station");
-    addElement("md-ripple", item);
+    let item = addElement("mdui-card", null, "station");
+    addElement("mdui-ripple", item);
     let textHolder = addElement("div", item, "textHolder");
     textHolder.innerHTML =
       '<span class="stationName">' + station.name + "</span>";
@@ -160,13 +159,14 @@ function createFavourite(parent, search, query) {
       if (
         station.code &&
         station.code.match(/\d+/)[0] % 2 !== 0 &&
-        agency !== "SŽ"
+        agency !== "sž"
       ) {
-        cornot = '<md-icon class="center">adjust</md-icon>';
+        cornot = '<mdui-icon name=adjust--outlined class="center"></mdui-icon>';
       }
       let fav = "";
       if (favList.includes(station.gtfs_id.match(/\d+/)[0])) {
-        fav = '<md-icon class="iconFill">favorite</md-icon>';
+        fav =
+          '<mdui-icon name=favorite--outlined class="iconFill"></mdui-icon>';
       }
       if (distance > 1) {
         textHolder.innerHTML +=
@@ -186,13 +186,9 @@ function createFavourite(parent, search, query) {
         nearby[distance.toFixed(5)] = item;
       }
 
-      const openStation = async () => {
-        await stationClick(station);
-        interval = setInterval(async () => {
-          await stationClick(null, true);
-        }, 10000);
-      };
-      item.addEventListener("click", openStation);
+      item.addEventListener("click", () => {
+        stationClick(station);
+      });
       item = null;
 
       textHolder = null;
@@ -239,234 +235,189 @@ async function oppositeStation(id) {
     }, 1);
   }, 300);
 }
-var arrivalsScroll;
 async function stationClick(stationa, noAnimation, ia) {
   if (document.querySelector(".arrivalsOnStation")) return;
   let station = stationa ? stationa : isArrivalsOpen;
-  var stylesTransition = [
-    document.querySelector(".searchContain").style,
-    document.querySelector(".listOfStations").style,
-    document.querySelector(".favouriteStations").style,
-    document.getElementById("tabsFav").style,
-  ];
 
-  var notYet = false;
   var container;
 
-  var data;
   var favList = JSON.parse(
     localStorage.getItem("favouriteStationsArriva") || "[]"
   );
-  var mapca;
-  var fav;
-  if (noAnimation) {
-    data = await fetchData(
-      `https://api.beta.brezavta.si/stops/${encodeURIComponent(
-        station.gtfs_id
-      )}/arrivals?current=true`
-    );
-    if (ia) {
-      document.querySelector(".arrivalsHolder").style.transform =
-        "translateX(0)";
-      document.querySelector(".arrivalsHolder").style.opacity = "1";
-      //showLines(document.querySelector(".timeTScroll"), station);
-    }
-    let cornot = "";
-    if (station.code % 2 == 0 && agency !== "SŽ")
-      cornot = '<md-icon class="center">adjust</md-icon>';
-    //document.querySelector(".title span").innerHTML = station.name + cornot;
-    document.querySelector(".titleHolder").innerHTML +=
-      "<div class=none></div>";
-    document.querySelector(".mapca").addEventListener("click", function () {
-      oppositeStation(station.code);
-    });
-    let favi = document.querySelector(".favi");
-    favi.innerHTML = favList.includes(station.code)
-      ? "<md-icon class=iconFill>favorite</md-icon>"
-      : "<md-icon>favorite</md-icon>";
 
-    favi.addEventListener("click", function () {
-      if (favList.includes(station.code)) {
-        favList = favList.filter((item) => item !== station.code);
-        favi.innerHTML = "<md-icon>favorite</md-icon>";
-      } else {
-        favList.push(station.code);
+  document.querySelector(".navigationBar").style.transform = "translateY(80px)";
 
-        favi.innerHTML = "<md-icon class=iconFill>favorite</md-icon>";
-      }
+  window.history.pushState(
+    null,
+    document.title + " - " + station.name,
+    location.pathname
+  );
+  container = addElement(
+    "div",
+    document.querySelector(".mainSheet"),
+    "arrivalsHolder"
+  );
+  let infoBar = addElement(
+    "div",
+    document.querySelector(".mainSheet"),
+    "infoBar"
+  );
+  createInfoBar(infoBar, station.code);
 
-      localStorage.setItem("favouriteStationsArriva", JSON.stringify(favList));
-    });
-  } else {
+  document.querySelector(".searchContain").style.transform =
+    "translateX(-100vw) translateZ(1px)";
+  document.getElementById("tabsFav").style.transform =
+    "translateX(-100vw) translateZ(1px)";
+  setTimeout(() => {
+    container.style.transform = "translateX(0) translateZ(1px)";
+  }, 0);
+
+  const title = addElement("h1", container, "title");
+  let holder = addElement("div", title);
+  let iks = addElement(
+    "mdui-button-icon",
+    holder,
+    "iks",
+    "icon=arrow_back_ios_new"
+  );
+  iks.addEventListener("click", function () {
+    window.history.replaceState(null, document.title, location.pathname);
+    container.style.transform = "translateX(100vw) translateZ(1px)";
+    document.querySelector(".infoBar").style.transform = "translateY(100%)";
+    isArrivalsOpen = false;
     document.querySelector(".navigationBar").style.transform =
-      "translateY(60px)";
+      "translateY(0px)";
 
-    window.history.pushState(
-      null,
-      document.title + " - " + station.name,
-      location.pathname
-    );
-    container = addElement(
-      "div",
-      document.querySelector(".mainSheet"),
-      "arrivalsHolder"
-    );
-    createInfoBar(document.querySelector(".mainSheet"), station.code);
-
-    stylesTransition.forEach((style) => {
-      style.transform = "translateX(-100vw)";
-      style.opacity = "0";
-    });
+    document.querySelector(".searchContain").style.transform =
+      "translateX(0vw) translateZ(1px)";
+    document.getElementById("tabsFav").style.transform =
+      "translateX(0vw) translateZ(1px)";
+    clearInterval(interval);
     setTimeout(() => {
-      container.style.transform = "translateX(0)";
-      container.style.opacity = "1";
-    }, 0);
+      container.remove();
+      document
+        .querySelector(".listOfStations")
+        .classList.remove("hideStations");
+      document.querySelector(".infoBar").remove();
+    }, 500);
+    try {
+      document.getElementById("popup").remove();
+    } catch {}
+  });
 
-    const title = addElement("h1", container, "title");
-    let holder = addElement("div", title);
-    let iks = addElement("md-icon-button", holder, "iks");
-    iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
-    iks.addEventListener("click", function () {
-      window.history.replaceState(null, document.title, location.pathname);
-      container.style.transform = "translateX(100vw)";
-      document.querySelector(".infoBar").style.transform = "translateY(100%)";
-      container.style.opacity = "0";
-      isArrivalsOpen = false;
-      document.querySelector(".navigationBar").style.transform =
-        "translateY(0px)";
+  let ttl = addElement("span", title);
+  let cornot = "";
+  if (station.code && station.code.match(/\d+/)[0] % 2 !== 0)
+    cornot = '<mdui-icon name=adjust--outlined class="center"></mdui-icon>';
+  ttl.innerHTML = station.name + cornot;
+  let hh = addElement("div", title, "titleHolder");
+  var streetView = addElement(
+    "mdui-button",
+    infoBar,
+    "streetViewBtn",
+    "icon=360",
+    "variant=tonal"
+  );
+  streetView.innerHTML = "Slika postaje";
+  streetView.addEventListener("click", function () {
+    showStreetView(station.lat, station.lon);
+  });
+  var fav = addElement(
+    "mdui-button-icon",
+    hh,
+    "favi",
+    "icon=favorite_border",
+    "selectable",
+    "selected-icon=favorite",
+    favList.includes(station.gtfs_id.match(/\d+/)[0]) ? "selected" : ""
+  );
 
-      stylesTransition.forEach((style) => {
-        style.transform = "translateX(0vw)";
-      });
-      stylesTransition.forEach((style) => {
-        style.opacity = "1";
-      });
-      clearInterval(interval);
-      setTimeout(() => {
-        container.remove();
-        document
-          .querySelector(".listOfStations")
-          .classList.remove("hideStations");
-        document.querySelector(".infoBar").remove();
-      }, 500);
-    });
-
-    let ttl = addElement("div", title);
-    let cornot = "";
-    if (station.code && station.code.match(/\d+/)[0] % 2 !== 0)
-      cornot = '<md-icon class="center">adjust</md-icon>';
-    ttl.innerHTML = station.name + cornot;
-    let hh = addElement("div", title, "titleHolder");
-    fav = addElement("md-icon-button", hh, "favi");
-    fav.innerHTML = favList.includes(station.gtfs_id.match(/\d+/)[0])
-      ? "<md-icon class=iconFill>favorite</md-icon>"
-      : "<md-icon>favorite</md-icon>";
-    fav.addEventListener("click", function () {
-      if (favList.includes(station.gtfs_id.match(/\d+/)[0])) {
-        favList = favList.filter(
-          (item) => item !== station.gtfs_id.match(/\d+/)[0]
-        );
-        fav.innerHTML = "<md-icon>favorite</md-icon>";
-      } else {
-        favList.push(station.gtfs_id.match(/\d+/)[0]);
-
-        fav.innerHTML = "<md-icon class=iconFill>favorite</md-icon>";
-      }
-
-      localStorage.setItem("favouriteStationsArriva", JSON.stringify(favList));
-    });
-    mapca = addElement("md-icon-button", hh, "mapca");
-    mapca.innerHTML = "<md-icon>swap_calls</md-icon>";
-    mapca.addEventListener("click", function () {
-      oppositeStation(station.gtfs_id.match(/\d+/)[0]);
-    });
-    if (station.gtfs_id.match(/\d+/)[0] % 2 !== 0) {
-      if (
-        stationList.findIndex(
-          (obj) =>
-            obj.gtfs_id.match(/\d+/)[0] ===
-            String(parseInt(station.gtfs_id.match(/\d+/)[0]) + 1)
-        ) === -1
-      ) {
-        mapca.setAttribute("disabled", "");
-      }
+  fav.addEventListener("click", function () {
+    if (favList.includes(station.gtfs_id.match(/\d+/)[0])) {
+      favList = favList.filter(
+        (item) => item !== station.gtfs_id.match(/\d+/)[0]
+      );
     } else {
-      if (
-        stationList.findIndex(
-          (obj) =>
-            obj.gtfs_id.match(/\d+/)[0] ===
-            String(parseInt(station.gtfs_id.match(/\d+/)[0]) - 1)
-        ) === -1
-      ) {
-        mapca.setAttribute("disabled", "");
-      }
+      favList.push(station.gtfs_id.match(/\d+/)[0]);
     }
-
-    var tabs = addElement("md-tabs", container, "tabs");
-    tabs.innerHTML = `<md-primary-tab id="arrivalsTab" aria-controls="arrivals-panel">Prihodi</md-primary-tab>
-   <md-primary-tab id="timeTab" aria-controls="time-panel">Urnik</md-primary-tab>`;
-    arrivalsScroll = addElement("div", null, "arrivalsScroll");
-
-    arrivalsScroll.setAttribute("role", "tabpanel");
-    arrivalsScroll.setAttribute("aria-labelledby", "arrivalsTab");
-    arrivalsScroll.setAttribute("id", "arrivals-panel");
-
-    let currentPanel2 = document.querySelector(".arrivalsScroll");
-    if (document.querySelector(".timeTScroll"))
-      document.querySelector(".timeTScroll").remove();
-    var timeTScroll = addElement("div", container, "timeTScroll");
-    timeTScroll.setAttribute("role", "tabpanel");
-    timeTScroll.setAttribute("aria-labelledby", "timeTab");
-    timeTScroll.setAttribute("id", "time-panel");
-    timeTScroll.classList.add("arrivalsScroll");
-    timeTScroll.style.display = "none";
-    tabs.addEventListener("change", () => {
-      let o =
-        currentPanel2.id == "arrivals-panel"
-          ? document.getElementById("arrivals-panel")
-          : document.querySelector(".timeTScroll");
-      o.style.display = "none";
-      o.style.transform = "translateX(0px) translateY(-20px)";
-      o.style.opacity = "0";
-
-      const panelId = event.target.activeTab?.getAttribute("aria-controls");
-      const root = event.target.getRootNode();
-      currentPanel2 = root.querySelector(`#${panelId}`);
-      currentPanel2.style.display = "flex";
-      setTimeout(() => {
-        currentPanel2.style.transform = "translateX(0px) translateY(0px)";
-        currentPanel2.style.opacity = "1";
-      }, 1);
-
-      if (currentPanel2.id == "time-panel" && !notYet) {
-        notYet = true;
-        //showLines(timeTScroll, station);
-      }
-      getLocation();
-    });
-    data = await fetchData(
-      `https://api.beta.brezavta.si/stops/${encodeURIComponent(
-        station.gtfs_id
-      )}/arrivals?current=true`
-    );
-    createSearchBar(container, data, station.gtfs_id);
-    container.appendChild(arrivalsScroll);
-    setTimeout(() => {
-      let ars = document.getElementById("arrivals-panel");
-      ars.style.transform = "translateX(0px) translateY(0px)";
-      ars.style.opacity = "1";
-    }, 1);
-    showStationOnMap(stationa.lat, stationa.lon, stationa.name);
+    localStorage.setItem("favouriteStations", JSON.stringify(favList));
+  });
+  var mapca = addElement("mdui-button-icon", hh, "mapca", "icon=swap_calls");
+  mapca.addEventListener("click", function () {
+    oppositeStation(station.gtfs_id.match(/\d+/)[0]);
+  });
+  if (station.gtfs_id.match(/\d+/)[0] % 2 !== 0) {
+    if (
+      stationList.findIndex(
+        (obj) =>
+          obj.gtfs_id.match(/\d+/)[0] ===
+          String(parseInt(station.gtfs_id.match(/\d+/)[0]) + 1)
+      ) === -1
+    ) {
+      mapca.setAttribute("disabled", "");
+    }
+  } else {
+    if (
+      stationList.findIndex(
+        (obj) =>
+          obj.gtfs_id.match(/\d+/)[0] ===
+          String(parseInt(station.gtfs_id.match(/\d+/)[0]) - 1)
+      ) === -1
+    ) {
+      mapca.setAttribute("disabled", "");
+    }
   }
+  let data = await fetchData(
+    `https://api.beta.brezavta.si/stops/${encodeURIComponent(
+      station.gtfs_id
+    )}/arrivals?current=true`
+  );
+  createSearchBar(container, data, station.gtfs_id);
+  var tabs = addElement("mdui-tabs", container, "tabs");
+  tabs.outerHTML = `<mdui-tabs
+  placement="top"
+  value="tab-1"
+  class="tabs"
+  full-width
+  ><mdui-tab value="tab-1">Prihodi</mdui-tab
+  ><mdui-tab value="tab-2">Urnik</mdui-tab>
+  <mdui-tab-panel
+  class="arrivalsScroll"
+    slot="panel"
+    value="tab-1"
+    
+    id=arrivals-panel
+  ></mdui-tab-panel>
+  <mdui-tab-panel
+    slot="panel"
+    value="tab-2"
+    class="timeTScroll arrivalsScroll"
+    id=time-panel
+  ></mdui-tab-panel
+></mdui-tabs>`;
+  let arrivalsScroll = document.getElementById("arrivals-panel");
+  makeSkeleton(arrivalsScroll);
+  showStationOnMap(stationa.lat, stationa.lon, stationa.name);
+
   isArrivalsOpen = station;
+
   let searchInput = document.querySelector("#searchRoutes");
   console.log(searchInput.value);
-
-  if (searchInput.value !== "") {
-    showFilteredArrivals(searchInput.value, station.gtfs_id, data, true);
-  } else {
-    showArrivals(data, station.gtfs_id, noAnimation);
-  }
+  console.log(searchInput.value);
+  showArrivals(data, station.gtfs_id, noAnimation);
+  interval = setInterval(async () => {
+    data = await fetchData(
+      `https://api.beta.brezavta.si/stops/${encodeURIComponent(
+        station.gtfs_id
+      )}/arrivals?current=true`
+    );
+    if (searchInput.value !== "") {
+      showFilteredArrivals(searchInput.value, station.gtfs_id, data, true);
+    } else {
+      showArrivals(data, station.gtfs_id, true);
+    }
+  }, 10000);
+  /*cvvvvvv*/
 }
 
 /**
@@ -483,7 +434,14 @@ async function stationClick(stationa, noAnimation, ia) {
  * @param {Array} data.data.arrivals - An array of bus arrival objects.
  */
 
-function showArrivals(data, station_id, noAnimation, stationRoute) {
+async function showArrivals(data, station_id, noAnimation, stationRoute) {
+  data = !data
+    ? await fetchData(
+        `https://api.beta.brezavta.si/stops/${encodeURIComponent(
+          isArrivalsOpen.gtfs_id
+        )}/arrivals?current=true`
+      )
+    : data;
   let arrivalsScroll = document.getElementById("arrivals-panel");
   clearElementContent(arrivalsScroll);
   arrivalsScroll = null;
@@ -518,13 +476,13 @@ function showArrivals(data, station_id, noAnimation, stationRoute) {
         }
 
         createBusNumber(arrival, arrivalItem, "0." + i + "5", noAnimation);
-        addElement("md-ripple", arrivalItem);
+        addElement("mdui-ripple", arrivalItem);
         let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
         let queryHeadSign;
         if (stationRoute) {
           queryHeadSign = `${
             stationRoute[arrival.route_id.split(":")[1]]
-          }<md-icon class=arrow>arrow_right</md-icon>`;
+          }<mdui-icon name=arrow_right--outlined class=arrow></mdui-icon>`;
         } else {
           queryHeadSign = "";
         }
@@ -532,10 +490,11 @@ function showArrivals(data, station_id, noAnimation, stationRoute) {
         tripNameSpan.innerHTML = arrival.trip_headsign.replace(
           /(.+?)[-–]/g,
           (_, word) =>
-            `${word}<md-icon class=arrow>arrow_right</md-icon>` + queryHeadSign
+            `${word}<mdui-icon name=arrow_right--outlined class=arrow></mdui-icon>` +
+            queryHeadSign
         );
         if (arrival.alerts.length > 0) {
-          addElement("md-icon", tripNameSpan, "alert").innerHTML = "warning";
+          addElement("mdui-icon", tripNameSpan, "alert", "name=warning_amber");
         }
         arrivalItem.addEventListener("click", () => {
           showBusById(arrival, station_id, data);
@@ -547,7 +506,14 @@ function showArrivals(data, station_id, noAnimation, stationRoute) {
           "eta"
         );
         etaDiv.id = "arrival_" + makeIdFriendly(arrival.trip_headsign);
-        let favorite = addElement("md-icon", arrivalItem, "favorite");
+        let favorite = addElement(
+          "mdui-button-icon",
+          arrivalItem,
+          "favorite",
+          "selectable",
+          "icon=star_border",
+          "selected-icon=star"
+        );
 
         favoriteLine(
           arrival.route_short_name.split(" ")[0],
@@ -571,9 +537,9 @@ function showArrivals(data, station_id, noAnimation, stationRoute) {
 
       if (arrival.realtime) {
         arrivalTimeSpan.innerHTML =
-          "<md-icon style='animation-delay:" +
+          "<mdui-icon name=near_me--outlined style='animation-delay:" +
           randomOneDecimal() +
-          "s;'>near_me</md-icon>";
+          "s;'></mdui-icon>";
         arrivalTimeSpan.classList.add("arrivalGreen");
       }
       if (
@@ -601,14 +567,18 @@ function showArrivals(data, station_id, noAnimation, stationRoute) {
     }
   } else {
     arrivalsScroll.innerHTML +=
-      "<p><md-icon>no_transfer</md-icon>V naslednji uri ni predvidenih avtobusov.</p>";
+      "<p><mdui-icon name=no_transfer--outlined></mdui-icon>V naslednji uri ni predvidenih avtobusov.</p>";
   }
 }
 function createSearchBar(parent, data, station) {
-  let searchInput = addElement("md-filled-text-field", parent, "search");
+  let searchInput = addElement(
+    "mdui-text-field",
+    parent,
+    "search",
+    "icon=search--outlined"
+  );
   searchInput.placeholder = "Išči izstopno postajo";
   searchInput.id = "searchRoutes";
-  searchInput.innerHTML = "<md-icon slot=leading-icon>search</md-icon>";
   const debouncedShowArrivals = debounce(showFilteredArrivals, 500);
 
   searchInput.addEventListener("input", () => {
@@ -651,11 +621,10 @@ function showFilteredArrivals(value, station, data, noAnimation) {
   showArrivals(filtered, station, noAnimation, routeToStationName);
 }
 function favoriteLine(lineName, button, arrivalItem, favos = []) {
-  button.innerHTML = "star";
   if (!localStorage.getItem("favoriteBuses"))
     localStorage.setItem("favoriteBuses", "[]");
   if (favos.includes(lineName)) {
-    button.classList.add("iconFill");
+    button.selected = true;
     const order =
       JSON.parse(favos).indexOf(lineName) - JSON.parse(favos).length;
     arrivalItem.style.order = order;
@@ -673,7 +642,7 @@ function favoriteLine(lineName, button, arrivalItem, favos = []) {
           )
         )
       );
-      button.classList.remove("iconFill");
+
       return;
     } else {
       localStorage.setItem(
@@ -683,13 +652,13 @@ function favoriteLine(lineName, button, arrivalItem, favos = []) {
           lineName,
         ])
       );
-      button.classList.add("iconFill");
+
       arrivalItem.style.order = order;
     }
   });
 }
 function createBusNumber(arrival, arrivalItem, delay, noAnimation) {
-  if (agency !== "IJPP" && agency !== "SŽ") {
+  if (agency !== "ijpp" && agency !== "sž") {
     let busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
     busNumberDiv.style.background = lineToColor(
@@ -826,7 +795,7 @@ async function showLines(parent, station) {
       busNumberDiv.id = "bus_" + arrival.route_number;
       busNumberDiv.textContent = arrival.route_number;
       const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
-      addElement("md-ripple", arrivalItem);
+      addElement("mdui-ripple", arrivalItem);
 
       const tripNameSpan = addElement("span", arrivalDataDiv);
       tripNameSpan.textContent = arrival.route_group_name;
@@ -911,27 +880,29 @@ function hoursDay(what) {
 }
 const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
 
-/**
- * Populates the parent element with bus arrival information, specifically for the next bus.
- * Adds a new element for each arrival in the list if its ETA is greater than 1 minute.
- * The first valid arrival is marked as the next bus, and further arrivals are skipped.
- *
- * @param {Array} arrivals - The list of arrival objects containing bus information.
- * @param {HTMLElement} parent - The parent element to which the arrival items will be appended.
- */
-async function createInfoBar(parent, station_id) {
-  let infoBar = addElement("div", parent, "infoBar");
-
+async function createInfoBar(infoBar, station_id) {
   let changeTime = addElement(
-    "md-outlined-segmented-button-set",
+    "mdui-segmented-button-group",
     infoBar,
-    "changeTime"
+    "changeTime",
+    "selects=single",
+    "value=" + (localStorage.getItem("time") ? "absolute" : "relative")
   );
-  let absolut = addElement("md-outlined-segmented-button", changeTime, "");
-  absolut.label = minToTime(3, 1);
-  let relativ = addElement("md-outlined-segmented-button", changeTime, "");
-  relativ.label = "3 min";
-  localStorage.getItem("time") == "relativ"
+  let absolut = addElement(
+    "mdui-segmented-button",
+    changeTime,
+    "",
+    "value=absolute"
+  );
+  absolut.innerHTML = minToTime(3, 1);
+  let relativ = addElement(
+    "mdui-segmented-button",
+    changeTime,
+    "",
+    "value=relative"
+  );
+  relativ.innerHTML = "3 min";
+  localStorage.getItem("time") == "relativ" || !localStorage.getItem("time")
     ? relativ.setAttribute("selected", "")
     : absolut.setAttribute("selected", "");
   relativ.addEventListener("click", function () {
@@ -944,19 +915,11 @@ async function createInfoBar(parent, station_id) {
     absoluteTime = true;
     refresh();
   });
-  /*let info = await fetchData(
-    "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/messages?station-code=" +
-      station_id
-  );
-  if (info.length !== 0 && false) {
-    let infoTextC = addElement("div", infoBar, "infoTextContainer");
-    let infoText = addElement("div", infoTextC, "infoText");
-    infoText.innerHTML = decodeURIComponent(info.toString());
-  }
-    */
+
   setTimeout(() => {
     infoBar.style.transform = "translateY(0)";
   }, 10);
+  return infoBar;
 }
 
 var busUpdateInterval, arrivalsUpdateInterval, intervalBusk;
@@ -1006,7 +969,13 @@ async function getMyBusData(busId, arrivalsAll, routeId) {
   holder.classList.add("arrivalsScroll");
   let myEtaHolder = addElement("div", holder, "myEtaHolder");
 
-  let iks = addElement("md-icon-button", myEtaHolder, "iks");
+  let iks = addElement(
+    "mdui-button-icon",
+    myEtaHolder,
+    "iks",
+    "icon=arrow_back_ios_new",
+    "id=busDataIks"
+  );
   let myEtaChips = addElement("div", myEtaHolder, "myEtaChips");
   console.log("ia", arrivals);
   if (arrivals && arrivals.length > 1) {
@@ -1016,7 +985,7 @@ async function getMyBusData(busId, arrivalsAll, routeId) {
       let arTime = addElement("div", myEtaChips, "arrivalTime");
       arTime.innerHTML = minutesFromNow(arrival.arrival_realtime);
       arTime.busId = arrival.trip_id;
-      addElement("md-ripple", arTime);
+      addElement("mdui-ripple", arTime);
       arTime.addEventListener("click", function () {
         myEtaChips.querySelector(".selected").classList.remove("selected");
         arTime.classList.add("selected");
@@ -1030,6 +999,9 @@ async function getMyBusData(busId, arrivalsAll, routeId) {
         intervalBusk = setInterval(() => {
           updateMyBus(busek, arrival.trip_id, arrival);
         }, 10000);
+        window.refreshMyBus = async () => {
+          await updateMyBus(busek, arrival.trip_id, arrival);
+        };
       });
     }
     myEtaChips.firstElementChild.classList.add("selected");
@@ -1039,9 +1011,6 @@ async function getMyBusData(busId, arrivalsAll, routeId) {
     ? clearElementContent(document.querySelector(".myBusDiv"))
     : addElement("div", holder, "myBusDiv");
   myBusDiv = document.querySelector(".myBusDiv");
-
-  iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
-  iks.id = "busDataIks";
   iks.addEventListener("click", function () {
     holder.style.transform = "translateX(100vw)";
     clearInterval(intervalBusk);
@@ -1069,6 +1038,13 @@ async function getMyBusData(busId, arrivalsAll, routeId) {
     intervalBusk = setInterval(() => {
       updateMyBus(bus, bus ? bus.trip_id : arrivals[0].trip_id, arrivals[0]);
     }, 10000);
+    window.refreshMyBus = async () => {
+      await updateMyBus(
+        bus,
+        bus ? bus.trip_id : arrivals[0].trip_id,
+        arrivals[0]
+      );
+    };
     return;
   }
 
@@ -1097,7 +1073,7 @@ async function clickedMyBus(bus, tripId, arrival) {
   tripNameSpan.innerHTML = arOnS1.trip_headsign.replace(
     /(.+?)[-–]/g,
     (_, word) =>
-      `<span style="white-space: nowrap;">${word}<md-icon>arrow_right</md-icon></span>`
+      `<span style="white-space: nowrap;">${word}<mdui-icon name=arrow_right--outlined class=arrow></mdui-icon></span>`
   );
   if (arrival.alerts.length > 0) {
     let warning = addElement("div", myBusDiv, "arrivalItem");
@@ -1105,7 +1081,7 @@ async function clickedMyBus(bus, tripId, arrival) {
     for (const alert of arrival.alerts) {
       if (alert.language !== "sl" || alert.id == "SZ-DELAY") continue;
       let alertDiv = addElement("div", warning, "alert");
-      alertDiv.innerHTML = `<span class="title"><md-icon>warning</md-icon>${alert.header}</span><span class="body">${alert.description}</span>`;
+      alertDiv.innerHTML = `<span class="title"><mdui-icon name=warning_amber></mdui-icon>${alert.header}</span><span class="body">${alert.description}</span>`;
     }
     if (warning.childElementCount == 0) {
       warning.remove();
@@ -1115,7 +1091,7 @@ async function clickedMyBus(bus, tripId, arrival) {
     let delay = addElement("div", myBusDiv, "arrivalItem");
     delay.style.margin = "10px 0";
     let alertDiv = addElement("div", delay, "alert");
-    alertDiv.innerHTML = `<span class="title"><md-icon>warning</md-icon>ZAMUDA : ${Math.round(
+    alertDiv.innerHTML = `<span class="title"><mdui-icon name=warning_amber></mdui-icon>ZAMUDA : ${Math.round(
       arrival.arrival_delay / 60
     )} min</span>`;
   }
@@ -1210,7 +1186,7 @@ function showArrivalsMyBus(info, container, arrival) {
 
     if (bus && bus.stop.id == ar.stop.id && bus.stop_status == "STOPPED_AT") {
       lnimg.innerHTML =
-        "<md-icon style='color:RGB(" +
+        "<mdui-icon name='directions_bus--outlined' style='color:RGB(" +
         darkenColor(
           lineToColor(
             parseInt(
@@ -1222,7 +1198,7 @@ function showArrivalsMyBus(info, container, arrival) {
         ).join(",") +
         ")!important;background-color:" +
         color +
-        "'>directions_bus</md-icon>";
+        "'></mdui-icon>";
       lnimg.classList.add("busOnStation");
       listArrivals[tripId] = [];
 
@@ -1236,7 +1212,7 @@ function showArrivalsMyBus(info, container, arrival) {
       isFutureTime(ar.departure_realtime)
     ) {
       lnimg.innerHTML =
-        "<md-icon style='color:RGB(" +
+        "<mdui-icon name='directions_bus--outlined' style='color:RGB(" +
         darkenColor(
           lineToColor(
             parseInt(
@@ -1248,7 +1224,7 @@ function showArrivalsMyBus(info, container, arrival) {
         ).join(",") +
         ")!important;background-color:" +
         color +
-        "'>directions_bus</md-icon>";
+        "'></mdui-icon>";
       lnimg.classList.add("busOnStation");
       listArrivals[tripId] = [];
       listArrivals[tripId][index] =
@@ -1260,7 +1236,7 @@ function showArrivalsMyBus(info, container, arrival) {
       if (!listArrivals[tripId]) {
         listArrivals[tripId] = [];
         lnimg.innerHTML =
-          "<md-icon style='color:RGB(" +
+          "<mdui-icon name='directions_bus--outlined' style='color:RGB(" +
           darkenColor(
             lineToColor(
               parseInt(
@@ -1272,7 +1248,7 @@ function showArrivalsMyBus(info, container, arrival) {
           ).join(",") +
           ")!important;background-color:" +
           color +
-          "'>directions_bus</md-icon>";
+          "'>directions_bus</mdui-icon>";
         lnimg.classList.add("busBetween");
 
         listArrivals[tripId][index] =
@@ -1329,7 +1305,9 @@ function showArrivalsMyBus(info, container, arrival) {
               stationHTML = item + `<sub>${long}</sub>`;
             } else if (typeValue == "true") {
               stationHTML =
-                item + `<sub>${long}</sub>` + "<md-icon>near_me</md-icon>";
+                item +
+                `<sub>${long}</sub>` +
+                "<mdui-icon name=near_me--outlined></mdui-icon>";
             }
           }
 
