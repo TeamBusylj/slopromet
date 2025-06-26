@@ -542,67 +542,7 @@ mdui-button-icon.busNo2::part(loading) {
 .busTemplate .arrivalItem .arrivalData {
   gap: 0px;
 }
-.lineTimes {
-  overflow: scroll;
-  position: absolute !important;
-  top: 40px !important;
-  overscroll-behavior: none;
-  transform: translateX(100vw);
-  height: calc(100dvh - 150px);
-  transition: all 0.6s cubic-bezier(0.38, 1.21, 0.22, 1) !important;
-}
-.lineTimes .busNo2 {
-  background: RGB(var(--mdui-color-surface-container-highest));
-}
 
-.lineTimes .arrivalItem {
-  background: none;
-  border-radius: 0;
-  border-bottom: 1px solid var(--mdui-color-surface-container-high, #cac4d0);
-}
-.lineTimes .arrivalTime {
-  padding: 0;
-  background: none;
-  margin: 0;
-  flex-wrap: wrap;
-  width: 100%;
-  gap: 10px;
-}
-.timet {
-  background: var(--mdui-color-surface-container);
-  padding: 5px 10px;
-  border-radius: 100px;
-}
-sub {
-  font-size: x-small;
-  margin-left: 2px;
-  vertical-align: baseline;
-}
-div.arrivalItem.currentTime > div.arrivalData > div > span > .timet {
-  background: #860000;
-}
-div.arrivalItem.previusTime > div.arrivalData > div > span > .timet {
-  color: gray;
-}
-.newDay {
-  margin: 20px;
-  font-size: 1.3rem;
-  border-bottom: 1px solid RGB(var(--mdui-color-outline));
-  width: 100%;
-  text-align: center;
-  padding-bottom: 20px;
-}
-.newDay::first-letter {
-  text-transform: uppercase;
-}
-.lineTimes mdui-button-icon.iks {
-  top: 0;
-  left: 0;
-}
-.iksa {
-  visibility: hidden;
-  pointer-events: none;
-}
 @keyframes showIn {
   0% {
     transform: translateX(100vw);
@@ -1629,77 +1569,82 @@ img.busImgElement {
   animation: show 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
 }
 
-.departures-panel > ul > li {
-  display: flex;
+#tabsTimes {
+  width: 100%;
+  padding-bottom: 100px;
+}
+.lineTimes {
+  overflow: scroll;
+  position: absolute !important;
+  top: 40px !important;
+  overscroll-behavior: none;
+  transform: translateX(100vw);
+  height: calc(100dvh - 150px);
+  transition: all 0.6s cubic-bezier(0.38, 1.21, 0.22, 1) !important;
+}
+.lineTimes .busNo2 {
+  background: RGB(var(--mdui-color-surface-container-highest));
+  align-self: start;
+}
+
+.lineTimes .arrivalItem {
+  background: none;
+  border-radius: 0;
+  border-bottom: 1px solid
+    rgb(var(--mdui-color-surface-container-high, #cac4d0));
+  margin: 0;
+}
+.lineTimes .arrivalTime {
+  padding: 0;
+  background: none;
+  margin: 0;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 15px;
+  align-items: flex-start;
+  margin-left: 10px;
   flex-direction: column;
 }
-
-.departures-panel > ul > li .time {
-  font-size: 18px;
-  line-height: 40px;
-  display: block;
-  border-bottom: 1px solid rgba(var(--mdui-color-on-surface), 0.05);
-  padding: 0 0 0 50px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  color: rgba(var(--mdui-color-on-surface), 0.9);
+.timeSuffix {
+  background: var(--mdui-color-surface-container);
+  filter: brightness(1.4);
+  padding: 5px 10px;
+  border-radius: 9px;
+  margin-left: 5px;
+  font-size: 0.8rem;
 }
-.departures-panel > ul > li .time:first-of-type .times-hour {
-  border-top: none !important;
+.timet {
+  background: var(--mdui-color-surface-container);
+
+  padding: 5px 10px;
+  border-radius: 9px;
+}
+sub {
+  font-size: x-small;
+  margin-left: 2px;
+  vertical-align: baseline;
+}
+div.arrivalItem.currentTime > div.arrivalData > div > span > .timet {
+  background: #860000;
+}
+div.arrivalItem.previusTime > div.arrivalData > div > span > .timet {
+  color: gray;
 }
 
-.departures-panel > ul > li .time .times-hour {
-  position: absolute;
+.lineTimes mdui-button-icon.iks {
+  top: 0;
   left: 0;
-  top: -1px;
-  pointer-events: none;
-  font-size: 12px;
-  line-height: 1em;
-  color: rgb(var(--mdui-color-on-surface));
-  font-weight: bold;
-  width: 100%;
-  padding: 10px 0 0 10px;
-  border-top: 1px solid rgba(var(--mdui-color-on-surface), 0.2);
 }
-ul,
-li {
-  list-style-type: none;
+.iksa {
+  visibility: hidden;
+  pointer-events: none;
+}
+div#infoItem {
+  border: navajowhite;
+  margin: 40px 0;
   padding: 0;
 }
-.departures-panel > ul > li i {
-  font-style: normal;
-  font-size: 0.8rem;
-  font-weight: bold;
-  display: flex;
-  border-radius: 9px;
-  background: rgba(var(--mdui-color-primary), 0.1);
-  padding: 7px 12px;
-  margin: 0 0 0 10px;
-  height: 1rem;
-  align-items: center;
-  justify-content: center;
-}
-.notes-legend {
-  padding: 25px 15px 25px 0;
-  float: left;
+#infoItem > .arrivalTime {
   width: 100%;
-}
-
-.notes-legend dt,
-.notes-legend dd {
-  display: block;
-  float: left;
-  min-height: 10px;
-  width: calc(100% - 65px);
-  margin: 0 0 20px 0;
-}
-.notes-legend dt {
-  clear: left;
-  width: 50px;
-  margin-right: 15px;
-  text-align: right;
-}
-.notes-legend dt i {
-  display: inline-block !important;
+  white-space: normal;
 }

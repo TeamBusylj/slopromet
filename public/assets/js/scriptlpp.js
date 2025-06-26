@@ -646,13 +646,23 @@ async function showLines(parent, station) {
   parent.style.opacity = "1";
 
   data.forEach((arrival, i) => {
-    if (!arrival.is_garage) {
+    console.log(arrival.route_group_name.split("-").at(-1).trim());
+
+    if (
+      !parent.querySelector(
+        "#bus_" +
+          arrival.route_group_name.split("-").at(-1).trim().replace(/\W/g, "_")
+      )
+    ) {
       let arrivalItem = addElement(
         "mdui-card",
         parent,
         "arrivalItem",
-        "clickable"
+        "clickable",
+        "id=bus_" +
+          arrival.route_group_name.split("-").at(-1).trim().replace(/\W/g, "_")
       );
+
       arrivalItem.style.animationDelay = "0." + i + "s";
       arrivalItem.style.order =
         arrival.route_number[0] == "N"
@@ -678,7 +688,7 @@ async function showLines(parent, station) {
         await showLineTime(
           arrival.route_number,
           station.ref_id,
-          arrival.route_group_name,
+          arrival.route_group_name.split("-").at(-1).trim(),
           arrival
         );
         document.querySelector(".arrivalsHolder").style.transform =
@@ -697,8 +707,32 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
     document.querySelector(".mainSheet"),
     "lineTimes"
   );
+  let dir12 = station_id % 2 === 0 ? "1" : "2";
 
   container.classList.add("arrivalsScroll");
+  /*let arrivalItem = addElement("div", container, "arrivalItem");
+  arrivalItem.style.margin = "15px 0";
+  let busNumberDiv = addElement("div", arrivalItem, "busNo2");
+  busNumberDiv.style.background = lineColors(routeN);
+  busNumberDiv.textContent = routeN;
+  let tripNameSpan = addElement("span", arrivalItem);
+  tripNameSpan.textContent = routeName;*/
+  let iks = addElement(
+    "mdui-button-icon",
+    null,
+    "iks",
+    "icon=arrow_back_ios_new"
+  );
+
+  iks.addEventListener("click", function () {
+    window.history.replaceState(null, document.title, location.pathname);
+    setTimeout(() => {
+      container.remove();
+    }, 500);
+    container.style.transform = "translateX(100vw) translateZ(1px)";
+    document.querySelector(".arrivalsHolder").style.transform =
+      "translateX(0vw) translateZ(1px)";
+  });
 
   let html = await (
     await fetch(
@@ -716,26 +750,32 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
   let stationId = null;
   let dir = null;
 
-  const lineNoEl = wrapper.querySelector(".line-no");
-  if (lineNoEl && lineNoEl.textContent.trim() === routeN) {
-    // Extract lineId from wrapper id
-    matchedLineId = wrapper.id.replace("line", "");
+  if (wrapper) {
+    const dirBlocks = wrapper.querySelectorAll(".line-dir-wrapper");
 
-    // Find the 'Odhodi' button
-    const departuresBtn = wrapper.querySelector(".btn.times");
-    console.log(wrapper);
-    if (departuresBtn) {
-      const onclick = departuresBtn.getAttribute("onclick");
-      // Match the pattern: changeLineNavTab(this, 'departures', 1, 1137, 832)
-      const match = onclick.match(
-        /changeLineNavTab\(.*?,\s*'departures',\s*(\d+),\s*(\d+),\s*(\d+)\)/
-      );
-      if (match) {
-        dir = match[1]; // "1"
-        matchedLineId = match[2]; // "1137" (again, just for consistency)
-        stationId = match[3]; // "832"
+    dirBlocks.forEach((block) => {
+      const lineFiles = block.querySelector(".lineFiles");
+      if (!lineFiles || !lineFiles.classList.contains(`dir${dir12}`)) return;
+
+      const lineNoEl = block.querySelector(".line-no");
+
+      if (lineNoEl?.textContent.trim() === routeN) {
+        matchedLineId = wrapper.id.replace("line", "");
+
+        const departuresBtn = block.querySelector(".btn.times");
+        if (departuresBtn) {
+          const onclick = departuresBtn.getAttribute("onclick");
+          const match = onclick.match(
+            /changeLineNavTab\(.*?,\s*'departures',\s*(\d+),\s*(\d+),\s*(\d+)\)/
+          );
+          if (match) {
+            dir = match[1];
+            matchedLineId = match[2];
+            stationId = match[3];
+          }
+        }
       }
-    }
+    });
   }
 
   fetch(
@@ -754,112 +794,79 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
   )
     .then((response) => response.text()) // or .json() if the response is JSON
     .then((data) => {
-      // Parse the response HTML string into a document
+      let tabs = addElement(
+        "mdui-tabs",
+        container,
+        "tabs",
+        "full-width",
+        "value=tab-Del",
+        "variant=secondary",
+        "id=tabsTimes",
+        "placement=top"
+      );
+
       const parsedDoc = new DOMParser().parseFromString(data, "text/html");
 
       // Transform departures and get updated HTML string
-      const transformedHtml = transformDepartures(parsedDoc);
+      var dataObject = parseDepartures(parsedDoc.querySelector(".departures"));
+      console.log(dataObject);
+      for (const key in dataObject) {
+        const day = dataObject[key];
+        tabs.innerHTML += `<mdui-tab value="tab-${key.slice(
+          0,
+          3
+        )}">${key.replace(" ", "&nbsp;")}</mdui-tab>`;
+        let tabPanel = addElement(
+          "mdui-tab-panel",
+          tabs,
+          "mdui-tab-panel",
+          "slot=panel",
+          `value=tab-${key.slice(0, 3)}`
+        );
 
-      // Inject transformed HTML into container element in your page
-      container.innerHTML += transformedHtml;
-      let iks = addElement(
-        "mdui-button-icon",
-        null,
-        "iks",
-        "icon=arrow_back_ios_new"
-      );
-      container.insertBefore(iks, container.firstChild);
-      iks.addEventListener("click", function () {
-        window.history.replaceState(null, document.title, location.pathname);
-        setTimeout(() => {
-          container.remove();
-        }, 500);
-        container.style.transform = "translateX(100vw) translateZ(1px)";
-        document.querySelector(".arrivalsHolder").style.transform =
-          "translateX(0vw) translateZ(1px)";
-      });
-    })
-    .catch((error) => console.error("Error:", error));
-
-  if (false) {
-    let arrival2 = arrival;
-    arrival2.route_name = routeN;
-    window.history.pushState(null, document.title, location.pathname);
-    //showBusById(arrival2);
-    let container = addElement(
-      "div",
-      document.querySelector(".mainSheet"),
-      "lineTimes"
-    );
-
-    container.classList.add("arrivalsScroll");
-
-    let iks = addElement(
-      "mdui-button-icon",
-      container,
-      "iks",
-      "icon=arrow_back_ios_new"
-    );
-    iks.addEventListener("click", function () {
-      window.history.replaceState(null, document.title, location.pathname);
-      setTimeout(() => {
-        container.remove();
-      }, 500);
-      container.style.transform = "translateX(100vw) translateZ(1px)";
-      document.querySelector(".arrivalsHolder").style.transform =
-        "translateX(0vw) translateZ(1px)";
-    });
-    let data1 = await fetchData(
-      `https://lpp.ojpp.derp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN.replace(
-        /\D/g,
-        ""
-      )}&previous-hours=${hoursDay(0)}&next-hours=168`
-    );
-
-    data1 = data1.route_groups[0].routes;
-    let previusTime = true;
-    let newDay = null;
-    data1.forEach((route) => {
-      if (route.parent_name !== routeName) return;
-      if (route.group_name + route.route_number_suffix == routeN) {
-        route.timetable.forEach((time) => {
-          let dateStr = time.timestamp.slice(0, 10);
-
-          if (newDay !== dateStr) {
-            let newDayTxt = addElement("div", container, "newDay");
-            newDayTxt.innerHTML =
-              new Date(dateStr).toLocaleDateString("sl-SI", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              }) + (route.is_garage ? " (garaža)" : "");
-          }
-          newDay = dateStr;
-          let arrivalItem = addElement("div", container, "arrivalItem");
+        for (const times of day.times) {
+          let arrivalItem = addElement("div", tabPanel, "arrivalItem");
           const busNumberDiv = addElement("div", arrivalItem, "busNo2");
-          busNumberDiv.id = "bus_" + time.route_number;
-          busNumberDiv.innerHTML = time.hour + "<sub>h</sub>";
+          busNumberDiv.innerHTML = times[0][0].split(":")[0] + "<sub>h</sub>";
           const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
           const etaDiv = addElement("div", arrivalDataDiv, "eta");
           const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
-          let hour = time.hour
-            .toString()
-            .replace(/\b\d\b/g, (match) => "0" + match);
-          time.minutes.forEach((minute, index) => {
-            arrivalTimeSpan.innerHTML +=
-              "<span class=timet>" +
-              hour +
-              ":" +
-              minute.toString().replace(/\b\d\b/g, (match) => "0" + match);
-            +"</span>";
+
+          times.forEach((time) => {
+            arrivalTimeSpan.innerHTML += `<div><span class=timet>${time[0]}</span>${time[1]}</div>`;
           });
-          if (time.is_current) previusTime = false;
-          if (previusTime) arrivalItem.classList.add("previusTime");
-        });
+        }
+        if (day.times.length == 0) {
+          tabPanel.innerHTML += `<p><mdui-icon name=no_transfer--outlined></mdui-icon>V tem dnevu ni odhodov.</p>`;
+        }
+        for (const info of day.info) {
+          let arrivalItem = addElement(
+            "div",
+            tabPanel,
+            "arrivalItem",
+            "id=infoItem"
+          );
+          const suffix = addElement(
+            "span",
+            arrivalItem,
+            "timeSuffix",
+            info[0] == "" ? "style=background:none;" : ""
+          );
+          suffix.innerHTML = info[0] == "" ? "!" : info[0];
+
+          const infoSpan = addElement("span", arrivalItem, "arrivalTime");
+          infoSpan.innerHTML = info[1];
+        }
       }
+      tabs.insertBefore(iks, tabs.firstChild);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      tabs.innerHTML =
+        "Zgodila se je napaka med pridobivanjem podatkov o odhodih.";
     });
-  }
 }
+
 function hoursDay(what) {
   const now = new Date();
   const hoursFromMidnight = now.getHours() + now.getMinutes() / 60;
@@ -868,70 +875,72 @@ function hoursDay(what) {
 }
 const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
 
-function transformDepartures(html) {
-  // Select the main container div.departures
-  const departuresDiv = html.querySelector("div.departures");
+function parseDepartures(departuresElement) {
+  const tabLabels = ["Delavnik", "Sobota", "Nedelja, praznik"];
+  const keys = ["Delavnik", "Sobota", "Nedelja, praznik"];
+  const output = {};
 
-  // Find the first <ul> inside it (the tabs container)
-  const ul = departuresDiv.querySelector("ul");
+  const allTabs = departuresElement.querySelectorAll("ul > li");
+  let tabIndex = 0;
 
-  // Create the new mdui-tabs element
-  const mduiTabs = html.createElement("mdui-tabs");
-  mduiTabs.setAttribute("value", "Delavnik");
-  // Replace ul with mdui-tabs container
-  ul.replaceWith(mduiTabs);
+  allTabs.forEach((li) => {
+    const btn = li.querySelector("button");
+    if (!btn) return;
 
-  // Process each direct child <li> of ul
-  ul.querySelectorAll(":scope > li").forEach((li) => {
-    // Find the button inside this li (assume only one)
-    const button = li.querySelector("button");
+    const tabName = btn.textContent.trim();
+    if (!tabLabels.includes(tabName)) return;
 
-    if (button) {
-      // Get button inner HTML (e.g. "Naslednji")
-      const btnText = button.innerHTML.trim();
-      if (btnText === "Naslednji") li.remove();
-      // Create the new mdui-tab element with the same text and value
-      const mduiTab = html.createElement("mdui-tab");
-      mduiTab.setAttribute("value", btnText);
-      mduiTab.textContent = btnText;
+    const key = keys[tabIndex++];
+    const hourBuckets = new Map();
+    const info = [];
 
-      // Replace button with mdui-tab
-      button.replaceWith(mduiTab);
+    const innerLis = li.querySelectorAll("ul > li");
+    innerLis.forEach((innerLi) => {
+      innerLi.querySelectorAll("span.time").forEach((span) => {
+        const fullTime = span.querySelector("time")?.textContent.trim();
+        if (fullTime) {
+          const hourMatch = fullTime.match(/^(\d{2})/);
+          if (hourMatch) {
+            const hour = hourMatch[1];
 
-      // Now convert this li to mdui-tab-panel
-      const mduiTabPanel = html.createElement("mdui-tab-panel");
+            // Get all <i> tag contents and wrap each in <span class="timeSuffix">
+            const iElements = span.querySelectorAll("i");
+            const suffixHTML = Array.from(iElements)
+              .map((i) => i.textContent.trim())
+              .filter(Boolean)
+              .map((text) => `<span class="timeSuffix">${text}</span>`)
+              .join("");
 
-      // Copy over the content of li except the button (already removed)
-      // So move all children from li to mduiTabPanel
-      while (li.firstChild) {
-        mduiTabPanel.appendChild(li.firstChild);
+            if (!hourBuckets.has(hour)) hourBuckets.set(hour, []);
+            hourBuckets.get(hour).push([fullTime, suffixHTML]);
+          }
+        }
+      });
+
+      // Legend info
+      const dl = innerLi.querySelector("dl.notes-legend");
+      if (dl) {
+        const dtList = dl.querySelectorAll("dt");
+        const ddList = dl.querySelectorAll("dd");
+        dtList.forEach((dt, i) => {
+          const dtText = dt.textContent.trim();
+          const ddText = ddList[i]?.textContent.trim();
+          if (dtText || ddText) {
+            info.push([dtText, ddText]);
+          }
+        });
       }
+    });
 
-      // Set slot and value attributes on the panel
-      mduiTabPanel.setAttribute("slot", "panel");
-      mduiTabPanel.setAttribute("value", btnText);
+    // Convert Map to sorted array of time arrays
+    const times = [...hourBuckets.entries()]
+      .sort((a, b) => Number(a[0]) - Number(b[0]))
+      .map(([, timeList]) => timeList);
 
-      // Replace the original li with mdui-tab-panel
-      li.replaceWith(mduiTabPanel);
-
-      mduiTabPanel.classList.add("departures-panel");
-      // Append the panel to mdui-tabs container
-      mduiTabs.appendChild(mduiTabPanel);
-
-      // Append the tab to mdui-tabs container (tabs go as direct children)
-      mduiTabs.insertBefore(mduiTab, mduiTabPanel);
-      const list = mduiTabPanel.querySelector("ul > li");
-      const notesLegend = list.querySelector(".notes-legend");
-      const firstSpan = list.querySelector("span");
-      console.log(notesLegend, firstSpan);
-      console.log(list);
-
-      if (notesLegend && firstSpan) {
-        list.insertBefore(notesLegend, firstSpan);
-      }
-    }
+    output[key] = { times, info };
   });
-  return departuresDiv.outerHTML;
+
+  return output;
 }
 
 /**
