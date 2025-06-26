@@ -1950,7 +1950,7 @@ function minToTime(min, yes) {
 
   return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
 }
-var agency = localStorage.getItem("agency").toLowerCase() || "lpp";
+var agency = localStorage.getItem("agency")?.toLowerCase() || "lpp";
 async function fetchData(url, arrivaType) {
   let data;
   if (agency !== "lpp") {

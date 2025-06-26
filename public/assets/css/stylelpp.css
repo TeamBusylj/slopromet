@@ -1602,6 +1602,7 @@ span.busDataModel {
   opacity: 0.6;
 }
 .busDataInfo {
+  max-height: 100%;
   width: 60%;
   display: flex;
   align-items: end;
@@ -1625,6 +1626,80 @@ img.busImgElement {
   z-index: 2;
   position: relative;
   object-fit: cover;
-  height: 100%;
   animation: show 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
+}
+
+.departures-panel > ul > li {
+  display: flex;
+  flex-direction: column;
+}
+
+.departures-panel > ul > li .time {
+  font-size: 18px;
+  line-height: 40px;
+  display: block;
+  border-bottom: 1px solid rgba(var(--mdui-color-on-surface), 0.05);
+  padding: 0 0 0 50px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: rgba(var(--mdui-color-on-surface), 0.9);
+}
+.departures-panel > ul > li .time:first-of-type .times-hour {
+  border-top: none !important;
+}
+
+.departures-panel > ul > li .time .times-hour {
+  position: absolute;
+  left: 0;
+  top: -1px;
+  pointer-events: none;
+  font-size: 12px;
+  line-height: 1em;
+  color: rgb(var(--mdui-color-on-surface));
+  font-weight: bold;
+  width: 100%;
+  padding: 10px 0 0 10px;
+  border-top: 1px solid rgba(var(--mdui-color-on-surface), 0.2);
+}
+ul,
+li {
+  list-style-type: none;
+  padding: 0;
+}
+.departures-panel > ul > li i {
+  font-style: normal;
+  font-size: 0.8rem;
+  font-weight: bold;
+  display: flex;
+  border-radius: 9px;
+  background: rgba(var(--mdui-color-primary), 0.1);
+  padding: 7px 12px;
+  margin: 0 0 0 10px;
+  height: 1rem;
+  align-items: center;
+  justify-content: center;
+}
+.notes-legend {
+  padding: 25px 15px 25px 0;
+  float: left;
+  width: 100%;
+}
+
+.notes-legend dt,
+.notes-legend dd {
+  display: block;
+  float: left;
+  min-height: 10px;
+  width: calc(100% - 65px);
+  margin: 0 0 20px 0;
+}
+.notes-legend dt {
+  clear: left;
+  width: 50px;
+  margin-right: 15px;
+  text-align: right;
+}
+.notes-legend dt i {
+  display: inline-block !important;
 }
