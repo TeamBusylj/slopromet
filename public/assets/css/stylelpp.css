@@ -526,10 +526,11 @@ mdui-button-icon.busNo2::part(loading) {
 }
 
 .busTemplate {
-  display: flex;
+  display: grid;
   padding: 10px 0;
   width: 100%;
-  flex-wrap: wrap;
+  grid-template-columns: 1fr 1fr;
+  flex-direction: row;
 }
 .busTemplate .arrivalItem {
   width: auto;
@@ -1559,12 +1560,14 @@ span.busDataAge {
   position: relative;
   height: 100%;
   margin-top: 25px;
+  display: flex;
 }
 img.busImgElement {
   max-width: 100%;
   border-radius: 18px;
   z-index: 2;
   position: relative;
+  height: 100%;
   object-fit: cover;
   animation: show 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
 }
@@ -1587,12 +1590,13 @@ img.busImgElement {
   align-self: start;
 }
 
-.lineTimes .arrivalItem {
+.lineTimes .arrivalItem:not(#lineTimeIndicator) {
   background: none;
   border-radius: 0;
   border-bottom: 1px solid
     rgb(var(--mdui-color-surface-container-high, #cac4d0));
   margin: 0;
+  padding: 15px;
 }
 .lineTimes .arrivalTime {
   padding: 0;
@@ -1640,8 +1644,8 @@ div.arrivalItem.previusTime > div.arrivalData > div > span > .timet {
   pointer-events: none;
 }
 div#infoItem {
-  border: navajowhite;
-  margin: 40px 0;
+  border: none !important;
+  margin: 20px 0 !important;
   padding: 0;
 }
 #infoItem > .arrivalTime {

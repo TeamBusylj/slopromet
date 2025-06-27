@@ -646,21 +646,18 @@ async function showLines(parent, station) {
   parent.style.opacity = "1";
 
   data.forEach((arrival, i) => {
-    console.log(arrival.route_group_name.split("-").at(-1).trim());
-
     if (
       !parent.querySelector(
-        "#bus_" +
-          arrival.route_group_name.split("-").at(-1).trim().replace(/\W/g, "_")
-      )
+        "#bus_" + arrival.route_id + arrival.route_name?.replace(/\W/g, "_")
+      ) &&
+      !arrival.is_garage
     ) {
       let arrivalItem = addElement(
         "mdui-card",
         parent,
         "arrivalItem",
         "clickable",
-        "id=bus_" +
-          arrival.route_group_name.split("-").at(-1).trim().replace(/\W/g, "_")
+        "id=bus_" + arrival.route_id + arrival.route_name?.replace(/\W/g, "_")
       );
 
       arrivalItem.style.animationDelay = "0." + i + "s";
@@ -688,7 +685,7 @@ async function showLines(parent, station) {
         await showLineTime(
           arrival.route_number,
           station.ref_id,
-          arrival.route_group_name.split("-").at(-1).trim(),
+          arrival.route_group_name,
           arrival
         );
         document.querySelector(".arrivalsHolder").style.transform =
@@ -710,13 +707,7 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
   let dir12 = station_id % 2 === 0 ? "1" : "2";
 
   container.classList.add("arrivalsScroll");
-  /*let arrivalItem = addElement("div", container, "arrivalItem");
-  arrivalItem.style.margin = "15px 0";
-  let busNumberDiv = addElement("div", arrivalItem, "busNo2");
-  busNumberDiv.style.background = lineColors(routeN);
-  busNumberDiv.textContent = routeN;
-  let tripNameSpan = addElement("span", arrivalItem);
-  tripNameSpan.textContent = routeName;*/
+
   let iks = addElement(
     "mdui-button-icon",
     null,
@@ -743,24 +734,33 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
     )
   ).text();
   const doc = new DOMParser().parseFromString(html, "text/html");
-
-  const wrapper = doc.querySelector(".lineWrapper.active");
-
   let matchedLineId = null;
   let stationId = null;
   let dir = null;
+  let directionName;
+  const wrappers = doc.querySelectorAll(".lineWrapper");
 
-  if (wrapper) {
+  wrappers.forEach((wrapper) => {
+    const lineIdFromWrapper = wrapper.id.replace("line", "");
     const dirBlocks = wrapper.querySelectorAll(".line-dir-wrapper");
 
     dirBlocks.forEach((block) => {
       const lineFiles = block.querySelector(".lineFiles");
-      if (!lineFiles || !lineFiles.classList.contains(`dir${dir12}`)) return;
+      if (!lineFiles) return;
 
+      const stopCodeEl = lineFiles.querySelector(".stop-code");
       const lineNoEl = block.querySelector(".line-no");
 
-      if (lineNoEl?.textContent.trim() === routeN) {
-        matchedLineId = wrapper.id.replace("line", "");
+      // Match by stop code and route number
+      if (
+        stopCodeEl?.textContent.trim() === station_id &&
+        lineNoEl?.textContent.trim() === routeN
+      ) {
+        matchedLineId = lineIdFromWrapper;
+
+        // ✅ Extract the direction name (e.g., "STANEŽIČE P+R")
+        const directionStrong = block.querySelector("h3 strong:last-of-type");
+        directionName = directionStrong?.textContent.trim() || "";
 
         const departuresBtn = block.querySelector(".btn.times");
         if (departuresBtn) {
@@ -770,15 +770,15 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
           );
           if (match) {
             dir = match[1];
-            matchedLineId = match[2];
+            matchedLineId = match[2]; // override from onclick if needed
             stationId = match[3];
           }
         }
       }
     });
-  }
+  });
 
-  fetch(
+  await fetch(
     "https://cors.proxy.prometko.si/https://www.lpp.si/sites/default/files/lpp_vozniredi/iskalnik/js/departures.php",
     {
       method: "POST",
@@ -793,7 +793,7 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
     }
   )
     .then((response) => response.text()) // or .json() if the response is JSON
-    .then((data) => {
+    .then(async (data) => {
       let tabs = addElement(
         "mdui-tabs",
         container,
@@ -809,7 +809,21 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
 
       // Transform departures and get updated HTML string
       var dataObject = parseDepartures(parsedDoc.querySelector(".departures"));
+
       console.log(dataObject);
+      if (Object.keys(dataObject).length == 0) {
+        dataObject = await fetchData(
+          `https://lpp.ojpp.derp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN}&previous-hours=${hoursDay(
+            0
+          )}&next-hours=168`
+        );
+
+        dataObject = await dataObject.route_groups[0].routes.find(
+          (route) => route.parent_name == routeName
+        );
+        dataObject = transformToDelavnikTimes(dataObject.timetable);
+        console.log(dataObject);
+      }
       for (const key in dataObject) {
         const day = dataObject[key];
         tabs.innerHTML += `<mdui-tab value="tab-${key.slice(
@@ -823,7 +837,19 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
           "slot=panel",
           `value=tab-${key.slice(0, 3)}`
         );
+        let arrivalItem = addElement(
+          "div",
+          tabPanel,
+          "arrivalItem",
+          "id=lineTimeIndicator"
+        );
+        arrivalItem.style.margin = "15px 0";
+        let busNumberDiv = addElement("div", arrivalItem, "busNo2");
+        busNumberDiv.style.background = lineColors(routeN);
+        busNumberDiv.textContent = routeN;
+        let tripNameSpan = addElement("span", arrivalItem);
 
+        tripNameSpan.textContent = !directionName ? routeName : directionName;
         for (const times of day.times) {
           let arrivalItem = addElement("div", tabPanel, "arrivalItem");
           const busNumberDiv = addElement("div", arrivalItem, "busNo2");
@@ -874,6 +900,36 @@ function hoursDay(what) {
   return what ? hoursToMidnight.toFixed(2) : hoursFromMidnight.toFixed(2);
 }
 const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
+function transformToDelavnikTimes(data) {
+  const result = {
+    Delavnik: {
+      times: [],
+      info: [],
+    },
+  };
+
+  const hoursMap = new Map();
+
+  data.forEach((entry) => {
+    const hourStr = String(entry.hour).padStart(2, "0");
+
+    if (!hoursMap.has(hourStr)) {
+      hoursMap.set(hourStr, []);
+    }
+
+    const group = hoursMap.get(hourStr);
+
+    entry.minutes.forEach((minute) => {
+      const minStr = String(minute).padStart(2, "0");
+      group.push([`${hourStr}:${minStr}`, ""]);
+    });
+  });
+
+  // Convert map values to ordered array
+  result.Delavnik.times = Array.from(hoursMap.values());
+
+  return result;
+}
 
 function parseDepartures(departuresElement) {
   const tabLabels = ["Delavnik", "Sobota", "Nedelja, praznik"];
