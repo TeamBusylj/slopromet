@@ -826,7 +826,8 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
       }
       for (const key in dataObject) {
         const day = dataObject[key];
-        tabs.innerHTML += `<mdui-tab value="tab-${key.slice(
+        const onclicktab = directionName ? "" : "id=clickTab";
+        tabs.innerHTML += `<mdui-tab ${onclicktab} value="tab-${key.slice(
           0,
           3
         )}">${key.replace(" ", "&nbsp;")}</mdui-tab>`;
@@ -885,6 +886,9 @@ async function showLineTime(routeN, station_id, routeName, arrival) {
         }
       }
       tabs.insertBefore(iks, tabs.firstChild);
+      if (!directionName) {
+        document.querySelector("#clickTab").click();
+      }
     })
     .catch((error) => {
       console.error("Error:", error);
@@ -902,7 +906,7 @@ function hoursDay(what) {
 const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
 function transformToDelavnikTimes(data) {
   const result = {
-    Delavnik: {
+    Urnik: {
       times: [],
       info: [],
     },
@@ -926,7 +930,7 @@ function transformToDelavnikTimes(data) {
   });
 
   // Convert map values to ordered array
-  result.Delavnik.times = Array.from(hoursMap.values());
+  result.Urnik.times = Array.from(hoursMap.values());
 
   return result;
 }
