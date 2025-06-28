@@ -5,12 +5,14 @@
     <style>
       @media (prefers-color-scheme: light) {
         .st0 {
-          fill: #000 !important;
+          fill: #000;
         }
       }
 
-      .st0 {
-        fill: #fff;
+      @media (prefers-color-scheme: dark) {
+        .st0 {
+          fill: #fff;
+        }
       }
     </style>
   </defs>
