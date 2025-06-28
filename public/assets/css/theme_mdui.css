@@ -50,7 +50,7 @@
     --mdui-color-surface-bright-dark: 55, 57, 63;
     --mdui-color-surface-container-lowest-dark: 12, 14, 19;
     --mdui-color-surface-container-low-dark: 25, 27, 33;
-    --mdui-color-surface-container-dark: 29, 32, 37;
+    --mdui-color-surface-container-dark: RGB(29, 32, 37);
     --mdui-color-surface-container-high-dark: 40, 42, 47;
     --mdui-color-surface-container-highest-dark: 51, 53, 58;
     --mdui-color-on-surface-dark: 226, 226, 233;
@@ -89,7 +89,7 @@
     --mdui-color-surface-bright-dark: 65, 55, 53;
     --mdui-color-surface-container-lowest-dark: 20, 12, 11;
     --mdui-color-surface-container-low-dark: 34, 26, 24;
-    --mdui-color-surface-container-dark: 38, 30, 28;
+    --mdui-color-surface-container-dark: RGB(38, 30, 28);
     --mdui-color-surface-container-high-dark: 49, 40, 38;
     --mdui-color-surface-container-highest-dark: 60, 50, 49;
     --mdui-color-on-surface-dark: 240, 223, 220;
@@ -128,7 +128,7 @@
     --mdui-color-surface-bright-dark: 53, 58, 63;
     --mdui-color-surface-container-lowest-dark: 10, 15, 19;
     --mdui-color-surface-container-low-dark: 23, 28, 33;
-    --mdui-color-surface-container-dark: 27, 32, 37;
+    --mdui-color-surface-container-dark: RGB(27, 32, 37);
     --mdui-color-surface-container-high-dark: 38, 42, 47;
     --mdui-color-surface-container-highest-dark: 48, 53, 58;
     --mdui-color-on-surface-dark: 223, 227, 233;
@@ -211,7 +211,7 @@
     --mdui-color-surface-bright-light: 249, 249, 255;
     --mdui-color-surface-container-lowest-light: 255, 255, 255;
     --mdui-color-surface-container-low-light: 243, 243, 251;
-    --mdui-color-surface-container-light: 231, 231, 239;
+    --mdui-color-surface-container-light: RGB(231, 231, 239);
     --mdui-color-surface-container-high-light: 231, 231, 239;
     --mdui-color-surface-container-highest-light: 226, 226, 233;
     --mdui-color-on-surface-light: 25, 27, 33;
@@ -250,7 +250,7 @@
     --mdui-color-surface-bright-light: 255, 248, 246;
     --mdui-color-surface-container-lowest-light: 255, 255, 255;
     --mdui-color-surface-container-low-light: 255, 240, 238;
-    --mdui-color-surface-container-light: 245, 228, 226;
+    --mdui-color-surface-container-light: RGB(245, 228, 226);
     --mdui-color-surface-container-high-light: 245, 228, 226;
     --mdui-color-surface-container-highest-light: 240, 223, 220;
     --mdui-color-on-surface-light: 34, 26, 24;
@@ -289,7 +289,7 @@
     --mdui-color-surface-bright-light: 247, 249, 255;
     --mdui-color-surface-container-lowest-light: 255, 255, 255;
     --mdui-color-surface-container-low-light: 240, 244, 250;
-    --mdui-color-surface-container-light: 228, 232, 239;
+    --mdui-color-surface-container-light: RGB(228, 232, 239);
     --mdui-color-surface-container-high-light: 228, 232, 239;
     --mdui-color-surface-container-highest-light: 223, 227, 233;
     --mdui-color-on-surface-light: 23, 28, 33;

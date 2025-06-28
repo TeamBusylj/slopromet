@@ -38,7 +38,7 @@ async function loop(firsttim, arrival, station, arOnSt) {
   busObject = tempBusObject;
 
   // Create or update markers
-  displayBuses(firsttim, arrival, station, arOnSt);
+  await displayBuses(firsttim, arrival, station, arOnSt);
 }
 
 async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
@@ -318,6 +318,7 @@ async function generateRouteVector(
     document.querySelector(".loader").style.display = "none";
     document.querySelector(".loader").style.backgroundSize = "40% 40%";
   }, 100);
+  console.log("routevector");
 }
 async function getCoordinates(trip_id, data) {
   let coordinates = await fetchData(

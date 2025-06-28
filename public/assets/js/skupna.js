@@ -284,7 +284,7 @@ async function makeMap() {
     updateWhileInteracting: true,
   });
 
-  map.on("singleclick", function (evt) {
+  map.on("click", function (evt) {
     var feature = map.forEachFeatureAtPixel(evt.pixel, function (feat, layer) {
       return feat;
     });
@@ -387,7 +387,7 @@ async function makeMap() {
   map.once("postrender", function (event) {
     document.querySelector("#map").style.opacity = "1";
   });
-  map.on("singleclick", function (evt) {
+  map.on("click", function (evt) {
     const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
       return feature;
     });
@@ -701,23 +701,6 @@ async function getStreetViewCameraLocation(stopLat, stopLng, apiKey) {
     return null;
   }
 }
-const changeTabs = (event) => {
-  let o =
-    currentPanel.id == "location-panel"
-      ? document.querySelector(".listOfStations")
-      : document.querySelector(".favouriteStations");
-  o.style.display = "none";
-  o.style.transform = "translateX(0px) translateY(-20px)";
-  o.style.opacity = "0";
-  const panelId = event.target.activeTab?.getAttribute("aria-controls");
-  const root = event.target.getRootNode();
-  currentPanel = root.querySelector(`#${panelId}`);
-  currentPanel.style.display = "flex";
-  setTimeout(() => {
-    currentPanel.style.transform = "translateX(0px) translateY(0px)";
-    currentPanel.style.opacity = "1";
-  }, 1);
-};
 function minimizeSheet(h = 40) {
   let bottomSheet = document.querySelector(".bottomSheet");
   bottomSheet.style.transition =
@@ -1128,22 +1111,24 @@ function displayRoute(panel, dira) {
   let d = addElement("mdui-divider", panel);
   d.style.marginBottom = "15px";
   if (dir.departure_time) {
-    let startTime = addElement("div", panel, "stepDiv");
+    let startTime = addElement(
+      "div",
+      panel,
+      "stepDiv",
+      "style=margin-top: 0px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;"
+    );
     startTime.innerHTML =
       "<mdui-icon name=alarm></mdui-icon>Začnite ob " + dir.departure_time.text;
-    startTime.setAttribute(
-      "style",
-      "margin-top: 0px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;"
-    );
   }
 
-  let startDuration = addElement("div", panel, "stepDiv");
+  let startDuration = addElement(
+    "div",
+    panel,
+    "stepDiv",
+    "style=margin-top: 10px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px"
+  );
   startDuration.innerHTML =
     "<mdui-icon name=schedule></mdui-icon>Potovali boste " + dir.duration.text;
-  startDuration.setAttribute(
-    "style",
-    "margin-top: 10px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;"
-  );
 
   let transfersN = 0;
 
@@ -1155,15 +1140,16 @@ function displayRoute(panel, dira) {
   });
   transfersN = transfersN - 1;
   if (transfersN > 0) {
-    let transfers = addElement("div", panel, "stepDiv");
+    let transfers = addElement(
+      "div",
+      panel,
+      "stepDiv",
+      "style=margin-top: 10px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px"
+    );
     transfers.innerHTML =
       "<mdui-icon name=sync_alt></mdui-icon>Prestopili boste " +
       transfersN +
       "-krat";
-    transfers.setAttribute(
-      "style",
-      "margin-top: 10px;padding-top: 0px;padding-bottom: 0px;margin-bottom: 0px;"
-    );
   }
   let steps = addElement("div", panel, "stepsDir");
   for (const step of dir.steps) {
@@ -1227,11 +1213,15 @@ function displayRoute(panel, dira) {
     }
   }
   if (dir.arrival_time) {
-    let endTime = addElement("div", panel, "stepDiv");
+    let endTime = addElement(
+      "div",
+      panel,
+      "stepDiv",
+      "style=margin-top: 10px;padding-top: 0px;"
+    );
     endTime.innerHTML =
       "<mdui-icon name=schedule></mdui-icon>Na cilju boste ob " +
       dir.arrival_time.text;
-    endTime.setAttribute("style", "margin-top: 10px;padding-top: 0px;");
   }
   panel.style.opacity = "1";
   panel.style.transform = "translateY(0)";
