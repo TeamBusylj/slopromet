@@ -68,7 +68,7 @@ async function createStationItems(o) {
         let cornot = "";
         if (stationList[station].ref_id % 2 !== 0) {
           cornot =
-            '<mdui-icon name=adjust--outlined class="center"></mdui-icon>';
+            '<div class=iconCenter><div class="centerHolder"><mdui-icon name=adjust--outlined class="center"></mdui-icon><span>V CENTER</span></div></div>';
         }
         let fav = "";
         if (favList.includes(stationList[station].ref_id)) {
@@ -210,7 +210,8 @@ function createFavourite(parent, search, query) {
       );
       let cornot = "";
       if (stationList[station].ref_id % 2 !== 0) {
-        cornot = '<mdui-icon name=adjust--outlined class="center"></mdui-icon>';
+        cornot =
+          '<div class=iconCenter><div class="centerHolder"><mdui-icon name=adjust--outlined class="center"></mdui-icon><span>V CENTER</span></div></div>';
       }
       let fav = "";
       if (favList.includes(stationList[station].ref_id)) {
@@ -418,10 +419,11 @@ async function stationClick(stationa) {
     } catch {}
   });
 
-  let ttl = addElement("span", title);
+  let ttl = addElement("span", title, "titleText");
   let cornot = "";
   if (station.ref_id % 2 !== 0)
-    cornot = '<mdui-icon name=adjust--outlined class="center"></mdui-icon>';
+    cornot =
+      '<div class=iconCenter><div class="centerHolder"><mdui-icon name=adjust--outlined class="center"></mdui-icon><span>V CENTER</span></div></div>';
   ttl.innerHTML = station.name + cornot;
   let hh = addElement("div", title, "titleHolder");
   var streetView = addElement(

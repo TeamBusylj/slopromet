@@ -28,7 +28,12 @@ body {
   position: sticky;
   top: -1px;
 }
-
+.titleText {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  white-space: nowrap;
+}
 @media only screen and (max-width: 500px) {
   .title {
     font-size: 1.5rem !important;
@@ -84,19 +89,48 @@ body {
   animation: arrivalItemShow 0.5s cubic-bezier(0.38, 1.21, 0.3, 1.33) forwards;
 }
 .center {
-  margin-left: 10px;
-  padding: 4px 4px;
   position: relative;
   white-space: nowrap;
+  padding: 4px 4px;
+  font-size: 1rem !important;
+  width: 25px;
+  display: block;
+  height: 25px;
+}
+
+@container iconLabel (max-width: calc(8ch + 57px)) {
+  .centerHolder span {
+    display: none !important;
+  }
+  .centerHolder {
+    padding: 0 !important;
+    gap: 0px;
+  }
+}
+.centerHolder span {
+  font-size: 0.9rem !important;
+
+  white-space: nowrap;
+}
+.iconCenter {
+  container-type: inline-size;
+  container-name: iconLabel;
+  width: 100%;
+}
+.centerHolder {
+  width: fit-content;
+  margin-left: 10px;
   border-radius: 100px;
+  padding: 2px 14px 2px 8px;
+
+  display: flex;
+  align-items: center;
+  gap: 5px;
   background: linear-gradient(
     134deg,
     RGB(var(--mdui-color-surface-bright)),
-    #00000026
+    #00000047
   );
-  font-size: 1rem !important;
-  width: 25px;
-  height: 25px;
 }
 .textHolder {
   align-items: center;
@@ -132,6 +166,9 @@ mdui-tab-panel:not([active]) {
   margin-left: 20px !important;
 }
 @media (prefers-color-scheme: dark) {
+  .timeSuffix {
+    filter: brightness(1.4);
+  }
   #map div div a[target="_blank"] div {
     background-color: #242f3e;
   }
@@ -155,6 +192,9 @@ mdui-tab-panel:not([active]) {
 }
 
 @media (prefers-color-scheme: light) {
+  .timeSuffix {
+    filter: brightness(0.9);
+  }
   #map div div a[target="_blank"] div {
     background-color: #fbf9f7;
   }
@@ -247,6 +287,7 @@ mdui-tab-panel:not([active]) {
   font-weight: 300;
   display: flex;
   align-items: center;
+  white-space: nowrap;
 }
 .stationDistance mdui-icon {
   margin-right: 5px;
@@ -255,6 +296,7 @@ mdui-tab-panel:not([active]) {
 .stationName {
   font-weight: 400;
   font-size: 1.2rem;
+  white-space: nowrap;
 }
 
 .iconFill {
@@ -539,6 +581,7 @@ mdui-button-icon.busNo2::part(loading) {
   flex: 1 1 0;
   gap: 10px;
   background: none;
+  box-shadow: none;
 }
 .busTemplate .arrivalItem .arrivalData {
   gap: 0px;
@@ -1288,10 +1331,6 @@ div#popup-content2 {
   transition: all 0.4s;
 }
 
-mdui-navigation-bar-item img {
-  height: 20px;
-}
-
 body {
   padding: env(safe-area-inset-top) env(safe-area-inset-right)
     env(safe-area-inset-bottom) env(safe-area-inset-left);
@@ -1588,6 +1627,7 @@ img.busImgElement {
 .lineTimes .busNo2 {
   background: RGB(var(--mdui-color-surface-container-highest));
   align-self: start;
+  color: rgb(var(--mdui-color-on-surface));
 }
 
 .lineTimes .arrivalItem:not(#lineTimeIndicator) {
@@ -1611,7 +1651,6 @@ img.busImgElement {
 }
 .timeSuffix {
   background: var(--mdui-color-surface-container);
-  filter: brightness(1.4);
   padding: 5px 10px;
   border-radius: 9px;
   margin-left: 5px;
@@ -1651,4 +1690,7 @@ div#infoItem {
 #infoItem > .arrivalTime {
   width: 100%;
   white-space: normal;
+}
+#lineTimeIndicator > .busNo2 {
+  color: #ffffffba !important;
 }

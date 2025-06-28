@@ -169,10 +169,7 @@
     --mdui-color-surface-bright-light: 247, 250, 244;
     --mdui-color-surface-container-lowest-light: 255, 255, 255;
     --mdui-color-surface-container-low-light: 241, 245, 239;
-    --mdui-color-surface-container: linear-gradient(
-      329deg,
-      RGB(216, 220, 214) RGB(229, 233, 227)
-    );
+    --mdui-color-surface-container: linear-gradient(329deg, #d8dcd6, #e5e9e3);
     --mdui-color-surface-container-high-light: 229, 233, 227;
     --mdui-color-surface-container-highest-light: 223, 228, 222;
     --mdui-color-on-surface-light: 24, 29, 25;

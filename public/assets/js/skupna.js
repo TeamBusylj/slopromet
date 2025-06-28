@@ -948,7 +948,7 @@ async function getDirections() {
     let lppChip = addElement("mdui-chip", chipsHolder, "chip", "selectable");
     lppChip.innerHTML = key;
     lppChip.selected = agencies[key];
-    lppChip.addEventListener("click", () => {
+    lppChip.addEventListener("change", () => {
       if (lppChip.selected == true) {
         agencies[key] = true;
       } else {
@@ -1001,6 +1001,7 @@ async function getDirections() {
         new Date(inputArrive.value)
       );
       localStorage.agencije = JSON.stringify(agencies);
+      console.log(agencies);
     } else {
       panel.innerHTML = "Izberite obe lokaciji.";
     }
