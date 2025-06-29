@@ -31,18 +31,18 @@
         fill: #ef4e32;
       }
     </style>
-    <linearGradient id="linear-gradient" x1="1.5" y1="131.3" x2="25.5" y2="131.3" gradientTransform="translate(0 -102)" gradientUnits="userSpaceOnUse">
+    <linearGradient id="linear-gradient" x1="1.5" y1="-73.3" x2="25.5" y2="-73.3" gradientTransform="translate(0 -44) scale(1 -1)" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#fff"/>
       <stop offset="1" stop-color="#fff" stop-opacity=".8"/>
     </linearGradient>
-    <radialGradient id="radial-gradient" cx="13.1" cy="114.4" fx="22.3" fy="114.4" r="9.2" gradientTransform="translate(0 -91.3) scale(1 .9)" gradientUnits="userSpaceOnUse">
+    <radialGradient id="radial-gradient" cx="13.1" cy="-62.1" fx="22.3" fy="-62.1" r="9.2" gradientTransform="translate(0 -44.2) scale(1 -.9)" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#ffce20"/>
       <stop offset="0" stop-color="#ffb628"/>
       <stop offset=".4" stop-color="#ffb82e" stop-opacity=".9"/>
       <stop offset=".9" stop-color="#fff7de" stop-opacity="0"/>
       <stop offset="1" stop-color="#fff" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="linear-gradient1" x1="13.5" y1="113.6" x2="13.5" y2="152.5" gradientTransform="translate(0 -102)" gradientUnits="userSpaceOnUse">
+    <linearGradient id="linear-gradient1" x1="13.5" y1="-55.6" x2="13.5" y2="-94.5" gradientTransform="translate(0 -44) scale(1 -1)" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#fff"/>
       <stop offset="1" stop-color="#fff" stop-opacity=".8"/>
     </linearGradient>

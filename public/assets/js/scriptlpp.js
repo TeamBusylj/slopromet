@@ -647,7 +647,9 @@ async function showLines(parent, station) {
   parent.style.transform = "translateX(0px) translateY(0px)";
   parent.style.opacity = "1";
 
-  data.forEach((arrival, i) => {
+  let i = 0;
+
+  data.forEach((arrival) => {
     if (
       !parent.querySelector(
         "#bus_" + arrival.route_id + arrival.route_name?.replace(/\W/g, "_")
@@ -663,15 +665,14 @@ async function showLines(parent, station) {
       );
 
       arrivalItem.style.animationDelay = "0." + i + "s";
-      arrivalItem.style.order =
+      /* arrivalItem.style.order =
         arrival.route_number[0] == "N"
           ? arrival.route_number.replace(/\D/g, "") + 100
-          : arrival.route_number.replace(/\D/g, "");
+          : arrival.route_number.replace(/\D/g, "");*/
       const busNumberDiv = addElement(
         "mdui-button-icon",
         arrivalItem,
-        "busNo2",
-        "style=height:auto"
+        "busNo2"
       );
 
       busNumberDiv.style.background = lineColors(arrival.route_number);
@@ -697,6 +698,7 @@ async function showLines(parent, station) {
           "translateX(0px) translateZ(1px)";
         busNumberDiv.removeAttribute("loading");
       });
+      i++;
     }
   });
 }

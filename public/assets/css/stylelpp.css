@@ -40,13 +40,6 @@ body {
   }
 }
 
-.buses {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(35px, 35px));
-  gap: min(2vw, 10px);
-  margin-top: 7px;
-}
-
 md-circular-progress#loader {
   position: absolute;
   top: 50%;
@@ -105,6 +98,11 @@ body {
   .centerHolder {
     padding: 0 !important;
     gap: 0px;
+    background: linear-gradient(
+      134deg,
+      RGB(var(--mdui-color-surface-bright)),
+      #00000047
+    );
   }
 }
 .centerHolder span {
@@ -126,15 +124,12 @@ body {
   display: flex;
   align-items: center;
   gap: 5px;
-  background: linear-gradient(
-    134deg,
-    RGB(var(--mdui-color-surface-bright)),
-    #00000047
-  );
+  background: RGB(var(--mdui-color-surface-container-highest));
 }
 .textHolder {
   align-items: center;
   display: flex;
+  padding: 5px 0;
 }
 .searchContain {
   position: sticky;
@@ -491,7 +486,7 @@ span.hidden {
   box-sizing: border-box;
   border-radius: 25px;
   align-items: center;
-  padding: 19px;
+  padding: 15px;
   position: relative;
   display: flex;
   flex-direction: row;
@@ -526,15 +521,15 @@ span.hidden {
   width: calc(100% - 25px);
   margin: 10px auto;
 }
-.buses .busNo {
-  height: 25px;
-  width: 25px;
+.buses {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(30px, 1fr));
+  gap: 10px;
+  margin-top: 7px;
 }
-
 .busNo {
   font-weight: 900;
-  height: 60%;
-  border-radius: 200px;
+  border-radius: 14px;
   aspect-ratio: 1 / 1;
   background: red;
   display: flex;
@@ -542,19 +537,24 @@ span.hidden {
   justify-content: center;
   color: #ffffffba;
   padding: 5px;
+  height: 30px;
+  width: 35px;
+  box-sizing: border-box;
 }
 .busNo2 {
   font-size: 1rem;
   font-weight: 900;
-  height: 30px;
-  border-radius: 200px;
-  aspect-ratio: 1 / 1;
+  height: 40px;
+  width: 45px;
+  border-radius: 18px;
   background: red;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   justify-content: center;
   color: #ffffffba;
   padding: 5px;
+  box-sizing: border-box;
   position: relative;
   cursor: pointer;
 }
