@@ -49,7 +49,7 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
     stations = stations.stop_times;
     coordinates = await getCoordinates(arrival.trip_id);
   }
-
+  let buses = [];
   for (const i in busObject) {
     const bus = busObject[i];
 
@@ -102,7 +102,6 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
       marker.setStyle(busStyle);
 
       tempMarkersSource.addFeature(marker);
-      busPreviusPosition[bus.vehicle.id] = coordinates1;
     } else {
       try {
         let coords = [...coordinates];
@@ -155,8 +154,6 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
               } else {
                 feature.getGeometry().setCoordinates(coords);
               }
-
-              busPreviusPosition[bus.vehicle.id] = newCoordinates;
             }
           }
         });

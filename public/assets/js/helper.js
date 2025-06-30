@@ -6,8 +6,8 @@
  * @param {string} trip - The trip name of the bus.
  * @returns {void}
  */
-async function loop(firsttim, arrival, station, arOnSt) {
-  if (firsttim) {
+async function loop(isFirstTime, arrival, station, arOnSt) {
+  if (isFirstTime) {
     document.querySelector(".loader").style.display = "grid";
     document
       .querySelector(".loader")
@@ -16,152 +16,16 @@ async function loop(firsttim, arrival, station, arOnSt) {
         "RGB(" + lineColorsObj[arrival.route_name.replace(/\D/g, "")] + ")"
       );
   }
-  // Fetch bus data
-  let response = await fetchData(
-    "https://mestnipromet.cyou/api/v1/resources/buses/info"
-  );
+  busObject = await apiAdapter.getVehicleLocations(arrival);
 
-  let tempBusObject = response.filter((bus) => {
-    return bus.line_number == arrival.route_name;
-  });
-
-  for (const i in tempBusObject) {
-    for (const j in busImageData) {
-      if (tempBusObject[i].bus_name.includes(busImageData[j].no)) {
-        tempBusObject[i] = {
-          ...tempBusObject[i],
-          ...busImageData[j],
-        };
-      }
-    }
-  }
-  busObject = tempBusObject;
-
-  // Create or update markers
-  await displayBuses(firsttim, arrival, station, arOnSt);
-}
-
-async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
-  tempMarkersSource = new ol.source.Vector();
-  if (firsttim) {
-    stations = await fetchData(
-      "https://lpp.ojpp.derp.si/api/route/stations-on-route?trip-id=" +
-        arrival.trip_id
-    );
-    console.log(arrival.trip_id);
-
-    coordinates = await getCoordinates(arrival.trip_id, stations);
-  }
-  for (const i in busObject) {
-    const bus = busObject[i];
-
-    if (bus.trip_id == arrival.trip_id) {
-      if (!buses.includes(bus.bus_id)) {
-        buses.push(bus.bus_id);
-        const coordinates1 = ol.proj.fromLonLat([bus.longitude, bus.latitude]); // Convert to EPSG:3857
-
-        // Create a feature for the bus
-        const marker = new ol.Feature({
-          geometry: new ol.geom.Point(coordinates1),
-        });
-
-        // Create a style for the bus with rotation
-        const busStyle = new ol.style.Style({
-          image: new ol.style.Icon({
-            rotateWithView: true,
-            anchor: [0.52, 0.5],
-            anchorXUnits: "fraction",
-            anchorYUnits: "fraction",
-
-            /*src: generateCustomSVG(
-              darkenColor(
-                lineColorsObj[bus.line_number.replace(/\D/g, "")],
-                -100
-              ),
-              lineColorsObj[bus.line_number.replace(/\D/g, "")]
-            ), // Generate dynamic SVG*/
-            src: "assets/images/bus_urb.png",
-            scale: 0.5,
-            rotation: (bus.direction * Math.PI) / 180, // Convert degrees to radians
-          }),
-        });
-
-        marker.busId = bus.bus_id;
-        marker.direction = bus.direction;
-        marker.busNo = bus.bus_name.replace("LJ LPP-", "");
-
-        marker.setStyle(busStyle);
-
-        tempMarkersSource.addFeature(marker);
-        busPreviusPosition[bus.bus_id] = coordinates1;
-      } else {
-        try {
-          let coords = [...coordinates];
-          if (coords[0][0][0]) {
-            coords = coords.flat(); // Flatten the array if needed
-          }
-          markers.getSource().forEachFeature(function (feature) {
-            if (bus.bus_id === feature.busId) {
-              let cordi = [
-                ...coords[
-                  findClosestPoint([bus.longitude, bus.latitude], coords)
-                ],
-              ];
-              cordi =
-                getDistance(cordi, [bus.longitude, bus.latitude]) > 10
-                  ? [bus.longitude, bus.latitude]
-                  : cordi;
-
-              cordi[0] > cordi[1] ? cordi.reverse() : cordi;
-
-              let newCoordinates = ol.proj.fromLonLat(cordi);
-
-              if (
-                findClosestPoint([bus.longitude, bus.latitude], coords) >
-                findClosestPoint(
-                  ol.proj.toLonLat(feature.getGeometry().getCoordinates()),
-                  coords
-                )
-              ) {
-                now = new Date().getTime();
-
-                const animate = () => {
-                  const shouldContinue = moveMarker(
-                    feature,
-                    newCoordinates,
-                    (bus.direction * Math.PI) / 180
-                  );
-
-                  // Re-render map for smooth animation
-                  map.render();
-
-                  if (shouldContinue) {
-                    requestAnimationFrame(animate); // Continue animation
-                  }
-                };
-
-                animate(); // Start animation loop
-
-                busPreviusPosition[bus.bus_id] = newCoordinates;
-              }
-            }
-          });
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    }
+  if (isFirstTime) {
+    stations = await apiAdapter.getStationsOnRoute(arrival);
+    coordinates = await apiAdapter.getRouteGeometry(arrival, stations);
   }
 
-  if (firsttim) {
-    await generateRouteVector(
-      stations,
-      arrival.trip_id,
-      arrival.route_name,
-      station,
-      [...coordinates]
-    );
-  } else {
+  await displayBuses(isFirstTime, arrival, station);
+
+  if (!isFirstTime) {
     document.querySelector(".loader").style.backgroundSize = "0% 0%";
     setTimeout(() => {
       document.querySelector(".loader").style.display = "none";
@@ -169,157 +33,145 @@ async function displayBuses(firsttim, arrival, station, arrivalsOnRoutes) {
     }, 300);
   }
 }
-async function generateRouteVector(
-  data,
-  trip_id,
-  lno,
-  stationID,
-  coordinatesRoute
-) {
-  if (trip_id === undefined) return;
-  let coords1 = [...coordinates];
-  if (coords1[0][0][0]) {
-    coords1 = coords1.flat(); // Flatten the array if needed
-  }
 
-  for (const i of coords1) {
-    if (i[0] < i[1]) {
-      i.reverse();
+/**
+ * Displays buses on the map, creating or updating their markers.
+ * @param {boolean} isFirstTime - True if this is the initial drawing.
+ * @param {Object} arrival - The arrival object.
+ * @param {string} stationId - The ID of the station.
+ */
+async function displayBuses(isFirstTime, arrival, stationId) {
+  tempMarkersSource = new ol.source.Vector();
+  let currentBusesOnMap = [];
+  let buses = [];
+  for (const bus of busObject) {
+    const busId = bus.bus_id;
+
+    if (bus.trip_id !== arrival.trip_id) continue;
+    currentBusesOnMap.push(busId);
+
+    const busCoords = ol.proj.fromLonLat([bus.longitude, bus.latitude]);
+
+    if (isFirstTime || !buses.includes(busId)) {
+      buses.push(busId);
+      const marker = new ol.Feature({ geometry: new ol.geom.Point(busCoords) });
+      const busStyle = new ol.style.Style({
+        image: new ol.style.Icon({
+          rotateWithView: true,
+          anchor: [0.5, 0.5],
+          src: "assets/images/bus_urb.png", // Unified icon
+          scale: 0.5,
+          rotation: ((bus.direction || 0) * Math.PI) / 180,
+        }),
+      });
+      marker.setStyle(busStyle);
+      marker.busId = busId;
+      tempMarkersSource.addFeature(marker);
+    } else {
+      // Animate existing marker
+      markers.getSource().forEachFeature((feature) => {
+        if (feature.busId === busId) {
+          moveMarker(
+            feature,
+            busCoords,
+            ((bus.direction || 0) * Math.PI) / 180
+          );
+        }
+      });
     }
   }
 
-  // Create new vector sources for stations and routes
+  if (isFirstTime) {
+    await generateRouteVector(arrival, stationId);
+  } else {
+    // Update the main markers layer if not the first time
+    markers.setSource(tempMarkersSource);
+  }
+}
+/**
+ * Draws the route line and station markers on the map.
+ * @param {Object} arrival - The arrival object.
+ * @param {string} stationId - The ID of the station.
+ */
+async function generateRouteVector(arrival, stationId) {
+  if (!coordinates) return;
+
+  const routeColor =
+    agency === "lpp"
+      ? lineColorsObj[arrival.route_name.replace(/\D/g, "")]
+      : lineToColor(
+          parseInt(Math.max(...arrival.route_name.match(/\d+/g).map(Number))),
+          1
+        );
+
   const tempStationSource = new ol.source.Vector();
   const tempRouteSource = new ol.source.Vector();
+  console.log(darkenColor(routeColor, -50));
 
-  // Add station markers
-  data.forEach((station, index) => {
-    let loca = [
-      ...coords1[
-        findClosestPoint([station.latitude, station.longitude], coords1)
-      ],
-    ];
-    loca = loca.reverse();
-    // console.log(loca,coords1);
-
+  // Draw stations
+  stations.forEach((stationData) => {
     const stationFeature = new ol.Feature({
-      geometry: new ol.geom.Point(ol.proj.fromLonLat(loca)),
-      name: station.name,
-      order: station.order_no,
-      code: station.station_code,
-      color: lineColorsObj[lno.replace(/\D/g, "")],
+      geometry: new ol.geom.Point(
+        ol.proj.fromLonLat([stationData.longitude, stationData.latitude])
+      ),
+      name: stationData.name,
+      color: routeColor,
+      txtColor: darkenColor(routeColor, 120),
     });
-
-    // Set styles for stations
     stationFeature.setStyle(
       new ol.style.Style({
         image: new ol.style.Circle({
-          radius: 7, // Adjust size as needed
+          radius: 7,
           fill: new ol.style.Fill({
             color:
-              station.station_code == stationID
-                ? darkenColor(lineColorsObj[lno.replace(/\D/g, "")], -50)
-                : darkenColor(lineColorsObj[lno.replace(/\D/g, "")], 100),
+              stationData.station_code == stationId
+                ? darkenColor(routeColor, -50)
+                : darkenColor(routeColor, 100),
           }),
-          stroke: new ol.style.Stroke({
-            color: lineColorsObj[lno.replace(/\D/g, "")], // Border color
-            width: 3, // Border width
-          }),
+          stroke: new ol.style.Stroke({ color: routeColor, width: 3 }),
         }),
       })
     );
-
     tempStationSource.addFeature(stationFeature);
   });
 
-  let lineStrings = [];
-
-  // Check if the geojson_shape is a MultiLineString or a LineString
-  const hasLongSubarray = (arr) =>
-    arr.some((sub) => Array.isArray(sub) && sub.length > 2);
-  if (hasLongSubarray(coordinatesRoute)) {
-    for (const j of coordinatesRoute) {
-      if (j[0][0] > j[0][1]) {
-        for (const i of j) {
-          i.reverse();
-        }
-      }
-    }
-
-    // For MultiLineString, iterate over each array of coordinates
-    lineStrings = coordinatesRoute.map((coordinatesa) => {
-      return new ol.geom.LineString(
-        coordinatesa.map((c) => {
-          return ol.proj.fromLonLat(c);
-        })
-      );
-    });
-  } else {
-    if (coordinatesRoute[0][0] > coordinatesRoute[0][1]) {
-      for (const i in coordinatesRoute) {
-        coordinatesRoute[i].reverse();
-      }
-    }
-
-    // For a single LineString, just create a single geometry
-    lineStrings = [
-      new ol.geom.LineString(
-        coordinatesRoute.map((c) => {
-          return ol.proj.fromLonLat(c);
-        })
-      ),
-    ];
-  }
-  // Add features to the source
-  lineStrings.forEach((line, index) => {
-    const routeFeature = new ol.Feature({
-      geometry: line,
-    });
-
-    // Set styles based on index or a color object
-    routeFeature.setStyle(
-      new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color: lineColorsObj[lno.replace(/\D/g, "")],
-          width: 7,
-        }),
+  // Draw route line
+  const routeFeature = new ol.Feature({
+    geometry: new ol.geom.LineString(
+      coordinates.map((c) => {
+        return ol.proj.fromLonLat(c[0] < c[1] ? c : c.reverse());
       })
-    );
-    // Add the feature to the route source
-    tempRouteSource.addFeature(routeFeature);
+    ),
   });
-  const myExtent = tempRouteSource.getExtent();
-  const view = map.getView();
-  view.fit(myExtent, { duration: 750 });
-  document.querySelector(".loader").style.backgroundSize = "0% 0%";
+  routeFeature.setStyle(
+    new ol.style.Style({
+      stroke: new ol.style.Stroke({
+        color: `RGB(${routeColor.join(",")})`,
+        width: 7,
+      }),
+    })
+  );
+  tempRouteSource.addFeature(routeFeature);
 
+  // Fit map to the route extent
+  map.getView().fit(tempRouteSource.getExtent(), {
+    duration: 750,
+    padding: [50, 50, 50, 50],
+  });
+
+  // Add layers to map
   setTimeout(() => {
-    busVectorLayer = new ol.layer.Vector({
-      source: tempRouteSource,
-      updateWhileInteracting: true,
-      style: {},
-    });
-    busVectorLayer.trip = trip_id;
+    busVectorLayer = new ol.layer.Vector({ source: tempRouteSource });
+    busStationLayer = new ol.layer.Vector({ source: tempStationSource });
+    markers = new ol.layer.Vector({ source: tempMarkersSource });
     map.addLayer(busVectorLayer);
-
-    busStationLayer = new ol.layer.Vector({
-      source: tempStationSource,
-      updateWhileInteracting: true,
-      style: {},
-    });
     map.addLayer(busStationLayer);
-    markers = new ol.layer.Vector({
-      source: tempMarkersSource,
-      updateWhileInteracting: true,
-      style: {},
-    });
     map.addLayer(markers);
 
     document.querySelector(".loader").style.display = "none";
-    document.querySelector(".loader").style.backgroundSize = "40% 40%";
   }, 100);
-  console.log("routevector");
 }
+
 async function getCoordinates(trip_id, data) {
   let coordinates = await fetchData(
     "https://mestnipromet.cyou/api/v1/resources/buses/shape?trip_id=" + trip_id
@@ -335,13 +187,7 @@ async function getCoordinates(trip_id, data) {
       await fetch(
         "https://cors.proxy.prometko.si/https://router.project-osrm.org/route/v1/driving/" +
           coords.substring(0, coords.length - 2) +
-          "?overview=full&geometries=geojson",
-        {
-          headers: {
-            apiKey: "D2F0C381-6072-45F9-A05E-513F1515DD6A",
-            Accept: "Travana",
-          },
-        }
+          "?overview=full&geometries=geojson"
       )
     ).json();
 

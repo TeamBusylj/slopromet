@@ -1,10 +1,4 @@
 "use strict";
-var routesStations;
-
-var isArrivalsOpen = false;
-var currentPanel;
-
-var interval;
 
 async function oppositeStation(id) {
   let arS = document.getElementById("arrivals-panel");
@@ -477,141 +471,8 @@ function isLessThanMinutes(minutes, timestamp2, min) {
   let diff = Math.abs(secSinceMidnight - minutes) / 60;
   return diff < min;
 }
-function minutesFromNow(dateOrSeconds, nothours) {
-  const currentTime = new Date();
 
-  // Determine if input is a number (assumed to be seconds since midnight)
-  // Create a Date for today at midnight
-  const midnight = new Date(currentTime);
-  midnight.setHours(0, 0, 0, 0);
-
-  // Add the seconds to get the target time
-  let targetDate = new Date(midnight.getTime() + dateOrSeconds * 1000);
-
-  const diff = targetDate - currentTime;
-  const diffInMinutes = Math.round(diff / (1000 * 60));
-
-  if (nothours) return diffInMinutes;
-
-  if (diffInMinutes >= 60) {
-    const hours = Math.floor(diffInMinutes / 60);
-    const minutes = diffInMinutes % 60;
-    return `${hours} h ${minutes} min`;
-  }
-
-  return minToTime(diffInMinutes);
-}
-
-// Example usage
-async function showLines(parent, station) {
-  let data = await fetchData(
-    "https://cors.proxy.prometko.si/https://data.lpp.si/api/station/routes-on-station?station-code=" +
-      station.ref_id
-  );
-
-  parent.style.transform = "translateX(0px) translateY(0px)";
-  parent.style.opacity = "1";
-
-  data.forEach((arrival) => {
-    if (!arrival.is_garage) {
-      let arrivalItem = addElement("div", parent, "arrivalItem");
-      arrivalItem.style.order =
-        arrival.route_number[0] == "N"
-          ? arrival.route_number.replace(/\D/g, "") + 100
-          : arrival.route_number.replace(/\D/g, "");
-      const busNumberDiv = addElement("div", arrivalItem, "busNo2");
-
-      busNumberDiv.style.background = lineColors(arrival.route_number);
-
-      busNumberDiv.id = "bus_" + arrival.route_number;
-      busNumberDiv.textContent = arrival.route_number;
-      const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
-      addElement("mdui-ripple", arrivalItem);
-
-      const tripNameSpan = addElement("span", arrivalDataDiv);
-      tripNameSpan.textContent = arrival.route_group_name;
-      arrivalItem.addEventListener("click", () => {
-        showLineTime(
-          arrival.route_number,
-          station.ref_id,
-          arrival.route_group_name,
-          arrival
-        );
-      });
-    }
-  });
-}
-async function showLineTime(routeN, station_id, routeName, arrival) {
-  let arrival2 = arrival;
-  arrival2.route_name = routeN;
-  window.history.pushState(null, document.title, location.pathname);
-  showBusById(arrival2);
-  let container = addElement(
-    "div",
-    document.querySelector(".mainSheet"),
-    "lineTimes"
-  );
-  container.style.transform = "translateX(0px) translateY(0px)";
-  container.style.opacity = "1";
-  container.classList.add("arrivalsScroll");
-  document.querySelector(".arrivalsHolder").style.transform =
-    "translateX(-100vw)";
-  let iks = addElement("md-icon-button", container, "iks");
-  iks.innerHTML = "<md-icon>arrow_back_ios_new</md-icon>";
-  iks.addEventListener("click", function () {
-    window.history.replaceState(null, document.title, location.pathname);
-    container.style.transform = "translateX(100vw)";
-    document.querySelector(".arrivalsHolder").style.transform =
-      "translateX(0vw)";
-    clearMap();
-    setTimeout(() => {
-      container.remove();
-    }, 500);
-  });
-  let data1 = await fetchData(
-    `https://cors.proxy.prometko.si/https://data.lpp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN.replace(
-      /\D/g,
-      ""
-    )}&previous-hours=${hoursDay(0)}&next-hours=${hoursDay(1)}`
-  );
-
-  data1 = data1.route_groups[0].routes;
-  data1.forEach((route) => {
-    if (route.parent_name !== routeName) return;
-    if (route.group_name + route.route_number_suffix == routeN) {
-      route.timetable.forEach((time) => {
-        let arrivalItem = addElement("div", container, "arrivalItem");
-        const busNumberDiv = addElement("div", arrivalItem, "busNo2");
-        busNumberDiv.id = "bus_" + time.route_number;
-        busNumberDiv.innerHTML = time.hour + "<sub>h</sub>";
-        const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
-        const etaDiv = addElement("div", arrivalDataDiv, "eta");
-        const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
-        arrivalTimeSpan.innerHTML =
-          "<span class=timet>" +
-          time.minutes
-            .toString()
-            .replace(
-              /,/g,
-              "<sub>min</sub>&nbsp;&nbsp;</span><span class=timet>"
-            )
-            .replace(/\b\d\b/g, (match) => "0" + match) +
-          "<sub>min</sub>";
-        if (time.is_current) arrivalItem.classList.add("currentTime");
-      });
-    }
-  });
-}
-const delayedSearch = debounce(createStationItems, 300);
-function hoursDay(what) {
-  const now = new Date();
-  const hoursFromMidnight = now.getHours() + now.getMinutes() / 60;
-  const hoursToMidnight = 24 - hoursFromMidnight;
-  return what ? hoursToMidnight.toFixed(2) : hoursFromMidnight.toFixed(2);
-}
-const randomOneDecimal = () => +(Math.random() * 2).toFixed(1);
-
-async function createInfoBar(infoBar, station_id) {
+async function createInfoBarBA(infoBar, station_id) {
   let changeTime = addElement(
     "mdui-segmented-button-group",
     infoBar,
@@ -765,17 +626,10 @@ async function getMyBusData(busId, arrivalsAll, routeId) {
       busObject.some((bus) => bus.trip_id === arrival.trip_id)
     );
 
-    clickedMyBus(bus, bus ? bus.trip_id : arrivals[0].trip_id, arrivals[0]);
     intervalBusk = setInterval(() => {
       updateMyBus(bus, bus ? bus.trip_id : arrivals[0].trip_id, arrivals[0]);
     }, 10000);
-    window.refreshMyBus = async () => {
-      await updateMyBus(
-        bus,
-        bus ? bus.trip_id : arrivals[0].trip_id,
-        arrivals[0]
-      );
-    };
+    window.refreshMyBus = async () => {};
     return;
   }
 
@@ -1052,10 +906,4 @@ function showArrivalsMyBus(info, container, arrival) {
       .join("");
     etaHolder = null;
   }
-}
-function isFutureTime(dateString) {
-  const secSinceMidnight = Math.floor(
-    (Date.now() - new Date().setHours(0, 0, 0, 0)) / 1000
-  );
-  return secSinceMidnight < dateString;
 }
