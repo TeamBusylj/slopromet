@@ -1,210 +1,8 @@
 "use strict";
 var routesStations;
-async function updateStations() {
-  console.log(agency);
-
-  let stations = await fetchData("https://api.beta.brezavta.si/stops");
-
-  stationList = stations.filter((station) => {
-    return (
-      (station.gtfs_id.includes(agency.toUpperCase()) &&
-        station.type == "BUS") ||
-      (station.type == "RAIL" && agency == "sž")
-    );
-  });
-  routesStations = await (await fetch("assets/stop_to_routes.json")).json();
-  createStationItems();
-}
 
 var isArrivalsOpen = false;
 var currentPanel;
-async function createStationItems() {
-  var search = false;
-  var query = document.querySelector(".search").value;
-  if (query !== "") {
-    search = true;
-  }
-  var loader = document.getElementById("loader");
-  var list = document.querySelector(".listOfStations");
-  await clearElementContent(list);
-  list = document.querySelector(".listOfStations");
-  var favList = document.querySelector(".favouriteStations");
-  await clearElementContent(favList);
-  favList = document.querySelector(".favouriteStations");
-  createFavourite(favList, search, query);
-
-  loader.style.display = "block";
-  var nearby = {};
-
-  if (navigator.geolocation) {
-    if (latitude == 46.051467939339034)
-      list.innerHTML +=
-        "<p><mdui-icon name=location_off></mdui-icon>Lokacija ni omogočena.</p>";
-
-    for (const station of stationList) {
-      let item = addElement("mdui-card", null, "station");
-      addElement("mdui-ripple", item);
-      let textHolder = addElement("div", item, "textHolder");
-      textHolder.innerHTML =
-        '<span class="stationName">' + station.name + "</span>";
-      const distance = haversineDistance(
-        latitude,
-        longitude,
-        station.lat,
-        station.lon
-      );
-      const favList = JSON.parse(
-        localStorage.getItem("favouriteStationsArriva") || "[]"
-      );
-
-      if (distance < 5 || search) {
-        if (
-          search &&
-          !normalizeText(station.name.toLowerCase()).includes(
-            normalizeText(query.toLowerCase())
-          )
-        )
-          continue;
-        let cornot = "";
-        if (
-          station.code &&
-          station.code.match(/\d+/)[0] % 2 !== 0 &&
-          agency !== "sž"
-        ) {
-          cornot =
-            '<mdui-icon name=adjust--outlined class="center"></mdui-icon>';
-        }
-        let fav = "";
-        if (favList.includes(station.gtfs_id.match(/\d+/)[0])) {
-          fav =
-            '<mdui-icon name=favorite--outlined class="iconFill"></mdui-icon>';
-        }
-        if (distance > 1) {
-          textHolder.innerHTML +=
-            cornot +
-            "<span class=stationDistance>" +
-            fav +
-            distance.toFixed(1) +
-            " km</span>";
-          nearby[distance.toFixed(5)] = item;
-        } else {
-          textHolder.innerHTML +=
-            cornot +
-            "<span class=stationDistance>" +
-            fav +
-            Math.round(distance * 1000) +
-            " m</span>";
-          nearby[distance.toFixed(5)] = item;
-        }
-
-        item.addEventListener("click", () => {
-          stationClick(station);
-        });
-        item = null;
-
-        textHolder = null;
-      }
-    }
-
-    const sortedArray = Object.keys(nearby)
-      .map((key) => parseFloat(key).toFixed(5))
-      .sort((a, b) => a - b)
-      .map((key) => nearby[key]);
-    if (sortedArray.length > 40) sortedArray.splice(40);
-
-    for (const stationDistance of sortedArray) {
-      list.appendChild(stationDistance);
-    }
-    loader.style.display = "none";
-    nearby = null;
-  }
-}
-
-function createFavourite(parent, search, query) {
-  var nearby = {};
-  if (latitude == 46.051467939339034)
-    parent.innerHTML +=
-      "<p><mdui-icon name=location_off></mdui-icon>Lokacija ni omogočena.</p>";
-  const favList = JSON.parse(
-    localStorage.getItem("favouriteStationsArriva") || "[]"
-  );
-  for (const station of stationList) {
-    if (favList.length == 0 && !search) {
-      let p = addElement("p", parent);
-      p.innerHTML =
-        "<p><mdui-icon name=favorite></mdui-icon>Nimate priljubljenih postaj.</p>";
-      break;
-    }
-    let item = addElement("mdui-card", null, "station");
-    addElement("mdui-ripple", item);
-    let textHolder = addElement("div", item, "textHolder");
-    textHolder.innerHTML =
-      '<span class="stationName">' + station.name + "</span>";
-
-    if (favList.includes(station.gtfs_id.match(/\d+/)[0]) || search) {
-      if (
-        search &&
-        !normalizeText(station.name.toLowerCase()).includes(
-          normalizeText(query.toLowerCase())
-        )
-      )
-        continue;
-      const distance = haversineDistance(
-        latitude,
-        longitude,
-        station.lat,
-        station.lon
-      );
-      let cornot = "";
-      if (
-        station.code &&
-        station.code.match(/\d+/)[0] % 2 !== 0 &&
-        agency !== "sž"
-      ) {
-        cornot = '<mdui-icon name=adjust--outlined class="center"></mdui-icon>';
-      }
-      let fav = "";
-      if (favList.includes(station.gtfs_id.match(/\d+/)[0])) {
-        fav =
-          '<mdui-icon name=favorite--outlined class="iconFill"></mdui-icon>';
-      }
-      if (distance > 1) {
-        textHolder.innerHTML +=
-          cornot +
-          "<span class=stationDistance>" +
-          fav +
-          distance.toFixed(1) +
-          " km</span>";
-        nearby[distance.toFixed(5)] = item;
-      } else {
-        textHolder.innerHTML +=
-          cornot +
-          "<span class=stationDistance>" +
-          fav +
-          Math.round(distance * 1000) +
-          " m</span>";
-        nearby[distance.toFixed(5)] = item;
-      }
-
-      item.addEventListener("click", () => {
-        stationClick(station);
-      });
-      item = null;
-
-      textHolder = null;
-    }
-  }
-  const sortedArray = Object.keys(nearby)
-    .map((key) => parseFloat(key).toFixed(5))
-    .sort((a, b) => a - b)
-    .map((key) => nearby[key]);
-
-  if (sortedArray.length > 40) sortedArray.splice(40);
-
-  for (const stationDistance of sortedArray) {
-    parent.appendChild(stationDistance);
-  }
-}
 
 var interval;
 
@@ -235,7 +33,7 @@ async function oppositeStation(id) {
     }, 1);
   }, 300);
 }
-async function stationClick(stationa, noAnimation, ia) {
+async function stationClickBA(stationa, noAnimation, ia) {
   if (document.querySelector(".arrivalsOnStation")) return;
   let station = stationa ? stationa : isArrivalsOpen;
 
@@ -434,7 +232,7 @@ async function stationClick(stationa, noAnimation, ia) {
  * @param {Array} data.data.arrivals - An array of bus arrival objects.
  */
 
-async function showArrivals(data, station_id, noAnimation, stationRoute) {
+async function showArrivalBA(data, station_id, noAnimation, stationRoute) {
   data = !data
     ? await fetchData(
         `https://api.beta.brezavta.si/stops/${encodeURIComponent(
@@ -570,7 +368,7 @@ async function showArrivals(data, station_id, noAnimation, stationRoute) {
       "<p><mdui-icon name=no_transfer--outlined></mdui-icon>V naslednji uri ni predvidenih avtobusov.</p>";
   }
 }
-function createSearchBar(parent, data, station) {
+function createSearchBarBA(parent, data, station) {
   let searchInput = addElement(
     "mdui-text-field",
     parent,
@@ -585,7 +383,7 @@ function createSearchBar(parent, data, station) {
     debouncedShowArrivals(searchInput.value, station, data);
   });
 }
-function showFilteredArrivals(value, station, data, noAnimation) {
+function showFilteredArrivalsBA(value, station, data, noAnimation) {
   console.log("Filtering arrivals with value:", value);
 
   const query = value.trim().toLowerCase();
@@ -657,74 +455,7 @@ function favoriteLine(lineName, button, arrivalItem, favos = []) {
     }
   });
 }
-function createBusNumber(arrival, arrivalItem, delay, noAnimation) {
-  if (agency !== "ijpp" && agency !== "sž") {
-    let busNumberDiv = addElement("div", arrivalItem, "busNo2");
 
-    busNumberDiv.style.background = lineToColor(
-      parseInt(arrival.route_short_name.split(" ")[0].replace(/[^\d]/g, ""))
-    );
-
-    busNumberDiv.id = "bus_" + arrival.route_short_name;
-    busNumberDiv.textContent = arrival.route_short_name;
-    return;
-  }
-  let busHolder = addElement("div", arrivalItem, "busGoeey");
-  let gooeyHolder = addElement("div", busHolder, "stepIcon");
-
-  let imgHolder = addElement("div", gooeyHolder, "agencyLogo");
-  let imgLogo = addElement("img", imgHolder, "agenImg");
-  imgLogo.src = "assets/images/logos_brezavta/" + arrival.agency_id + ".svg";
-  imgHolder.style.background =
-    "#" + adaptColors(arrival.route_color_background);
-  let busNumberDiv = addElement("div", gooeyHolder, "busNo2");
-
-  busNumberDiv.style.background = lineToColor(
-    parseInt(Math.max(...arrival.route_short_name.match(/\d+/g).map(Number)))
-  );
-  busNumberDiv.innerHTML += arrival.route_short_name;
-}
-function adaptColors(color) {
-  return color.replace("0077BE", "fff").replace("FBB900", "00489a");
-}
-function lineToColor(i, no) {
-  const primeJump = 137;
-  const hue = (parseInt(i) * primeJump) % 360;
-
-  // Base color in HSL
-  const saturation = 70;
-  const lightness = 55;
-  let h = hue,
-    s = saturation,
-    l = lightness;
-
-  // Convert HSL to RGB
-  let color = hslToRgb(h, s, l);
-
-  // Make a darker version for gradient end
-  const darkerColor = darkenColor(color, 70);
-
-  // Format RGB for CSS
-  const rgb = color.join(",");
-  const rgbDark = darkerColor.join(",");
-
-  return no
-    ? rgb.split(",")
-    : `linear-gradient(165deg, rgb(${rgb}), rgb(${rgbDark}))`;
-}
-function hslToRgb(h, s, l) {
-  s /= 100;
-  l /= 100;
-
-  const k = (n) => (n + h / 30) % 12;
-  const a = s * Math.min(l, 1 - l);
-  const f = (n) =>
-    Math.round(
-      255 * (l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))))
-    );
-
-  return [f(0), f(8), f(4)];
-}
 function getFormattedDate() {
   const date = new Date();
 

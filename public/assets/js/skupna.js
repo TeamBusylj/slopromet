@@ -77,14 +77,10 @@ function sortArrivals(listArrivals, sortIndex) {
   // Sort the arrivals as before
   let sortedArrivals = Object.entries(listArrivals)
     .sort((a, b) => {
-      const extractText = (text) => {
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = text;
-        const hiddenSpans = tempDiv.querySelectorAll(
-          'span[style="display:none;"]'
-        );
-        hiddenSpans.forEach((span) => span.remove());
-        return tempDiv.textContent || tempDiv.innerText || "";
+      const extractText = (htmlString) => {
+        return htmlString
+          .replace(/<span style="display:none;">.*?<\/span>/g, "")
+          .replace(/<[^>]*>/g, "");
       };
 
       let aValue =
@@ -719,7 +715,7 @@ async function refresh(btn) {
     let arH = document.querySelector(".arrivalsScroll");
     arH.style.transform = "translateX(0px) translateY(-20px)";
     arH.style.opacity = "0";
-    await showArrivals(isArrivalsOpen.ref_id);
+    await showArrivals(null, isArrivalsOpen.ref_id);
     arH = document.querySelector(".arrivalsScroll");
     arH.style.transform = "translateX(0px) translateY(0px)";
     arH.style.opacity = "1";
@@ -1470,19 +1466,16 @@ function makeBottomSheet(title, height) {
 async function clearElementContent(element) {
   if (!(element instanceof Element)) {
     console.error("Provided argument is not a valid DOM element.");
-    return;
+    return element;
   }
 
   while (element.firstChild) {
     element.firstChild.remove();
   }
-
-  const clonedElement = element.cloneNode(false);
-  element.replaceWith(clonedElement);
-
-  // Clear innerHTML (after removing event listeners)
-
-  return clonedElement; // Return the cleaned element
+  element.innerHTML = "";
+  // Replacing the element with a clone is expensive and often unnecessary.
+  // This simpler version is much more performant.
+  return element; // Return the original, now empty, element
 }
 function clearMap() {
   busStationLayer
@@ -2065,42 +2058,1078 @@ function findClosestPoint(busCoord, routeCoords) {
   });
   return closestIndex;
 }
-class MduiSymbol extends HTMLElement {
-  connectedCallback() {
-    requestAnimationFrame(() => {
-      const iconName = Array.from(this.childNodes)
-        .filter((n) => n.nodeType === Node.TEXT_NODE)
-        .map((n) => n.textContent.trim())
-        .join("");
+const apiAdapter = {
+  /**
+   * Fetches and adapts station data for the current agency.
+   * @returns {Promise<Array>} A promise that resolves to an array of station objects in a unified format.
+   */
+  async getStations() {
+    if (agency === "lpp") {
+      const url =
+        "https://lpp.ojpp.derp.si/api/station/station-details?show-subroutes=1";
+      const data = await fetchData(url);
+      // LPP data is already in the target format, just convert from object to array
+      return Object.values(data);
+    } else {
+      // BrezAvta (BA) and other agencies
+      const stopsUrl = "https://api.beta.brezavta.si/stops";
+      const stops = await fetchData(stopsUrl);
 
-      if (!iconName) return;
-
-      const wrapper = document.createElement("mdui-icon");
-
-      const slotAttr = this.getAttribute("slot");
-      if (slotAttr === null) {
-        // No slot attribute: default to "icon"
-        wrapper.setAttribute("slot", "icon");
-      } else if (slotAttr) {
-        // Slot attribute with value: use it
-        wrapper.setAttribute("slot", slotAttr);
+      // The BA script pre-fetches a mapping of stops to routes, we do the same.
+      if (!routesStations) {
+        routesStations = await (
+          await fetch("assets/js/stop_to_routes.json")
+        ).json();
       }
-      // else: slot attribute exists but empty — do not set slot
 
-      const span = document.createElement("span");
-      span.textContent = iconName;
+      const filteredStops = stops.filter(
+        (station) =>
+          (station.gtfs_id.includes(agency.toUpperCase()) &&
+            station.type === "BUS") ||
+          (station.type === "RAIL" && agency === "sž")
+      );
 
-      // Copy all other attributes to <span>, excluding "slot"
-      for (const attr of this.attributes) {
-        if (attr.name !== "slot") {
-          span.setAttribute(attr.name, attr.value);
+      // Adapt BA station data to the LPP format
+      return filteredStops.map((station) => ({
+        type: station.type,
+        ref_id: station.code || station.gtfs_id,
+        name: station.name,
+        latitude: station.lat,
+        longitude: station.lon,
+        // Attempt to find associated routes for the station icon display
+        route_groups_on_station: routesStations
+          ? routesStations[station.gtfs_id.split(":")[1]] || []
+          : [],
+        gtfs_id: station.gtfs_id, // Keep original GTFS ID for BA-specific calls
+      }));
+    }
+  },
+
+  /**
+   * Fetches and adapts arrival data for a specific station.
+   * @param {string} stationId - The unique identifier for the station.
+   * @returns {Promise<Object>} A promise that resolves to an object containing arrivals.
+   */
+  async getArrivals(stationId) {
+    // The stationId for BA is the full gtfs_id, for LPP it's the numeric code.
+    // The stationClick function passes the correct ID based on the agency.
+    const id = stationId;
+
+    if (agency === "lpp") {
+      const url = `https://lpp.ojpp.derp.si/api/station/arrival?station-code=${id}`;
+      const data = await fetchData(url);
+      return data;
+    } else {
+      const url = `https://api.beta.brezavta.si/stops/${encodeURIComponent(
+        id
+      )}/arrivals?current=true`;
+      const baArrivals = await fetchData(url);
+      if (!baArrivals) return { arrivals: [], station: { code_id: id } };
+
+      // Adapt BA arrival data to LPP format
+      const adaptedArrivals = baArrivals.map((arrival) => {
+        const eta = minutesFromNow(arrival.arrival_realtime, true);
+        let type = 1; // 1 = Scheduled
+        if (arrival.realtime) type = 0; // 0 = Realtime
+        if (eta <= 0) type = 2; // 2 = Arrived/Departed
+
+        return {
+          route_name: arrival.route_short_name,
+          trip_id: arrival.trip_id,
+          eta_min: eta,
+          type: type,
+          depot: false, // BA API doesn't provide this
+          stations: { arrival: arrival.trip_headsign },
+          vehicle_id: arrival.vehicle_id,
+          route_id: arrival.route_id,
+          // Keep original BA data for extended functionality if needed
+          _originalBA: arrival,
+        };
+      });
+      return { arrivals: adaptedArrivals, station: { code_id: id } };
+    }
+  },
+
+  /**
+   * Fetches the full details for a specific trip/route.
+   * @param {string} tripId - The ID of the trip.
+   * @returns {Promise<Object>} A promise resolving to the route details.
+   */
+  async getRouteDetails(tripId) {
+    if (agency === "lpp") {
+      const url = `https://lpp.ojpp.derp.si/api/route/arrivals-on-route?trip-id=${tripId}`;
+      const data = await fetchData(url);
+      return { type: "lpp", data: data };
+    } else {
+      const url = `https://api.beta.brezavta.si/trips/${encodeURIComponent(
+        tripId
+      )}?date=${new Date().toISOString().slice(0, 10).replace(/-/g, "")}`;
+      const data = await fetchData(url);
+      return { type: "ba", data: data };
+    }
+  },
+};
+/**
+ * Renders a list of stations based on various criteria.
+ * @param {HTMLElement} parentElement - The DOM element to append the station items to.
+ * @param {string} query - The search query string.
+ * @param {boolean} filterByFavorites - If true, only shows stations from the user's favorites.
+ */
+function renderStationList(parentElement, query, filterByFavorites) {
+  const search = query !== "";
+  const favList =
+    agency == "lpp"
+      ? JSON.parse(localStorage.getItem("favouriteStations") || "[]")
+      : JSON.parse(localStorage.getItem("favouriteStationsArriva") || "[]");
+  const nearby = {};
+
+  if (latitude === 46.051467939339034) {
+    parentElement.innerHTML =
+      "<p><mdui-icon name=location_off></mdui-icon>Lokacija ni omogočena.</p>";
+    // If filtering for favorites and there are none, show a message.
+    if (filterByFavorites && favList.length === 0 && !search) {
+      parentElement.innerHTML =
+        "<p><mdui-icon name=favorite></mdui-icon>Nimate priljubljenih postaj.</p>";
+      return; // Exit the function
+    }
+  }
+
+  for (const stationId in stationList) {
+    const station = stationList[stationId];
+    const isFavorite = favList.includes(
+      agency === "lpp" ? station.ref_id : station.ref_id.split(":")[1]
+    );
+
+    // Continue to next station if it doesn't meet filter criteria
+    if (
+      search &&
+      !normalizeText(station.name.toLowerCase()).includes(
+        normalizeText(query.toLowerCase())
+      )
+    )
+      continue;
+    if (filterByFavorites && !isFavorite && !search) continue;
+    if (!filterByFavorites && !search) {
+      const distance = haversineDistance(
+        latitude,
+        longitude,
+        station.latitude,
+        station.longitude
+      );
+      if (distance >= 3) continue;
+    }
+
+    let item = addElement("mdui-card", null, "station");
+    item.clickable = true;
+    let textHolder = addElement("div", item, "textHolder");
+    textHolder.innerHTML = `<span class="stationName">${station.name}</span>`;
+
+    const distance = haversineDistance(
+      latitude,
+      longitude,
+      station.latitude,
+      station.longitude
+    );
+    let cornot =
+      station.ref_id % 2 !== 0
+        ? '<div class=iconCenter><div class="centerHolder"><mdui-icon name=adjust--outlined class="center"></mdui-icon><span>V CENTER</span></div></div>'
+        : "";
+    let favIcon = isFavorite
+      ? '<mdui-icon name=favorite--outlined class="iconFill"></mdui-icon>'
+      : "";
+
+    let distanceString =
+      distance > 1
+        ? `${distance.toFixed(1)} km`
+        : `${Math.round(distance * 1000)} m`;
+
+    textHolder.innerHTML += `${cornot}<span class="stationDistance">${favIcon}${distanceString}</span>`;
+    nearby[distance.toFixed(5)] = item;
+    if (agency === "lpp") {
+      let buses = addElement("div", item, "buses");
+      for (const bus of station.route_groups_on_station) {
+        buses.innerHTML += `<div class=busNo style="background:${lineColors(
+          bus
+        )}" id="bus2_${bus}">${bus}</div>`;
+      }
+      item.appendChild(buses);
+    }
+
+    item.addEventListener("click", () => stationClick(stationId));
+  }
+
+  const sortedItems = Object.keys(nearby)
+    .sort((a, b) => a - b)
+    .map((key) => nearby[key]);
+
+  if (sortedItems.length > 40) sortedItems.length = 40; // More efficient than splice
+
+  for (const stationItem of sortedItems) {
+    parentElement.appendChild(stationItem);
+  }
+
+  // Handle line search results
+  if (search && agency === "LPP") {
+    for (const line of lines) {
+      if (
+        normalizeText(line.route_name + line.route_number).includes(
+          normalizeText(query.toLowerCase())
+        )
+      ) {
+        let arrivalItem = addElement("div", parentElement, "arrivalItem");
+        arrivalItem.style.order = line.route_number.replace(/\D/g, "") || "0";
+        if (line.route_number.startsWith("N")) {
+          arrivalItem.style.order = (
+            parseInt(arrivalItem.style.order, 10) + 100
+          ).toString();
         }
+
+        let busNumberDiv = addElement("div", arrivalItem, "busNo2");
+        busNumberDiv.style.background = lineColors(line.route_number);
+        busNumberDiv.id = "bus_" + line.route_number;
+        busNumberDiv.textContent = line.route_number;
+
+        let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+        addElement("span", arrivalDataDiv).textContent = line.route_name;
+        addElement("mdui-ripple", arrivalItem);
+
+        arrivalItem.addEventListener("click", () => {
+          document.querySelector(".searchContain").style.transform =
+            "translateX(-100vw) translateZ(1px)";
+          document.getElementById("tabsFav").style.transform =
+            "translateX(-100vw) translateZ(1px)";
+
+          let line2 = { ...line, route_name: line.route_number };
+          showBusById(line2, 60);
+          setTimeout(() => {
+            let busObject2 = busObject
+              .map((obj) => ({ ...obj, vehicle_id: obj.bus_id }))
+              .filter((element) => element.trip_id === line2.trip_id);
+            getMyBusData(
+              null,
+              busObject2.length ? busObject2 : null,
+              line2.trip_id,
+              line2
+            );
+          }, 100);
+        });
       }
-      span.classList.add("material-symbols-outlined");
-      wrapper.appendChild(span);
-      this.replaceWith(wrapper);
-    });
+    }
   }
 }
 
-customElements.define("mdui-symbol", MduiSymbol);
+/**
+ * Main function to create and update station lists.
+ */
+async function createStationItems() {
+  const query = document.querySelector(".search").value;
+  const search = query !== "";
+  const loader = document.getElementById("loader");
+  const list = document.querySelector(".listOfStations");
+  const favList = document.querySelector(".favouriteStations");
+
+  // Clear previous content
+  await clearElementContent(list);
+  await clearElementContent(favList);
+
+  loader.style.display = "block";
+
+  if (navigator.geolocation) {
+    // Render favorites list
+    renderStationList(favList, query, true);
+    // Render nearby/search list
+    if (!search) {
+      renderStationList(list, query, false);
+    } else {
+      list.innerHTML = favList.innerHTML;
+    }
+  }
+
+  loader.style.display = "none";
+}
+async function updateStations(t) {
+  console.log(agency);
+  if (agency == "lpp") {
+    let url =
+      "https://lpp.ojpp.derp.si/api/station/station-details?show-subroutes=1";
+
+    if (localStorage.getItem("stationList") && !t) {
+      stationList = JSON.parse(localStorage.getItem("stationList"));
+      setTimeout(async () => {
+        stationList = await fetchData(url);
+        localStorage.setItem("stationList", JSON.stringify(stationList));
+      }, 1000);
+    } else {
+      stationList = await fetchData(url);
+      localStorage.setItem("stationList", JSON.stringify(stationList));
+    }
+  } else {
+    let stations = await apiAdapter.getStations();
+
+    stationList = stations.filter((station) => {
+      return (
+        (station.gtfs_id.includes(agency.toUpperCase()) &&
+          station.type == "BUS") ||
+        (station.type == "RAIL" && agency == "sž")
+      );
+    });
+  }
+
+  createStationItems();
+}
+async function stationClick(stationa) {
+  document.querySelector(".navigationBar").style.transform = "translateY(80px)";
+  if (document.querySelector(".arrivalsOnStation")) return;
+  let station = stationa ? stationList[stationa] : isArrivalsOpen;
+
+  var container;
+
+  var favList = JSON.parse(localStorage.getItem("favouriteStations") || "[]");
+  console.log(stationa, station);
+  window.history.pushState(
+    null,
+    document.title + " - " + station.name,
+    location.pathname
+  );
+  container = addElement(
+    "div",
+    document.querySelector(".mainSheet"),
+    "arrivalsHolder"
+  );
+  let infoBar = addElement(
+    "div",
+    document.querySelector(".mainSheet"),
+    "infoBar"
+  );
+  createInfoBar(infoBar, station.ref_id);
+
+  document.querySelector(".searchContain").style.transform =
+    "translateX(-100vw) translateZ(1px)";
+  document.getElementById("tabsFav").style.transform =
+    "translateX(-100vw) translateZ(1px)";
+  setTimeout(() => {
+    container.style.transform = "translateX(0) translateZ(1px)";
+  }, 0);
+
+  const title = addElement("h1", container, "title");
+  let holder = addElement("div", title);
+  let iks = addElement(
+    "mdui-button-icon",
+    holder,
+    "iks",
+    "icon=arrow_back_ios_new"
+  );
+  iks.addEventListener("click", function () {
+    window.history.replaceState(null, document.title, location.pathname);
+    container.style.transform = "translateX(100vw) translateZ(1px)";
+    document.querySelector(".infoBar").style.transform = "translateY(100%)";
+    isArrivalsOpen = false;
+    document.querySelector(".searchContain").style.transform =
+      "translateX(0vw) translateZ(1px)";
+    document.getElementById("tabsFav").style.transform =
+      "translateX(0vw) translateZ(1px)";
+    document.querySelector(".navigationBar").style.transform =
+      "translateY(0px)";
+    clearInterval(interval);
+    setTimeout(() => {
+      container.remove();
+      document
+        .querySelector(".listOfStations")
+        .classList.remove("hideStations");
+      document.querySelector(".infoBar").remove();
+    }, 500);
+    try {
+      document.getElementById("popup").remove();
+    } catch {}
+  });
+
+  let ttl = addElement("span", title, "titleText");
+  let cornot = "";
+  if (station.ref_id % 2 !== 0)
+    cornot =
+      '<div class=iconCenter><div class="centerHolder"><mdui-icon name=adjust--outlined class="center"></mdui-icon><span>V CENTER</span></div></div>';
+  ttl.innerHTML = station.name + cornot;
+  let hh = addElement("div", title, "titleHolder");
+  var streetView = addElement(
+    "mdui-button",
+    infoBar,
+    "streetViewBtn",
+    "icon=360",
+    "variant=tonal"
+  );
+  streetView.innerHTML = "Slika postaje";
+  streetView.addEventListener("click", function () {
+    showStreetView(station.latitude, station.longitude, streetView);
+  });
+  var fav = addElement(
+    "mdui-button-icon",
+    hh,
+    "favi",
+    "icon=favorite_border",
+    "selectable",
+    "selected-icon=favorite",
+    favList.includes(station.ref_id) ? "selected" : ""
+  );
+
+  fav.addEventListener("click", function () {
+    if (favList.includes(station.ref_id)) {
+      favList = favList.filter((item) => item !== station.ref_id);
+    } else {
+      favList.push(station.ref_id);
+    }
+    localStorage.setItem("favouriteStations", JSON.stringify(favList));
+  });
+  var mapca = addElement("mdui-button-icon", hh, "mapca", "icon=swap_calls");
+  mapca.addEventListener("click", function () {
+    oppositeStation(station.ref_id);
+  });
+
+  if (station.ref_id % 2 === 0) {
+    if (
+      stationList.findIndex(
+        (obj) => obj.ref_id === String(parseInt(station.ref_id) - 1)
+      ) === -1
+    ) {
+      mapca.setAttribute("disabled", "");
+    }
+  } else {
+    if (
+      stationList.findIndex(
+        (obj) => obj.ref_id === String(parseInt(station.ref_id) + 1)
+      ) === -1
+    ) {
+      mapca.setAttribute("disabled", "");
+    }
+  }
+  console.log(station.ref_id);
+
+  let data = await apiAdapter.getArrivals(station.ref_id);
+  createSearchBar(container, data, station.ref_id);
+  var tabs = addElement("mdui-tabs", container, "tabs");
+  tabs.outerHTML = `<mdui-tabs
+  placement="top"
+  value="tab-1"
+  class="tabs"
+  full-width
+  ><mdui-tab value="tab-1">Prihodi</mdui-tab
+  ><mdui-tab value="tab-2">Urnik</mdui-tab>
+  <mdui-tab-panel
+  class="arrivalsScroll"
+    slot="panel"
+    value="tab-1"
+    
+    id=arrivals-panel
+  ></mdui-tab-panel>
+  <mdui-tab-panel
+    slot="panel"
+    value="tab-2"
+    class="timeTScroll arrivalsScroll"
+    id=time-panel
+  ></mdui-tab-panel
+></mdui-tabs>`;
+  let arrivalsScroll = document.getElementById("arrivals-panel");
+  makeSkeleton(arrivalsScroll);
+  if (agency === "lpp")
+    showLines(document.getElementById("time-panel"), station);
+
+  showStationOnMap(station.latitude, station.longitude, station.name);
+
+  isArrivalsOpen = station;
+  let searchInput = document.querySelector("#searchRoutes");
+  console.log(searchInput.value);
+  console.log(searchInput.value);
+  showArrivals(data, station.ref_id, false);
+  interval = setInterval(async () => {
+    data = await apiAdapter.getArrivals(station.ref_id);
+    if (searchInput.value !== "") {
+      showFilteredArrivals(searchInput.value, station.ref_id, data, true);
+    } else {
+      showArrivals(data, station.ref_id, true);
+    }
+  }, 10000);
+}
+async function showArrivals(data, ref_id, repeated, stationRoute) {
+  data = !data
+    ? (await apiAdapter.getArrivals(ref_id)).arrivals
+    : data.arrivals;
+  let arrivalsScroll = document.getElementById("arrivals-panel");
+  arrivalsScroll.innerHTML = "";
+  console.log(data);
+
+  if (data.length > 0) {
+    let busTemplate = addElement("div", arrivalsScroll, "busTemplate");
+
+    let listOfArrivals = [];
+    if (agency === "lpp") nextBusTemplate(data, busTemplate, ref_id);
+    data.sort((a, b) => {
+      return parseInt(a.route_name) - parseInt(b.route_name);
+    });
+    let i = 0;
+    for (const arrival of data) {
+      if (arrival.eta_min > 120) continue;
+
+      if (listOfArrivals.includes(arrival.route_name.replace(/ /g, ""))) {
+        let arrivalTimeSpan = addElement(
+          "span",
+          arrivalsScroll.querySelector(
+            "#eta_" + arrival.route_name.replace(/ /g, "")
+          ),
+          "arrivalTime"
+        );
+        if (arrival.type == 0) {
+          arrivalTimeSpan.innerHTML =
+            "<mdui-icon name=near_me--outlined style='animation-delay:" +
+            randomOneDecimal() +
+            "s;'></mdui-icon>" +
+            minToTime(arrival.eta_min);
+          arrivalTimeSpan.classList.add("arrivalGreen");
+        } else if (arrival.type == 1) {
+          arrivalTimeSpan.innerHTML = minToTime(arrival.eta_min);
+        } else if (arrival.type == 2) {
+          arrivalTimeSpan.innerHTML = "PRIHOD";
+          arrivalTimeSpan.classList.add("arrivalRed");
+        } else if (arrival.type == 3) {
+          arrivalTimeSpan.innerHTML = "OBVOZ";
+          arrivalTimeSpan.classList.add("arrivalYellow");
+        }
+        if (arrival.depot) arrivalTimeSpan.innerHTML += "G";
+
+        arrivalTimeSpan = null;
+      } else {
+        let arrivalItem = addElement(
+          "mdui-card",
+          arrivalsScroll,
+          "arrivalItem",
+          "clickable"
+        );
+        if (repeated) {
+          arrivalItem.style.opacity = "1";
+          arrivalItem.style.transform = "translateX(0)";
+          arrivalItem.style.animationDuration = "0s";
+        }
+        arrivalItem.style.animationDelay = "0." + i + "s";
+        i++;
+        if (agency == "lpp") {
+          let busNumberDiv = addElement("div", arrivalItem, "busNo2");
+
+          busNumberDiv.style.background = lineColors(arrival.route_name);
+
+          busNumberDiv.id = "bus_" + arrival.route_name;
+          busNumberDiv.textContent = arrival.route_name;
+        } else {
+          createBusNumber(arrival, arrivalItem, "0." + i + "5", repeated);
+        }
+
+        listOfArrivals.push(arrival.route_name.replace(/ /g, ""));
+        let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+        addElement("mdui-ripple", arrivalItem);
+        let queryHeadSign;
+
+        if (stationRoute) {
+          queryHeadSign = `${
+            stationRoute[
+              agency == "lpp"
+                ? arrival.route_name
+                : arrival.route_id.split(":")[1]
+            ]
+          }<mdui-icon name=arrow_right--outlined class=arrow></mdui-icon>`;
+        } else {
+          queryHeadSign = "";
+        }
+        let tripNameSpan = addElement("span", arrivalDataDiv);
+        tripNameSpan.innerHTML = queryHeadSign + arrival.stations.arrival;
+
+        let etaDiv = addElement("div", arrivalDataDiv, "eta");
+        etaDiv.id = "eta_" + arrival.route_name.replace(/ /g, "");
+
+        let arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
+        if (arrival.type == 0) {
+          arrivalTimeSpan.innerHTML =
+            "<mdui-icon name=near_me--outlined style='animation-delay:" +
+            randomOneDecimal() +
+            "s;'></mdui-icon>" +
+            minToTime(arrival.eta_min);
+          arrivalTimeSpan.classList.add("arrivalGreen");
+        } else if (arrival.type == 1) {
+          arrivalTimeSpan.innerHTML = minToTime(arrival.eta_min);
+        } else if (arrival.type == 2) {
+          arrivalTimeSpan.innerHTML = "PRIHOD";
+          arrivalTimeSpan.classList.add("arrivalRed");
+        } else if (arrival.type == 3) {
+          arrivalTimeSpan.innerHTML = "OBVOZ";
+          arrivalTimeSpan.classList.add("arrivalYellow");
+        }
+        if (arrival.depot) arrivalTimeSpan.innerHTML += "G";
+        arrivalItem.addEventListener("click", () => {
+          showBusById(arrival, ref_id, data);
+        });
+      }
+    }
+  } else {
+    arrivalsScroll.innerHTML +=
+      "<p><mdui-icon name=no_transfer--outlined></mdui-icon>V naslednji uri ni predvidenih avtobusov.</p>";
+  }
+}
+function createSearchBar(parent, data, station) {
+  let searchInput = addElement(
+    "mdui-text-field",
+    parent,
+    "search",
+    "icon=search--outlined"
+  );
+  searchInput.placeholder = "Išči izstopno postajo";
+  searchInput.id = "searchRoutes";
+  const debouncedShowArrivals = debounce(showFilteredArrivals, 500);
+
+  searchInput.addEventListener("input", () => {
+    debouncedShowArrivals(searchInput.value, station, data);
+  });
+}
+/**
+ * Filters and displays arrivals based on a search query for station names.
+ * This modern version uses the 'route_groups_on_station' array directly on station objects.
+ *
+ * @param {string} value - The search query for the station name.
+ * @param {object} station - The primary station context (passed through to showArrivals).
+ * @param {Array<object>} data - The complete list of arrival data to be filtered.
+ * @param {boolean} noAnimation - Flag to disable animations in showArrivals.
+ */
+function showFilteredArrivals(value, station, data, noAnimation) {
+  const query = value.trim().toLowerCase();
+
+  // Exit if the query is empty
+  if (!query) {
+    // It might be useful to show all arrivals again if the query is cleared
+    // showArrivals(data, station, noAnimation);
+    return;
+  }
+
+  // 1. Find all stations that match the search query.
+  const matchingStations = stationList.filter((s) =>
+    s.name.toLowerCase().includes(query)
+  );
+
+  // 2. From these stations, create a map of which route number corresponds to which station name.
+  //    This also gives us a unique set of all relevant route numbers.
+  const routeToStationNameMap = {};
+  for (const s of matchingStations) {
+    for (const routeNumber of s.route_groups_on_station) {
+      // We only store the name of the *first* station we find for a given route
+      // to maintain consistency with the old function's behavior.
+      if (!routeToStationNameMap[routeNumber]) {
+        routeToStationNameMap[routeNumber] = s.name;
+      }
+    }
+  }
+
+  // Get a list of all unique route numbers from the map keys.
+  const relevantRouteNumbers = Object.keys(routeToStationNameMap);
+
+  // 3. Filter the main arrival data. An arrival is kept if its route number
+  //    is in our list of routes from the matching stations.
+  const filteredArrivals = data.arrivals.filter(
+    (arrival) =>
+      relevantRouteNumbers.includes(
+        agency == "lpp" ? arrival.route_name : arrival.route_id.split(":")[1]
+      ) // Assumes arrival objects have a 'route_number' property.
+  );
+  console.log(filteredArrivals, relevantRouteNumbers);
+  // 4. Call the display function with the filtered data and the route-to-station mapping.
+  showArrivals(
+    { arrivals: filteredArrivals },
+    station,
+    noAnimation,
+    routeToStationNameMap
+  );
+}
+const nextBusTemplate = (arrivals, parent, station_id) => {
+  var isNextbus = false;
+  let i = 0;
+  for (const arrival of arrivals) {
+    if (arrival.type == 3) continue;
+    if (arrival.eta_min > 1) {
+      if (!isNextbus) {
+        isNextbus = true;
+      } else {
+        return;
+      }
+    }
+
+    let arrivalItem = addElement(
+      "mdui-card",
+      parent,
+      "arrivalItem",
+      "clickable"
+    );
+    addElement("mdui-ripple", arrivalItem);
+    arrivalItem.style.animationDelay = "0";
+    arrivalItem.style.order = arrival.type === 2 ? 0 : arrival.eta_min;
+    let busNumberDiv = addElement("div", arrivalItem, "busNo2");
+
+    busNumberDiv.style.background = lineColors(arrival.route_name);
+
+    busNumberDiv.id = "next_bus_" + arrival.route_name;
+    busNumberDiv.textContent = arrival.route_name;
+    addElement("mdui-ripple", busNumberDiv);
+    let arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+
+    let tripNameSpan = addElement("span", arrivalDataDiv);
+    tripNameSpan.textContent = arrival.stations.arrival;
+
+    let etaDiv = addElement("div", arrivalDataDiv, "eta");
+    etaDiv.id = "next_eta_" + arrival.route_name;
+
+    let arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
+
+    if (arrival.type == 0) {
+      arrivalTimeSpan.innerHTML =
+        "<mdui-icon name=near_me--outlined style='animation-delay:" +
+        randomOneDecimal() +
+        "s;'></mdui-icon>" +
+        minToTime(arrival.eta_min);
+      arrivalTimeSpan.classList.add("arrivalGreen");
+    } else if (arrival.type == 1) {
+      arrivalTimeSpan.innerHTML = minToTime(arrival.eta_min);
+    } else if (arrival.type == 2) {
+      arrivalTimeSpan.innerHTML = "PRIHOD";
+      arrivalTimeSpan.classList.add("arrivalRed");
+    }
+    if (arrival.depot) arrivalTimeSpan.innerHTML += "G";
+    arrivalItem.addEventListener("click", () => {
+      showBusById(arrival, station_id, arrivals);
+    });
+    i++;
+  }
+};
+function createBusNumber(arrival, arrivalItem, delay, noAnimation) {
+  let routeName = arrival.route_name;
+  if (agency !== "ijpp" && agency !== "sž") {
+    let busNumberDiv = addElement("div", arrivalItem, "busNo2");
+
+    busNumberDiv.style.background = lineToColor(
+      parseInt(routeName.split(" ")[0].replace(/[^\d]/g, ""))
+    );
+
+    busNumberDiv.id = "bus_" + routeName;
+    busNumberDiv.textContent = routeName;
+    return;
+  }
+  let busHolder = addElement("div", arrivalItem, "busGoeey");
+  let gooeyHolder = addElement("div", busHolder, "stepIcon");
+
+  let imgHolder = addElement("div", gooeyHolder, "agencyLogo");
+  let imgLogo = addElement("img", imgHolder, "agenImg");
+  imgLogo.src =
+    "assets/images/logos_brezavta/" + arrival._originalBA.agency_id + ".svg";
+  imgHolder.style.background =
+    "#" + adaptColors(arrival._originalBA.route_color_background);
+  let busNumberDiv = addElement("div", gooeyHolder, "busNo2");
+
+  busNumberDiv.style.background = lineToColor(
+    parseInt(Math.max(...routeName.match(/\d+/g).map(Number)))
+  );
+  busNumberDiv.innerHTML += routeName;
+}
+function adaptColors(color) {
+  return color.replace("0077BE", "fff").replace("FBB900", "00489a");
+}
+function lineToColor(i, no) {
+  const primeJump = 137;
+  const hue = (parseInt(i) * primeJump) % 360;
+
+  // Base color in HSL
+  const saturation = 70;
+  const lightness = 55;
+  let h = hue,
+    s = saturation,
+    l = lightness;
+
+  // Convert HSL to RGB
+  let color = hslToRgb(h, s, l);
+
+  // Make a darker version for gradient end
+  const darkerColor = darkenColor(color, 70);
+
+  // Format RGB for CSS
+  const rgb = color.join(",");
+  const rgbDark = darkerColor.join(",");
+
+  return no
+    ? rgb.split(",")
+    : `linear-gradient(165deg, rgb(${rgb}), rgb(${rgbDark}))`;
+}
+function hslToRgb(h, s, l) {
+  s /= 100;
+  l /= 100;
+
+  const k = (n) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n) =>
+    Math.round(
+      255 * (l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))))
+    );
+
+  return [f(0), f(8), f(4)];
+}
+async function showLines(parent, station) {
+  let data = await fetchData(
+    "https://lpp.ojpp.derp.si/api/station/routes-on-station?station-code=" +
+      station.ref_id
+  );
+
+  parent.style.transform = "translateX(0px) translateY(0px)";
+  parent.style.opacity = "1";
+
+  let i = 0;
+
+  data.forEach((arrival) => {
+    if (
+      !parent.querySelector(
+        "#bus_" + arrival.route_id + arrival.route_name?.replace(/\W/g, "_")
+      ) &&
+      !arrival.is_garage
+    ) {
+      let arrivalItem = addElement(
+        "mdui-card",
+        parent,
+        "arrivalItem",
+        "clickable",
+        "id=bus_" + arrival.route_id + arrival.route_name?.replace(/\W/g, "_")
+      );
+
+      arrivalItem.style.animationDelay = "0." + i + "s";
+      /* arrivalItem.style.order =
+        arrival.route_number[0] == "N"
+          ? arrival.route_number.replace(/\D/g, "") + 100
+          : arrival.route_number.replace(/\D/g, "");*/
+      const busNumberDiv = addElement(
+        "mdui-button-icon",
+        arrivalItem,
+        "busNo2"
+      );
+
+      busNumberDiv.style.background = lineColors(arrival.route_number);
+
+      busNumberDiv.id = "bus_" + arrival.route_number;
+      busNumberDiv.textContent = arrival.route_number;
+      const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+
+      const tripNameSpan = addElement("span", arrivalDataDiv);
+      tripNameSpan.textContent = arrival.route_group_name;
+      arrivalItem.addEventListener("click", async () => {
+        busNumberDiv.setAttribute("loading", "");
+        await showLineTime(
+          arrival.route_number,
+          station.ref_id,
+          arrival.route_group_name,
+          arrival
+        );
+        document.querySelector(".arrivalsHolder").style.transform =
+          "translateX(-100vw) translateZ(1px)";
+
+        document.querySelector(".lineTimes").style.transform =
+          "translateX(0px) translateZ(1px)";
+        busNumberDiv.removeAttribute("loading");
+      });
+      i++;
+    }
+  });
+}
+async function showLineTime(routeN, station_id, routeName, arrival) {
+  let container = addElement(
+    "div",
+    document.querySelector(".mainSheet"),
+    "lineTimes"
+  );
+  let dir12 = station_id % 2 === 0 ? "1" : "2";
+
+  container.classList.add("arrivalsScroll");
+
+  let iks = addElement(
+    "mdui-button-icon",
+    null,
+    "iks",
+    "icon=arrow_back_ios_new"
+  );
+
+  iks.addEventListener("click", function () {
+    window.history.replaceState(null, document.title, location.pathname);
+    setTimeout(() => {
+      container.remove();
+    }, 500);
+    container.style.transform = "translateX(100vw) translateZ(1px)";
+    document.querySelector(".arrivalsHolder").style.transform =
+      "translateX(0vw) translateZ(1px)";
+  });
+
+  let html = await (
+    await fetch(
+      "https://cors.proxy.prometko.si/https://www.lpp.si/sites/default/files/lpp_vozniredi/iskalnik/index.php?stop=" +
+        station_id +
+        "&lref=" +
+        routeN
+    )
+  ).text();
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  let matchedLineId = null;
+  let stationId = null;
+  let dir = null;
+  let directionName;
+  const wrappers = doc.querySelectorAll(".lineWrapper");
+
+  wrappers.forEach((wrapper) => {
+    const lineIdFromWrapper = wrapper.id.replace("line", "");
+    const dirBlocks = wrapper.querySelectorAll(".line-dir-wrapper");
+
+    dirBlocks.forEach((block) => {
+      const lineFiles = block.querySelector(".lineFiles");
+      if (!lineFiles) return;
+
+      const stopCodeEl = lineFiles.querySelector(".stop-code");
+      const lineNoEl = block.querySelector(".line-no");
+
+      // Match by stop code and route number
+      if (
+        stopCodeEl?.textContent.trim() === station_id &&
+        lineNoEl?.textContent.trim() === routeN
+      ) {
+        matchedLineId = lineIdFromWrapper;
+
+        // ✅ Extract the direction name (e.g., "STANEŽIČE P+R")
+        const directionStrong = block.querySelector("h3 strong:last-of-type");
+        directionName = directionStrong?.textContent.trim() || "";
+
+        const departuresBtn = block.querySelector(".btn.times");
+        if (departuresBtn) {
+          const onclick = departuresBtn.getAttribute("onclick");
+          const match = onclick.match(
+            /changeLineNavTab\(.*?,\s*'departures',\s*(\d+),\s*(\d+),\s*(\d+)\)/
+          );
+          if (match) {
+            dir = match[1];
+            matchedLineId = match[2]; // override from onclick if needed
+            stationId = match[3];
+          }
+        }
+      }
+    });
+  });
+
+  await fetch(
+    "https://cors.proxy.prometko.si/https://www.lpp.si/sites/default/files/lpp_vozniredi/iskalnik/js/departures.php",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        lineId: matchedLineId,
+        stopId: stationId,
+        dir: dir,
+      }),
+    }
+  )
+    .then((response) => response.text()) // or .json() if the response is JSON
+    .then(async (data) => {
+      let tabs = addElement(
+        "mdui-tabs",
+        container,
+        "tabs",
+        "full-width",
+        "value=tab-Del",
+        "variant=secondary",
+        "id=tabsTimes",
+        "placement=top"
+      );
+
+      const parsedDoc = new DOMParser().parseFromString(data, "text/html");
+
+      // Transform departures and get updated HTML string
+      var dataObject = parseDepartures(parsedDoc.querySelector(".departures"));
+
+      console.log(dataObject);
+      if (Object.keys(dataObject).length == 0) {
+        dataObject = await fetchData(
+          `https://lpp.ojpp.derp.si/api/station/timetable?station-code=${station_id}&route-group-number=${routeN}&previous-hours=${hoursDay(
+            0
+          )}&next-hours=168`
+        );
+
+        dataObject = await dataObject.route_groups[0].routes.find(
+          (route) => route.parent_name == routeName
+        );
+        dataObject = transformToDelavnikTimes(dataObject.timetable);
+        console.log(dataObject);
+      }
+      for (const key in dataObject) {
+        const day = dataObject[key];
+        const onclicktab = directionName ? "" : "id=clickTab";
+        tabs.innerHTML += `<mdui-tab ${onclicktab} value="tab-${key.slice(
+          0,
+          3
+        )}">${key.replace(" ", "&nbsp;")}</mdui-tab>`;
+        let tabPanel = addElement(
+          "mdui-tab-panel",
+          tabs,
+          "mdui-tab-panel",
+          "slot=panel",
+          `value=tab-${key.slice(0, 3)}`
+        );
+        let arrivalItem = addElement(
+          "div",
+          tabPanel,
+          "arrivalItem",
+          "id=lineTimeIndicator"
+        );
+        arrivalItem.style.margin = "15px 0";
+        let busNumberDiv = addElement("div", arrivalItem, "busNo2");
+        busNumberDiv.style.background = lineColors(routeN);
+        busNumberDiv.textContent = routeN;
+        let tripNameSpan = addElement("span", arrivalItem);
+
+        tripNameSpan.textContent = !directionName ? routeName : directionName;
+        for (const times of day.times) {
+          let arrivalItem = addElement("div", tabPanel, "arrivalItem");
+          const busNumberDiv = addElement("div", arrivalItem, "busNo2");
+          busNumberDiv.innerHTML = times[0][0].split(":")[0] + "<sub>h</sub>";
+          const arrivalDataDiv = addElement("div", arrivalItem, "arrivalData");
+          const etaDiv = addElement("div", arrivalDataDiv, "eta");
+          const arrivalTimeSpan = addElement("span", etaDiv, "arrivalTime");
+
+          times.forEach((time) => {
+            arrivalTimeSpan.innerHTML += `<div><span class=timet>${time[0]}</span>${time[1]}</div>`;
+          });
+        }
+        if (day.times.length == 0) {
+          tabPanel.innerHTML += `<p><mdui-icon name=no_transfer--outlined></mdui-icon>V tem dnevu ni odhodov.</p>`;
+        }
+        for (const info of day.info) {
+          let arrivalItem = addElement(
+            "div",
+            tabPanel,
+            "arrivalItem",
+            "id=infoItem"
+          );
+          const suffix = addElement(
+            "span",
+            arrivalItem,
+            "timeSuffix",
+            info[0] == "" ? "style=background:none;" : ""
+          );
+          suffix.innerHTML = info[0] == "" ? "!" : info[0];
+
+          const infoSpan = addElement("span", arrivalItem, "arrivalTime");
+          infoSpan.innerHTML = info[1];
+        }
+      }
+      tabs.insertBefore(iks, tabs.firstChild);
+      if (!directionName) {
+        document.querySelector("#clickTab").click();
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      tabs.innerHTML =
+        "Zgodila se je napaka med pridobivanjem podatkov o odhodih.";
+    });
+}
