@@ -692,9 +692,13 @@ async function refresh(btn) {
 }
 function makeSkeleton(container, height = 100) {
   for (let i = 0; i < 10; i++) {
-    let arrivalItem = addElement("div", container, "arrivalItem");
+    let arrivalItem = addElement(
+      "div",
+      container,
+      "",
+      "class=arrivalItem skeleton"
+    );
     arrivalItem.style.height = height + "px";
-    arrivalItem.style.margin = "20px 0";
     arrivalItem.style.animationDelay = "0.3" + i + "s";
   }
 }

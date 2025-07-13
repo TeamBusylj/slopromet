@@ -1694,3 +1694,23 @@ div#infoItem {
 #lineTimeIndicator > .busNo2 {
   color: #ffffffba !important;
 }
+.arrivalItem.skeleton {
+  animation: arrivalItemShow 0.5s cubic-bezier(0.38, 1.21, 0.3, 1.33) forwards,
+    skeletonItem 3s infinite ease-in-out;
+  background: linear-gradient(
+    120deg,
+    RGB(var(--mdui-color-surface-container-low)) 30%,
+    RGB(var(--mdui-color-surface-container-high)),
+    RGB(var(--mdui-color-surface-container-low)) 70%
+  );
+  background-size: 300% 100%;
+}
+@keyframes skeletonItem {
+  0% {
+    background-position: -30% 50%;
+  }
+
+  100% {
+    background-position: 130% 50%;
+  }
+}
