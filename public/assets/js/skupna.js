@@ -424,7 +424,7 @@ window.addEventListener("load", async function () {
     ><mdui-symbol>search</mdui-symbol></mdui-text-field
   >
 </div>
-<mdui-circular-progress id="loader"></mdui-circular-progress>
+</mdui-circular-progress>
 <mdui-tabs
 full-width
   placement="top"
@@ -589,6 +589,7 @@ function showStationOnMap(latitude, longitude, name) {
 }
 async function createBuses() {
   await getLocation();
+  makeSkeleton(document.querySelector(".favouriteStations"), "65");
   await updateStations();
   if (agency == "lpp") {
     busImageData = await fetch(
@@ -678,23 +679,23 @@ async function refresh(btn) {
     arH.style.opacity = "1";
   } else if (checkVisible(document.querySelector("#tabsFav"))) {
     let tabsFav = document.querySelector("#tabsFav > mdui-tab-panel[active]");
-    tabsFav.style.transform = "translateX(0px) translateY(-20px)";
-    tabsFav.style.opacity = "0";
+
+    tabsFav.innerHTML = "";
+    makeSkeleton(tabsFav, "130");
+
     await getLocation();
     await updateStations(true);
     await createStationItems();
-    tabsFav = document.querySelector("#tabsFav > mdui-tab-panel[active]");
-    tabsFav.style.transform = "translateX(0px) translateY(0px)";
-    tabsFav.style.opacity = "1";
   } else {
   }
   if (btn) btn.removeAttribute("loading");
 }
-function makeSkeleton(container) {
+function makeSkeleton(container, height = 100) {
   for (let i = 0; i < 10; i++) {
     let arrivalItem = addElement("div", container, "arrivalItem");
-    arrivalItem.style.height = "100px";
-    arrivalItem.style.animationDelay = "0." + i + "s";
+    arrivalItem.style.height = height + "px";
+    arrivalItem.style.margin = "20px 0";
+    arrivalItem.style.animationDelay = "0.3" + i + "s";
   }
 }
 function checkVisible(elm) {
@@ -2397,15 +2398,13 @@ function renderStationList(parentElement, query, filterByFavorites) {
 async function createStationItems() {
   const query = document.querySelector(".search").value;
   const search = query !== "";
-  const loader = document.getElementById("loader");
+
   const list = document.querySelector(".listOfStations");
   const favList = document.querySelector(".favouriteStations");
 
   // Clear previous content
   await clearElementContent(list);
   await clearElementContent(favList);
-
-  loader.style.display = "block";
 
   if (navigator.geolocation) {
     // Render favorites list
@@ -2417,8 +2416,6 @@ async function createStationItems() {
       list.innerHTML = favList.innerHTML;
     }
   }
-
-  loader.style.display = "none";
 }
 async function updateStations(t) {
   console.log(agency);
