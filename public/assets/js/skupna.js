@@ -494,7 +494,6 @@ function loadFromGuthub() {
 async function changeAgency(agencyClicked) {
   document.documentElement.classList.remove(agency);
   if (agency == agencyClicked) return;
-  minimizeSheet(90);
   agency = agencyClicked;
   localStorage.setItem("agency", agencyClicked);
 
@@ -502,9 +501,6 @@ async function changeAgency(agencyClicked) {
   document.querySelector(".listOfStations").innerHTML = "";
   document.documentElement.classList.add(agency);
   createBuses();
-  setTimeout(() => {
-    minimizeSheet(98);
-  }, 100);
 }
 async function getLocation() {
   try {
@@ -698,7 +694,7 @@ function makeSkeleton(container) {
   for (let i = 0; i < 10; i++) {
     let arrivalItem = addElement("div", container, "arrivalItem");
     arrivalItem.style.height = "100px";
-    arrivalItem.style.animationDelay = "0.2" + i * 2 + "s";
+    arrivalItem.style.animationDelay = "0." + i + "s";
   }
 }
 function checkVisible(elm) {
@@ -2125,6 +2121,8 @@ const apiAdapter = {
       const url = `https://api.beta.brezavta.si/trips/${encodeURIComponent(
         tripId
       )}?date=${new Date().toISOString().slice(0, 10).replace(/-/g, "")}`;
+      console.log(url);
+
       const data = await fetchData(url);
       console.log(data);
       /*const adaptedTrip = data.stop_times.map((arrival) => {
@@ -2230,7 +2228,7 @@ const apiAdapter = {
     } else {
       const url = `https://api.beta.brezavta.si/trips/${encodeURIComponent(
         arrival.trip_id
-      )}`;
+      )}?date=${new Date().toISOString().slice(0, 10).replace(/-/g, "")}`;
       const tripData = await fetchData(url);
       const adaptedBuses = tripData.stop_times.map((stop) => {
         return {
@@ -2575,14 +2573,12 @@ async function stationClick(stationa) {
   }
   console.log(station.ref_id);
 
-  let data = await apiAdapter.getArrivals(station.ref_id);
-  createSearchBar(container, data, station.ref_id);
-
   var tabs = addElement("mdui-tabs", container, "tabs");
   tabs.outerHTML = `<mdui-tabs
   placement="top"
   value="tab-1"
   class="tabs"
+  id="tabsStation"
   full-width
   ><mdui-tab value="tab-1">Prihodi</mdui-tab
   ><mdui-tab value="tab-2">Urnik</mdui-tab>
@@ -2602,23 +2598,27 @@ async function stationClick(stationa) {
 ></mdui-tabs>`;
   let arrivalsScroll = document.getElementById("arrivals-panel");
   makeSkeleton(arrivalsScroll);
+  let data = await apiAdapter.getArrivals(station.ref_id);
+
+  let searchInput;
   if (agency === "lpp")
     showLines(document.getElementById("time-panel"), station);
+  else searchInput = createSearchBar(container, data, station.ref_id);
+  console.log(searchInput);
 
   showStationOnMap(station.latitude, station.longitude, station.name);
 
   isArrivalsOpen = station;
-  let searchInput = document.querySelector("#searchRoutes");
-  if (agency == "lpp") searchInput.style.display = "none";
-  console.log(searchInput.value);
-  console.log(searchInput.value);
+
   showArrivals(data, station.ref_id, false);
   interval = setInterval(async () => {
-    data = await apiAdapter.getArrivals(station.ref_id);
-    if (searchInput.value !== "") {
-      showFilteredArrivals(searchInput.value, station.ref_id, data, true);
-    } else {
-      showArrivals(data, station.ref_id, true);
+    if (!document.querySelector(".myBusDiv")) {
+      data = await apiAdapter.getArrivals(station.ref_id);
+      if (searchInput && searchInput.value !== "") {
+        showFilteredArrivals(searchInput.value, station.ref_id, data, true);
+      } else {
+        showArrivals(data, station.ref_id, true);
+      }
     }
   }, 10000);
 }
@@ -2747,7 +2747,7 @@ async function showArrivals(data, ref_id, repeated, stationRoute) {
 function createSearchBar(parent, data, station) {
   let searchInput = addElement(
     "mdui-text-field",
-    parent,
+    null,
     "search",
     "icon=search--outlined"
   );
@@ -2758,6 +2758,8 @@ function createSearchBar(parent, data, station) {
   searchInput.addEventListener("input", () => {
     debouncedShowArrivals(searchInput.value, station, data);
   });
+  parent.insertBefore(searchInput, document.querySelector("#tabsStation"));
+  return searchInput;
 }
 /**
  * Filters and displays arrivals based on a search query for station names.
@@ -3537,8 +3539,7 @@ async function getMyBusData(busId, arrivalsAll, tripId, line) {
         arrivals[0]
       );
     }
-    holder.style.opacity = "1";
-    holder.style.transform = "translateX(0px) translateY(0px)";
+
     intervalBusk = setInterval(async () => {
       if (agency == "lpp") {
         await updateMyBus(bus, arrivals ? arrivals[0].trip_id : bus.trip_id);
@@ -3604,17 +3605,9 @@ async function updateMyBus(bus, tripId) {
   }
 }
 async function clickedMyBus(bus, tripId, arrival) {
-  let arOnS = await apiAdapter.getRouteDetails(tripId);
-  let tripName = arOnS.name;
-  if (agency != "lpp") {
-    arOnS = arOnS.stop_times;
-  } else {
-    tripName = arOnS.find((station) => station?.arrivals?.length > 0)
-      ?.arrivals[0]?.trip_name;
-  }
-  console.log(arOnS);
+  console.log(bus);
 
-  let busId = bus.bus_id;
+  let busId = bus?.bus_id;
   let busData = busObject.find((el) => el.bus_id === busId);
 
   let myBusDiv = document.querySelector(".myBusDiv");
@@ -3633,10 +3626,28 @@ async function clickedMyBus(bus, tripId, arrival) {
   } else {
     createBusNumber(arrival, arrivalItem, 0);
   }
-  let tripNameSpan = addElement("span", arrivalItem);
-  tripNameSpan.textContent = tripName;
+
   let busDataDiv = addElement("div", myBusDiv, "busDataDiv");
   if (agency == "lpp") await createBusData(busData, busDataDiv);
+
+  document.querySelector(".myBusHolder").style.opacity = "1";
+  document.querySelector(".myBusHolder").style.transform =
+    "translateX(0px) translateY(0px)";
+  myBusDiv.scrollTop = scrollPosition ? scrollPosition : 0;
+  myBusDiv.style.transform = "translateY(0px)";
+  myBusDiv.style.opacity = "1";
+  let arOnS = await apiAdapter.getRouteDetails(tripId);
+  console.timeEnd("Execution Time");
+  let tripName = arOnS.trip_headsign;
+  if (agency != "lpp") {
+    arOnS = arOnS.stop_times;
+  } else {
+    tripName = arOnS.find((station) => station?.arrivals?.length > 0)
+      ?.arrivals[0]?.trip_name;
+  }
+  console.log(arOnS);
+  let tripNameSpan = addElement("span", arrivalItem);
+  tripNameSpan.textContent = tripName;
   let arrivalDataDiv = addElement("div", myBusDiv, "arrivalsOnStation");
   if (agency == "lpp") {
     showArrivalsMyBus(
@@ -3649,10 +3660,6 @@ async function clickedMyBus(bus, tripId, arrival) {
     showArrivalsMyBusBA(arOnS, arrivalDataDiv, arrival);
   }
 
-  myBusDiv.scrollTop = scrollPosition ? scrollPosition : 0;
-  myBusDiv.style.transform = "translateY(0px)";
-  myBusDiv.style.opacity = "1";
-  console.log("clickedbus");
   try {
     markers
       .getSource()
@@ -3937,13 +3944,9 @@ async function createBusData(bus, busDataDiv) {
   let imgHtml = addElement("div", busDataDiv, "busImgHolder");
   if (bus.hasImage) {
     let img = addElement("img", imgHtml, "busImgElement");
-    let imageLoaded = new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = reject;
-    });
+
     img.src =
       "https://mestnipromet.cyou/tracker/img/avtobusi/" + bus.no + ".jpg";
-    await imageLoaded;
   }
   busDataDiv.innerHTML = `
    <div class=busDataTable>
