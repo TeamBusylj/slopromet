@@ -437,10 +437,25 @@ span.hidden {
 .arrivalGreen {
   color: RGB(var(--mdui-color-primary));
 }
-.arrivalTime mdui-icon {
+.arrivalTime mdui-icon:not(.garaza > mdui-icon) {
   animation: rotatingIcon 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   transform: rotate(-10deg);
   font-size: 1rem;
+}
+
+.garaza {
+  margin-left: 5px;
+  font-size: 0.8rem;
+  border: 1px solid RGB(var(--mdui-color-primary));
+  padding: 1px;
+  width: 0.8rem;
+  height: 0.8rem;
+  text-align: center;
+  border-radius: 5px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 @keyframes blinking {
   0%,
@@ -798,6 +813,16 @@ tr {
   border-radius: 10px;
   margin: 1px 0;
 }
+.lineStationNoMargin .lineStation {
+  margin: 0;
+  border-radius: 0 0 10px 10px;
+}
+.lineStationNoMargin .nameStation {
+  margin-top: -8px;
+  margin-left: 25px;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
 .arrDiv.half-hidden-first div .lineStationImg,
 .arrDiv.half-hidden div .lineStationImg {
   width: 25px;
@@ -826,6 +851,7 @@ img.googleLogo {
   align-items: center;
   justify-content: center;
   color: rgb(140, 136, 65);
+  margin-top: -5px;
 }
 .busBetween {
   display: flex;
@@ -841,6 +867,7 @@ img.googleLogo {
   width: 20px;
   height: 20px;
   padding: 2px;
+  margin-top: -5px;
 }
 .busOnStation mdui-icon {
   color: rgb(140, 136, 65);

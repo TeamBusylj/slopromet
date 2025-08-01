@@ -1440,6 +1440,8 @@ async function clearElementContent(element) {
   return element; // Return the original, now empty, element
 }
 function clearMap() {
+  console.log("halo");
+
   busStationLayer
     .getSource()
     .getFeatures()
@@ -2667,7 +2669,8 @@ async function showArrivals(data, ref_id, repeated, stationRoute) {
           arrivalTimeSpan.innerHTML = "OBVOZ";
           arrivalTimeSpan.classList.add("arrivalYellow");
         }
-        if (arrival.depot) arrivalTimeSpan.innerHTML += "G";
+        if (arrival.depot)
+          arrivalTimeSpan.innerHTML += "<span class=garaza>G</span>";
 
         arrivalTimeSpan = null;
       } else {
@@ -2734,7 +2737,8 @@ async function showArrivals(data, ref_id, repeated, stationRoute) {
           arrivalTimeSpan.innerHTML = "OBVOZ";
           arrivalTimeSpan.classList.add("arrivalYellow");
         }
-        if (arrival.depot) arrivalTimeSpan.innerHTML += "G";
+        if (arrival.depot)
+          arrivalTimeSpan.innerHTML += "<span class=garaza>G</span>";
         arrivalItem.addEventListener("click", () => {
           showBusById(arrival, ref_id, data);
         });
@@ -2895,7 +2899,8 @@ const nextBusTemplate = (arrivals, parent, station_id) => {
       arrivalTimeSpan.innerHTML = "PRIHOD";
       arrivalTimeSpan.classList.add("arrivalRed");
     }
-    if (arrival.depot) arrivalTimeSpan.innerHTML += "G";
+    if (arrival.depot)
+      arrivalTimeSpan.innerHTML += "<span class=garaza>G</span>";
     arrivalItem.addEventListener("click", () => {
       showBusById(arrival, station_id, arrivals);
     });
@@ -3697,6 +3702,7 @@ async function clickedMyBus(bus, tripId, arrival) {
     console.error(error);
   }
 }
+let previusStation = 0;
 function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
   let holder = addElement("div", container, "arFlex");
   holder.style.display = "flex";
@@ -3707,6 +3713,8 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
   let arrivalsColumns = addElement("div", holder, "arrivalsColumns");
   let isItYet = true;
   let o = 0;
+  console.log(info);
+
   info.forEach((arrivalRoute, index) => {
     //vsaka postaja
     let arDiv = addElement("div", arHolder, "arrDiv");
@@ -3744,6 +3752,7 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
     nameStation.classList.add("nameStation_" + arrivalRoute.station_code);
 
     nameStation.innerHTML = arrivalRoute.name;
+
     arDiv.style.viewTransitionName = (arrivalRoute.name + arrivalRoute.order_no)
       .toLowerCase()
       .replace(/ /g, "_");
@@ -3753,6 +3762,25 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
 
     try {
       if (!ar) {
+        if (
+          info[index - 1]?.arrivals?.find(
+            (el) => el.vehicle_id == busIdUp.toLowerCase() && el.depot == 1
+          ) &&
+          !info[index]?.arrivals?.find(
+            (el) => el.vehicle_id == busIdUp.toLowerCase()
+          )
+        ) {
+          info[index] = info[index - 1];
+          nameStation.innerHTML = "GARAŽA";
+          lineStation.parentNode.classList.add("half-hidden");
+
+          if (info.length !== index + 1) {
+            isItYet = false;
+            arDiv.style.display = "none";
+
+            return;
+          }
+        }
         if (
           !info[index - 2]?.arrivals?.find(
             (el) => el.vehicle_id == busIdUp.toLowerCase()
@@ -3777,6 +3805,13 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
           ) &&
           isItYet
         ) {
+          nameStation.style.opacity = ".5";
+          let col =
+            lineColorsObj[arrival.line_number.replace(/\D/g, "")].join(",");
+          lineStation.style.background = `linear-gradient(to top,RGB(${col}),transparent)`;
+          lnimg.style.opacity = "0";
+          lineStation.style.margin = "0";
+          lineStation.style.borderRadius = "0";
           return;
         }
 
@@ -3784,7 +3819,16 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
           !info[index + 1]?.arrivals?.find(
             (el) => el.vehicle_id == busIdUp.toLowerCase()
           ) &&
-          isItYet
+          isItYet &&
+          nameStation.innerHTML !== "GARAŽA"
+        ) {
+          arDiv.style.display = "none";
+
+          return;
+        }
+        if (
+          !info[index + 1]?.arrivals?.find((el) => el.eta_min == "/") &&
+          nameStation.innerHTML !== "GARAŽA"
         ) {
           arDiv.style.display = "none";
           return;
@@ -3804,7 +3848,10 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
           let indexOf = info.find(
             (station) => station?.arrivals?.length > 0
           )?.arrivals;
-          ar = indexOf.find((el) => el.vehicle_id == busIdUp.toLowerCase());
+          console.log(nameStation.innerHTML);
+
+          ar =
+            indexOf.find((el) => el.vehicle_id == busIdUp.toLowerCase()) ?? {};
           ar["eta_min"] = "/";
         }
       }
@@ -3813,13 +3860,15 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
     }
 
     isItYet = false;
+
     if (
       ar["type"] == 2 &&
       !lineStation.parentNode.classList.contains("half-hidden") &&
       !lineStation.parentNode.classList.contains("half-hidden-first")
     ) {
+      //view-transition-name:busIcon;
       lnimg.innerHTML =
-        "<mdui-icon name='directions_bus--outlined' style='view-transition-name:busIcon;color:RGB(" +
+        "<mdui-icon name='directions_bus--outlined' style='color:RGB(" +
         darkenColor(
           lineColorsObj[arrival.line_number.replace(/\D/g, "")],
           100
@@ -3828,7 +3877,10 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
         lineColorsObj[arrival.line_number.replace(/\D/g, "")].join(",") +
         ")'></mdui-icon>";
       lnimg.classList.add("busOnStation");
+      arDiv.classList.add("lineStationNoMargin");
     }
+
+    if (isItYet) previusStation = index;
     if (!listArrivals[ar["vehicle_id"]]) {
       listArrivals[ar["vehicle_id"]] = [];
       if (
@@ -3836,18 +3888,19 @@ function showArrivalsMyBus(info, container, arrival, busIdUp, update) {
         !lineStation.parentNode.classList.contains("half-hidden-first") &&
         ar["type"] !== 2
       ) {
-        lnimg.innerHTML =
-          "<mdui-icon name='directions_bus--outlined' style='view-transition-name:busIcon;color:RGB(" +
-          darkenColor(
-            lineColorsObj[arrival.line_number.replace(/\D/g, "")],
-            100
-          ).join(",") +
-          ")!important;background-color:RGB(" +
-          lineColorsObj[arrival.line_number.replace(/\D/g, "")].join(",") +
-          ")'></mdui-icon>";
+        //view-transition-name:busIcon;
+        lnimg.innerHTML = `<mdui-icon name="directions_bus--outlined" style="color:RGB(${darkenColor(
+          lineColorsObj[arrival.line_number.replace(/\D/g, "")],
+          100
+        ).join(",")})!important;background-color:RGB(${lineColorsObj[
+          arrival.line_number.replace(/\D/g, "")
+        ].join(",")})"></mdui-icon>`;
+
         lnimg.classList.add("busBetween");
+        console.log(ar);
       }
     }
+    if (ar["type"] == 3) arDiv.style.opacity = ".5";
     listArrivals[ar["vehicle_id"]][index] =
       minToTime(ar["eta_min"]).replace(" min", "") +
       `<span style="display:none;">${ar["type"]}</span>`;

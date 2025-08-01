@@ -19,8 +19,10 @@ async function loop(isFirstTime, arrival, station, arOnSt) {
   busObject = await apiAdapter.getVehicleLocations(arrival);
 
   if (isFirstTime) {
+    tempMarkersSource = new ol.source.Vector();
     stations = await apiAdapter.getStationsOnRoute(arrival);
     coordinates = await apiAdapter.getRouteGeometry(arrival, stations);
+    coordinates = coordinates[0].length > 2 ? coordinates.flat() : coordinates;
   }
 
   await displayBuses(isFirstTime, arrival, station);
@@ -33,7 +35,7 @@ async function loop(isFirstTime, arrival, station, arOnSt) {
     }, 300);
   }
 }
-
+let buses = [];
 /**
  * Displays buses on the map, creating or updating their markers.
  * @param {boolean} isFirstTime - True if this is the initial drawing.
@@ -41,36 +43,41 @@ async function loop(isFirstTime, arrival, station, arOnSt) {
  * @param {string} stationId - The ID of the station.
  */
 async function displayBuses(isFirstTime, arrival, stationId) {
-  tempMarkersSource = new ol.source.Vector();
-  let currentBusesOnMap = [];
-  let buses = [];
+  if (isFirstTime) {
+    tempMarkersSource.clear(); // Clear previous features safely
+  }
+
   for (const bus of busObject) {
     const busId = bus.bus_id;
-
     if (bus.trip_id !== arrival.trip_id) continue;
-    currentBusesOnMap.push(busId);
 
     const busCoords = ol.proj.fromLonLat([bus.longitude, bus.latitude]);
 
+    // First time: create marker
     if (isFirstTime || !buses.includes(busId)) {
-      buses.push(busId);
-      const marker = new ol.Feature({ geometry: new ol.geom.Point(busCoords) });
+      if (!buses.includes(busId)) buses.push(busId);
+
+      const marker = new ol.Feature({
+        geometry: new ol.geom.Point(busCoords),
+      });
+
       const busStyle = new ol.style.Style({
         image: new ol.style.Icon({
           rotateWithView: true,
           anchor: [0.5, 0.5],
-          src: "assets/images/bus_urb.png", // Unified icon
+          src: "assets/images/bus_urb.png",
           scale: 0.5,
           rotation: ((bus.direction || 0) * Math.PI) / 180,
         }),
       });
+
       marker.setStyle(busStyle);
       marker.busId = busId;
       tempMarkersSource.addFeature(marker);
     } else {
       // Animate existing marker
-      markers.getSource().forEachFeature((feature) => {
-        if (feature.busId === busId) {
+      tempMarkersSource.forEachFeature((feature) => {
+        if (feature.busId == busId) {
           moveMarker(
             feature,
             busCoords,
@@ -83,11 +90,9 @@ async function displayBuses(isFirstTime, arrival, stationId) {
 
   if (isFirstTime) {
     await generateRouteVector(arrival, stationId);
-  } else {
-    // Update the main markers layer if not the first time
-    markers.setSource(tempMarkersSource);
   }
 }
+
 /**
  * Draws the route line and station markers on the map.
  * @param {Object} arrival - The arrival object.
@@ -161,15 +166,21 @@ async function generateRouteVector(arrival, stationId) {
 
   // Add layers to map
   setTimeout(() => {
-    busVectorLayer = new ol.layer.Vector({ source: tempRouteSource });
-    busStationLayer = new ol.layer.Vector({ source: tempStationSource });
+    busVectorLayer = new ol.layer.Vector({
+      source: tempRouteSource,
+      updateWhileInteracting: true,
+    });
+    busStationLayer = new ol.layer.Vector({
+      source: tempStationSource,
+      updateWhileInteracting: true,
+    });
     markers = new ol.layer.Vector({ source: tempMarkersSource });
     map.addLayer(busVectorLayer);
     map.addLayer(busStationLayer);
     map.addLayer(markers);
 
     document.querySelector(".loader").style.display = "none";
-  }, 100);
+  }, 10);
 }
 
 async function getCoordinates(trip_id, data) {
