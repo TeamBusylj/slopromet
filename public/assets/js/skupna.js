@@ -1269,12 +1269,12 @@ function geocodeLatLng(latitude, longitude) {
     });
   });
 }
-function makeBottomSheet(title, height) {
+function makeBottomSheet() {
   let bottomSheet = addElement("div", document.body, "bottomSheet");
   let sheetContents = addElement("div", bottomSheet, "sheetContents");
   let draggableArea = addElement("div", bottomSheet, "handleHolder");
 
-  let handle = addElement("div", draggableArea, "bottomSheetHandle");
+  addElement("div", draggableArea, "bottomSheetHandle");
   var sheetHeight;
   setSheetHeight = (value) => {
     sheetHeight = Math.max(0, Math.min(100, value));
@@ -1380,7 +1380,8 @@ function makeBottomSheet(title, height) {
       mainContent.scrollHeight
     );
     sheetHeight3 = (mainContentHeight / vh) * 100;
-
+    bottomSheet.style.transition =
+      "transform var(--transDur) cubic-bezier(0.41, 1.33, 0.22, 1)";
     if (sheetHeight > 65) {
       setSheetHeight(98);
     } else {
@@ -1390,8 +1391,6 @@ function makeBottomSheet(title, height) {
       setSheetHeight(98);
     }
 
-    bottomSheet.style.transition =
-      "all var(--transDur) cubic-bezier(0.38, 1.21, 0.22, 1)";
     setTimeout(() => {
       bottomSheet.style.transition = "";
       bottomSheet.style.willChange = "";

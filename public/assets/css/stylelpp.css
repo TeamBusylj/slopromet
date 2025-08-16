@@ -136,14 +136,14 @@ body {
   top: 40px;
   width: 100%;
   z-index: 2;
-  transition: all 0.6s cubic-bezier(0.38, 1.21, 0.22, 1);
+  transition: transform 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
   transform: translateX(0);
   background: RGB(var(--mdui-color-surface));
   padding: 0 30px;
 }
 #tabsFav {
   width: 100%;
-  transition: all 0.6s cubic-bezier(0.38, 1.21, 0.22, 1);
+  transition: transform 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
 }
 mdui-tab-panel {
   overflow: visible;
@@ -273,7 +273,7 @@ mdui-tab-panel:not([active]) {
 .search {
   border: 2px solid RGB(var(--mdui-color-surface));
   border-radius: 100px;
-  transition: all 0.5s;
+  transition: transform 0.5s;
 }
 .stationDistance {
   margin-left: auto;
@@ -304,7 +304,7 @@ mdui-tab-panel:not([active]) {
   overflow-y: scroll;
   height: 100%;
   width: 100%;
-  transition: all 0.6s cubic-bezier(0.38, 1.21, 0.22, 1);
+  transition: transform 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
 
   padding: 0 40px;
   overscroll-behavior: none;
@@ -336,7 +336,7 @@ mdui-tab-panel:not([active]) {
 }
 .arrivalsHolder {
   transform: translateX(100dvh);
-  transition: all 0.6s cubic-bezier(0.38, 1.21, 0.22, 1);
+  transition: transform 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
   position: absolute;
   top: 40px;
   z-index: 3;
@@ -678,7 +678,7 @@ span.nextBusTitle {
   width: 100%;
   height: fit-content;
   display: flex;
-  transition: all 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
+  transition: transform 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
   border-top: 1px var(--mdui-color-outline-variant, #cac4d0) solid;
   overflow: hidden;
   white-space: nowrap;
@@ -713,7 +713,7 @@ span.nextBusTitle {
   position: absolute;
   top: 40px;
   left: 0;
-  transition: all 0.6s cubic-bezier(0.38, 1.21, 0.22, 1);
+  transition: transform 0.5s cubic-bezier(0.38, 1.21, 0.22, 1);
   width: 100%;
   transform: translateX(100vw);
   margin: 0;
@@ -742,7 +742,7 @@ span.nextBusTitle {
 .myBusDiv {
   height: calc(100dvh - 95px);
   box-sizing: border-box;
-  transition: all 0.6s cubic-bezier(0.38, 1.21, 0.27, 1.17);
+  transition: transform 0.5s cubic-bezier(0.38, 1.21, 0.27, 1.17);
   padding: 0 30px;
   width: 100%;
   overscroll-behavior: none;
@@ -791,7 +791,7 @@ tr {
   top: 40px !important;
   height: calc(100dvh - 55px);
 
-  transition: all 0.6s !important;
+  transition: transform 0.5s !important;
   transform: translateX(0);
   overscroll-behavior: none;
 }
@@ -1649,7 +1649,7 @@ img.busImgElement {
   overscroll-behavior: none;
   transform: translateX(100vw);
   height: calc(100dvh - 150px);
-  transition: all 0.6s cubic-bezier(0.38, 1.21, 0.22, 1) !important;
+  transition: transform 0.5s cubic-bezier(0.38, 1.21, 0.22, 1) !important;
 }
 .lineTimes .busNo2 {
   background: RGB(var(--mdui-color-surface-container-highest));
