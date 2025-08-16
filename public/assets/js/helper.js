@@ -158,29 +158,28 @@ async function generateRouteVector(arrival, stationId) {
   );
   tempRouteSource.addFeature(routeFeature);
 
+  // Add layers to map
+
+  busVectorLayer = new ol.layer.Vector({
+    source: tempRouteSource,
+    updateWhileInteracting: true,
+  });
+  busStationLayer = new ol.layer.Vector({
+    source: tempStationSource,
+    updateWhileInteracting: true,
+  });
+  markers = new ol.layer.Vector({ source: tempMarkersSource });
+  map.addLayer(busVectorLayer);
+  map.addLayer(busStationLayer);
+  map.addLayer(markers);
+
+  document.querySelector(".loader").style.display = "none";
+
   // Fit map to the route extent
   map.getView().fit(tempRouteSource.getExtent(), {
     duration: 750,
     padding: [50, 50, 50, 50],
   });
-
-  // Add layers to map
-  setTimeout(() => {
-    busVectorLayer = new ol.layer.Vector({
-      source: tempRouteSource,
-      updateWhileInteracting: true,
-    });
-    busStationLayer = new ol.layer.Vector({
-      source: tempStationSource,
-      updateWhileInteracting: true,
-    });
-    markers = new ol.layer.Vector({ source: tempMarkersSource });
-    map.addLayer(busVectorLayer);
-    map.addLayer(busStationLayer);
-    map.addLayer(markers);
-
-    document.querySelector(".loader").style.display = "none";
-  }, 10);
 }
 
 async function getCoordinates(trip_id, data) {
