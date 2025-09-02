@@ -3505,6 +3505,7 @@ async function getMyBusData(busId, arrivalsAll, tripId, line) {
   iks.addEventListener("click", function () {
     holder.style.transform = "translateX(100vw) translateZ(1px)";
     clearInterval(intervalBusk);
+    clearInterval(busUpdateInterval);
     if (document.querySelector(".arrivalsHolder")) {
       document.querySelector(".arrivalsHolder").style.transform =
         "translateX(0vw) translateZ(1px)";
@@ -3614,8 +3615,15 @@ async function clickedMyBus(bus, tripId, arrival) {
 
   let busId = bus?.bus_id;
   let busData = busObject.find((el) => el.bus_id === busId);
+  console.log(busData, arrival);
 
   let myBusDiv = document.querySelector(".myBusDiv");
+  /*showRealTimeTraffic(
+    [busData.latitude, busData.longitude],
+    [isArrivalsOpen.latitude, isArrivalsOpen.longitude],
+    busData.direction,
+    myBusDiv
+  );*/
   let scrollPosition = myBusDiv.scrollTop;
 
   clearElementContent(myBusDiv);
@@ -4271,6 +4279,78 @@ async function stationsOnRoute(arrival, container) {
     let nameStation = addElement("div", arDiv, "nameStation");
     nameStation.innerHTML = arrivalRoute.name;
   });
+}
+async function showRealTimeTraffic(busLoc, stationLoc, dir) {
+  let forwardCoords = getForwardStations(
+    busLoc,
+    stationLoc,
+    coordinates,
+    stations
+  );
+  console.log(forwardCoords);
+  forwardCoords.unshift(busLoc.reverse());
+  forwardCoords.push(stationLoc.reverse());
+  let data = await fetch(
+    `https://api.tomtom.com/routing/1/calculateRoute/${forwardCoords.join(
+      ":"
+    )}/json?key=3bF5vHTHJd741lmrbFZWlIzezbPy5Tsp&traffic=true&routeType=fastest&computeTravelTimeFor=all&travelMode=bus&departAt=now&vehicleHeading=${parseInt(
+      dir
+    )}`
+  );
+
+  data = await data.json();
+  console.log(data);
+  const tempRouteSourcer = new ol.source.Vector();
+  let pint = data.routes[0].legs[0].points;
+  pint = pint.map((p) => [p.latitude, p.longitude]);
+  const routeFeature = new ol.Feature({
+    geometry: new ol.geom.LineString(
+      pint.map((o) => {
+        return ol.proj.fromLonLat(o[0] < o[1] ? o : o.reverse());
+      })
+    ),
+  });
+  routeFeature.setStyle(
+    new ol.style.Style({
+      stroke: new ol.style.Stroke({
+        color: `RGB(0,255,0)`,
+        width: 7,
+      }),
+    })
+  );
+  tempRouteSourcer.addFeature(routeFeature);
+
+  let busVectorLayera = new ol.layer.Vector({
+    source: tempRouteSourcer,
+    updateWhileInteracting: true,
+  });
+  map.addLayer(busVectorLayera);
+  map.getView().fit(tempRouteSourcer.getExtent(), {
+    duration: 750,
+    padding: [50, 50, 50, 50],
+  });
+}
+function getForwardStations(busLoc, stationLoc, routeCoords, stations) {
+  // Find index of the closest point on the route to the bus
+  const busIndex = findClosestPoint(busLoc.reverse(), routeCoords);
+  const stIndex = findClosestPoint(stationLoc.reverse(), routeCoords);
+
+  // Filter stations: keep only those whose closest point on route is ahead of bus
+  const forwardStations = stations.filter((station) => {
+    const stationIndex = findClosestPoint(
+      [station.longitude, station.latitude],
+      routeCoords
+    );
+    console.log(busIndex, stationIndex);
+
+    return stationIndex >= busIndex && stationIndex < stIndex;
+  });
+
+  // Return array of station coordinates [lat, lon]
+  return forwardStations.map((station) => [
+    station.latitude,
+    station.longitude,
+  ]);
 }
 
 window.onpopstate = function (event) {
